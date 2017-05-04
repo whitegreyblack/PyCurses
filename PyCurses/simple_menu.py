@@ -3,12 +3,12 @@ import curses
 from populate import Populate, logging, log
 from db_connection import sqlite3, Connection
 
-hi, bd, li, key, limit = None, None, None, 30
+hi, bd, li, key, limit = None, None, None, None, 30
 tabnames = ["RECIEPT",
             "GROCERY",
             ]
 
-class Tab(object):
+class Tab:
     def __init__(self, title, parent, window, child):
         self.title = title
         self.parent = parent
@@ -46,11 +46,11 @@ class Window:
         if self.parent.title.lower()=="reciept":
             i = 2
             for store, date, _, _, _, _, total in self.datahead:
-                self.window.addstr(i,2,"{} {} {}".format(store, date, total))
+                self.window.addstr(i,2,"{} {} {:.2f}".format(store, date, total))
                 i+=2
             self.window.addstr(i,1,"{}".format(len(self.datahead)))
         if self.parent.title.lower()=="grocery":
-            self.window.addstr(6,1,'{} active'.format(self.parent.title))
+            i = 2
         if self.parent.title.lower()=="payment":
             self.window.addstr(7,1,'{} active'.format(self.parent.title))
         self.window.overwrite(self.mainscr)
@@ -72,7 +72,10 @@ class SubWindow:
         self.mainscr = mainscr
         self.parent = parent
 
-class TabsManager(object):
+class ListManager:
+    pass
+
+class TabsManager:
     def __init__(self, parent):
         self.conn = Connection()
         y, x = parent.getmaxyx()

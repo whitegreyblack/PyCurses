@@ -1,7 +1,7 @@
 # INFO|DEBUG|WARNING STRINGS FOR LOGGER
 sql_populate = "-- LOGGER :- Populate() --"
-sql_frontend = "-- LOGGER :- FrontEnd() --
-"
+sql_frontend = "-- LOGGER :- FrontEnd() --"
+
 sql_conn_try = "SQL: Creating Connection"
 sql_conn_scs = "SQL: Connection Established"
 sql_conn_err = "SQL: Connection Error"

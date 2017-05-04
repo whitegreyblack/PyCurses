@@ -4,7 +4,7 @@ headcreate = """create table if not exists reciepthead (store varchar(25),
 headinsert = """insert or ignore into reciepthead values (?,?,?,?,?,?,?);"""
 
 bodycreate = """create table if not exists recieptbody (item varchar(25), 
-    price real, code varchar(30))"""
+    price real, code varchar(30), UNIQUE(item, price, code))"""
 bodyinsert = """insert or ignore into recieptbody values (?,?,?)"""
 
 algrocery = """select * from reciepthead"""

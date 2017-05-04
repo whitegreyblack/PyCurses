@@ -2,8 +2,8 @@
 import sqlite3
 import sys
 import logging
-import logstrings as log
-import sqlstrings as sql
+import strings_log as log
+import strings_sql as sql
 from reciept_py import RecieptHeader, RecieptBody, sys
 
 # Database Object

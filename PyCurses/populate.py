@@ -2,9 +2,9 @@ import os
 import yaml
 import sqlite3
 import logging
-import logstrings as log
-from connection import Connection, sys
-from reciept_yaml import YamlReciept
+import strings_log as log
+from db_connection import Connection, sys
+from reciept_yaml import Reciept
 from reciept_py import RecieptHeader, RecieptBody
 
 folder = 'reciepts/'
@@ -29,9 +29,12 @@ def func_handler(enter, err, scs, fnc, *args):
         return fnc(*args)
     except:
         exit_handler_err(err)
+    else:
+        logging.debug(scs)
 
 def conn_exit(conn):
     del conn
+
 def conn_func(unneeded):
     return Connection()
 
@@ -42,22 +45,26 @@ def read_func(file):
     return file.read()
 
 def load_func(file):
+    logging.debug("Enter Load")
+    #logging.debug(file)
     return yaml.load(file)
+    logging.debug("Exit Load")
 
 def open_func(args):
     with open(args, 'r') as file:
+            data = func_handler(
+                log.sys_read_try.format(args),
+                log.sys_read_err,
+                log.sys_read_scs,
+                read_func,
+                file)
+            #logging.debug(data)
             obj = func_handler(
                 log.yml_load_try.format(args),
                 log.yml_load_err,
                 log.yml_load_scs,
                 load_func,
-                func_handler(
-                    log.sys_read_try.format(args),
-                    log.sys_read_err,
-                    log.sys_read_scs,
-                    read_func,
-                    file)
-                )
+                data)
             h,b = obj.build()
             return h, b
             

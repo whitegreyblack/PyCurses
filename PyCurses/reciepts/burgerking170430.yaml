@@ -1,0 +1,11 @@
+--- !Reciept
+store: Burger King
+date: [2017,4,30]
+type: fast food
+prod:
+  {
+    bacon cheeseburger meal: 4.00
+  }
+sub: 4.00
+tax: 0.34
+tot: 4.34
