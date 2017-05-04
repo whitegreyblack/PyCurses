@@ -1,0 +1,11 @@
+--- !Reciept
+store: Burger King
+date: [2017,4,29]
+type: fast food
+prod:
+  {
+    whopper (2): 4.49,
+  }
+sub: 4.49
+tax: 0.38
+tot: 4.87

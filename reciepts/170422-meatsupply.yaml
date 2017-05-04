@@ -1,0 +1,11 @@
+--- !Reciept
+store: Valley Meat Supply
+date: [2017,4,22]
+type: butcher
+prod:
+  {
+    beef shank: 4.66,
+  }
+sub: 4.66
+tax: 0.00
+tot: 4.66

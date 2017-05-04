@@ -1,0 +1,22 @@
+--- !Reciept
+store: Leevers
+date: [2017,4,27]
+type: grocery
+prod:
+  {
+    bananas: 2.14,
+    garlic clove (2): 1.70,
+    cilantro: 1.19,
+    watermelon: 7.88,
+    tortillas: 3.09,
+    jalapeno pepper: 0.41,
+    tomato: 1.38,
+    lettuce: 1.99,
+    sweet onion: 2.02,
+    chicken breast: 4.99,
+    pollock filets: 2.09,
+    turkey drums: 2.54,
+  }
+sub: 31.42
+tax: 0.00
+tot: 31.42

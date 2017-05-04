@@ -9,7 +9,7 @@ from reciept_py import RecieptHeader, RecieptBody, sys
 # Database Object
 class Connection:
     def __init__(self):
-        self.conn = sqlite3.connect('food.db')
+        self.conn = sqlite3.connect('food.db',0)
         self.build_tables()
     def build_tables(self):
         self.conn.execute(sql.headcreate)

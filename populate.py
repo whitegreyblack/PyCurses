@@ -9,6 +9,14 @@ from reciept_py import RecieptHeader, RecieptBody
 
 folder = 'reciepts/'
 
+def func_wrap(fn):
+    def wrapper(*args):
+        try:
+            fn(*args)
+        except Exception as e:
+            print(type(e))
+    return wrapper()
+
 def exit_handler_err(errstr):
     logging.warning(sys.exc_info()[0])
     logging.debug(errstr)
@@ -41,16 +49,13 @@ def conn_func(unneeded):
 def push_func(conn, head, body):
     conn.insert(head, body)
 
-def read_func(file):
-    return file.read()
-
-def load_func(file):
-    logging.debug("Enter Load")
-    #logging.debug(file)
-    return yaml.load(file)
-    logging.debug("Exit Load")
-
 def open_func(args):
+    def read_func(file):
+        return file.read()
+
+    def load_func(file):
+        return yaml.load(file)
+
     with open(args, 'r') as file:
             data = func_handler(
                 log.sys_read_try.format(args),

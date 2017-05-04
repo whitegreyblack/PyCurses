@@ -14,12 +14,12 @@ This program will be a multi step development. Currently on Step 1 backtesting a
     - I would like several differnt windows for a layered application
     - These will include Finance Tab, Grocery/Recipe Tab and Schedule Tab
 
-- Dependancies
+Dependancies
     - pyyaml : file parsing and extension
     - Curses : front end of application
     - sqlite : back end of application
 
-- Files:
+Files:
     - strings_sql.py - holds py strings containing common sql queries
     - strings_log.py - holds py strings containing common logger output
     - reciept_yaml.py - holds yaml object that parses yaml reciepts
