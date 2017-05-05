@@ -21,4 +21,4 @@ class Reciept(yaml.YAMLObject):
         code = self.store.replace(" ","") + date
         head = (self.store, date, self.type, code, self.sub, self.tax, self.tot)
         body = (code, self.prod)
-        return head, body
+        return head, body  

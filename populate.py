@@ -6,7 +6,7 @@ import strings_log as log
 from db_connection import Connection, sys
 from reciept_yaml import Reciept
 from reciept_py import RecieptHeader, RecieptBody
-
+from checker import YamlChecker
 folder = 'reciepts/'
 
 def func_wrap(fn):
@@ -73,7 +73,8 @@ def open_func(args):
             h,b = obj.build()
             return h, b
             
-def Populate():
+def Populate(files):
+    print(files)
     logging.debug(log.sql_populate)
     conn = func_handler(
                 log.sql_conn_try, 
@@ -82,8 +83,8 @@ def Populate():
                 conn_func, 
                 None)
     
-    for _,_,files in os.walk(folder):
-        for file in files:
+    for f in files:
+        for file in f:
             h, b = func_handler(
                 log.sys_open_try.format(folder+file), 
                 log.sys_open_err, 
@@ -101,4 +102,4 @@ def Populate():
 
 if __name__ == "__main__":
     logging.basicConfig(filename='debug.log', format='%(message)s', level=logging.DEBUG)
-    Populate()
+    Populate(YamlChecker('testfolder/').files_safe())

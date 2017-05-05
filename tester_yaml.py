@@ -9,9 +9,14 @@ folder = 'reciepts/'
 
 
 class YamlTester(unittest.TestCase):
+
+    def setUp(self):
+        self.folder = 'reciepts'
+
     def test_directory(self):
         """ Test if directory is not empty """
-        self.assertNotEqual(len([f for root,dirs,files in walk('reciepts') for f in files]), 0)
+        self.assertNotEqual(len([f for root,dirs,files in walk(self.folder) for f in files]), 0)
+        
     '''
     def test_files(self):
 
