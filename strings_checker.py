@@ -4,10 +4,10 @@ yellow='\x1b[0;33;40m'
 RED ='\x1b[1;31;40m'
 END ='\x1b[0m'
 
-strings = {
+passfail = {
     'f_safe' : {
-        True: GRN+("y f")+END,
-        False: RED+("f Fail")+END,
+        True: GRN+("File Pass")+END,
+        False: RED+("File Fail")+END,
     },
     'f_regex': {
         True: GRN+("Regx Pass")+END,
@@ -29,6 +29,10 @@ strings = {
         True: GRN+("Yaml Pass")+END,
         False: RED+("Yaml Fail")+END,
     },
+    'y_read': {
+        True: GRN+("Read Pass")+END,
+        False: RED+("Read Fail")+END,
+    },
     'y_store': {
         True: GRN+("Name Pass")+END,
         False: RED+("Name Fail")+END,
@@ -36,5 +40,13 @@ strings = {
     'y_date': {
         True: GRN+("Date Pass")+END,
         False: RED+("Date Fail")+END,
-    }
+    },
+    'y_prod': {
+        True: GRN+("Prod Pass")+END,
+        False: RED+("Prod Fail")+END,
+    },
+    'y_card': {
+        True: GRN+("Card Pass")+END,
+        False: RED+("Card Fail")+END,
+    },
 }

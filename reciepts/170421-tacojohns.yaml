@@ -6,6 +6,6 @@ prod:
   {
     taco salad: 5.69,
   }
-subtotal: 5.69
-totaltax: 0.48
-total: 6.17
+sub: 5.69
+tax: 0.48
+tot: 6.17

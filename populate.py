@@ -1,12 +1,13 @@
 import os
+import sys
 import yaml
 import sqlite3
 import logging
 import strings_log as log
 from db_connection import Connection, sys
 from reciept_yaml import Reciept
-from reciept_py import RecieptHeader, RecieptBody
 from checker import YamlChecker
+
 folder = 'reciepts/'
 
 def func_wrap(fn):
@@ -83,23 +84,25 @@ def Populate(files):
                 conn_func, 
                 None)
     
-    for f in files:
-        for file in f:
-            h, b = func_handler(
-                log.sys_open_try.format(folder+file), 
-                log.sys_open_err, 
-                log.sys_open_scs, 
-                open_func, 
-                folder+file)
-            logging.debug(log.sql_push_try.format(h,b))
-            func_handler(
-                log.sql_push_try.format(h,b),
-                log.sql_push_err,
-                log.sql_push_scs,
-                push_func,
-                conn, h, b)
+    for file in files:
+        h, b = func_handler(
+            log.sys_open_try.format(folder+file), 
+            log.sys_open_err, 
+            log.sys_open_scs, 
+            open_func, 
+            folder+file)
+        logging.debug(log.sql_push_try.format(h,b))
+        func_handler(
+            log.sql_push_try.format(h,b),
+            log.sql_push_err,
+            log.sql_push_scs,
+            push_func,
+            conn, h, b)
     exit_handler_nrm(conn)
 
 if __name__ == "__main__":
     logging.basicConfig(filename='debug.log', format='%(message)s', level=logging.DEBUG)
-    Populate(YamlChecker('testfolder/').files_safe())
+    if len(sys.argv) == 2:
+        Populate(YamlChecker(sys.argv[1].replace("\\",'/')).fs_safe())
+    else:
+        Populate(YamlChecker('testfolder/').fs_safe())

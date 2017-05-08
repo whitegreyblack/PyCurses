@@ -2,43 +2,21 @@ import sys
 import curses
 from populate import Populate, logging, log
 from db_connection import sqlite3, Connection
+from checker import YamlChecker
+from datetime import date
+from data import RecieptData
+from tabs import Tab
+import calendar
 
 hi, bd, li, key, limit = None, None, None, None, 30
 tabnames = ["RECIEPT",
-            "GROCERY",
             ]
 
-class Tab:
-    def __init__(self, title, parent, window, child):
-        self.title = title
+class WinCalendar:
+    def __init__(self, parent, window):
         self.parent = parent
         self.window = window
-        self.child = child
-        self.child.setparent(self)
-        self.x,self.y = window.getmaxyx()
-    def toggle_on(self):
-        self.window.border(bd,bd,bd,bd,bd,bd,bd,bd)
-        self.toggle_name()
-        self.window.refresh()
-        self.child.toggle_on()
-    def toggle_off(self):
-        self.window.border(li,li,li,li,li,li,li,li)
-        self.toggle_name()
-        self.window.refresh()
-        self.child.toggle_off()
-    def toggle_name(self):
-        self.window.addstr(1, 1, "{}".format(self.title))
-    def load(self):
-        self.child.load()
-class Data:
-    def __init__(self, data):
-        self.data = data
-        self.size = len(data)
-        self.pos = 0
-    def scroll(self, n):
-        old = self.pos
-        self.pos = max(min(self.size-1, self.pos+n), 0)
-        return old, self.pos
+        self.year = calendar.TextCalendar()
 
 class Window:
     def __init__(self, mainscr, window):
@@ -50,28 +28,60 @@ class Window:
         self.border()
         self.left.border(), self.right.border()
         self.datapos = 0
+        self.months = WinCalendar(self, self.right)
     def setparent(self, parent):
         self.parent = parent
     def toggle_on(self):
         if self.parent.title.lower()=="reciept":
             i = 2
             for store, date, _, _, _, _, total in self.datahead.data:
-                if i // 2 - 1== self.datahead.pos:
-                    self.window.addstr(i,2,"{} {} {:.2f}".format(store, date, total), curses.A_REVERSE)
+                if i // 2 - 1 == self.datahead.pos:
+                    self.window.addstr(i,2,"{d} | {n:{l}} | {t:5.2f}".format(
+                        n=store, 
+                        l=self.datahead.maxas,
+                        d=date,
+                        t=total
+                        ), curses.A_REVERSE)
                 else:
-                    self.window.addstr(i,2,"{} {} {:.2f}".format(store, date, total))
+                    self.window.addstr(i,2,"{d} | {n:{l}} | {:5.2f}".format(
+                        total,
+                        n=store, 
+                        l=self.datahead.maxas,
+                        d=date,
+                        ))
                 i+=2
-            self.window.addstr(10,2,"{}".format(self.datahead.pos))
+            i = 2
+            for m in self.datahead.month:
+                self.window.addstr(i, 60, "{:6} : {:6.2f}".format(
+                    calendar.month_name[m[0]], m[1]))
+                i+=2
+            self.window.addstr(i, 60, "Total = {}".format(self.datahead.total))
+        '''
         if self.parent.title.lower()=="grocery":
             i = 2
         if self.parent.title.lower()=="payment":
             self.window.addstr(7,1,'{} active'.format(self.parent.title))
+        '''
         self.window.overwrite(self.mainscr)
+        #self.window.refresh()
+        self.toggleMonths()
         self.window.refresh()
     def toggle_off(self):  
         self.window.clear()
         self.border()
         self.window.refresh()
+    def toggleMonths(self):
+        if self.parent.title.lower()=="reciept":
+            for m in self.datahead.month:
+                i = 40
+                #month = self.months.year.formatmonth(2017, m[0])
+                #self.window.addstr(i, 60, "{}".format(type(month)))
+                #self.window.addstr(i, 3, "{}".format(self.months.year.formatmonth(2017, m[0])))
+                #i+= 5
+                # for l in self.months.year.formatmonth(2017, m[0]):
+                #     self.window.addstr(35, 3, "{}".format(l))
+                #     i+=1
+                
     def refresh(self, i, j):
         s, d, _, _, _, _, t = self.datahead.data[i]
         self.window.addstr(i+2, 2, "{} {} {:2f}".format(s, d, t))
@@ -81,16 +91,10 @@ class Window:
         self.window.border(bd,bd,bd,bd,bd,bd,bd,bd)
     def load(self):
         if self.parent.title.lower()=="reciept":
-            self.datahead = Data([row for row in self.parent.parent.conn.load()])
+            self.datahead = RecieptData([row for row in self.parent.parent.conn.load()])
+            self.databody = self.parent.parent.conn.load_body("asdf")
         elif self.parent.title.lower()=="grocery":
             self.data = self.parent.parent.conn.loadByGroup("type",self.parent.title.lower())
-class SubWindow:
-    def __init__(self, mainscr, parent):
-        self.mainscr = mainscr
-        self.parent = parent
-
-class ListManager:
-    pass
 
 class TabsManager:
     def __init__(self, parent):
@@ -111,8 +115,8 @@ class TabsManager:
 
 def main(mainscreen):
     # fill sqlite db
-    Populate()
-
+    Populate(YamlChecker(sys.argv[1].replace("\\",'/')).fs_safe())
+    #Populate(YamlChecker(sys.argv[1].replace("\\",'/')).fs_safe())
     # variables
     curses.init_pair(1,curses.COLOR_BLACK, curses.COLOR_WHITE)
     curses.curs_set(0)
@@ -140,11 +144,13 @@ def main(mainscreen):
             pos = newpos
         elif char in vkeys:
             if char == vkeys[0]:
-                tm.active.child.datahead.scroll(-1)
-                tm.active.child.refresh(tm.active.child.datapos, -1)
+                tm.active.child.datahead.scroll_dn()
+                #tm.active.child.refresh(tm.active.child.datapos, -1)
+                tm.active.child.toggle_on()
             if char == vkeys[1]:
-                tm.active.child.datahead.scroll(1)
-                tm.active.child.refresh(tm.active.child.datapos, 1)
+                tm.active.child.datahead.scroll_up()
+                #tm.active.child.refresh(tm.active.child.datapos, 1)
+                tm.active.child.toggle_on()
         char = mainscreen.getch()
     curses.endwin()
     print(chr(27)+"[2J")
