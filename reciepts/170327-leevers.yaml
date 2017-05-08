@@ -1,0 +1,11 @@
+--- !Reciept
+store: Leevers
+date: [2017,3,27]
+type: grocery
+prod:
+  {
+    dollar item: 1.00
+  }
+sub: 1.00
+tax: 0.00
+tot: 1.00

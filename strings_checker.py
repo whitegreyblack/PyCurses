@@ -5,19 +5,19 @@ RED ='\x1b[1;31;40m'
 END ='\x1b[0m'
 
 strings = {
-    'file_safe' : {
-        True: GRN+("Yaml File")+END,
-        False: RED+("File Fail")+END,
+    'f_safe' : {
+        True: GRN+("y f")+END,
+        False: RED+("f Fail")+END,
     },
-    'file_regex': {
+    'f_regex': {
         True: GRN+("Regx Pass")+END,
         False: RED+("Regx Fail")+END,
     },
-    'file_read': {
+    'f_read': {
         True: GRN+("Read Pass")+END,
         False: RED+("Read Fail")+END
     },
-    'file_load': {
+    'f_load': {
         True: GRN+("Load Pass")+END,
         False: RED+("Load Fail")+END,
     },
@@ -25,15 +25,15 @@ strings = {
         True: GRN+("Store Pass")+END,
         False: RED+("Store Fail")+END,
     },
-    'yaml_safe': {
+    'y_safe': {
         True: GRN+("Yaml Pass")+END,
         False: RED+("Yaml Fail")+END,
     },
-    'yaml_store': {
+    'y_store': {
         True: GRN+("Name Pass")+END,
         False: RED+("Name Fail")+END,
     },
-    'yaml_date': {
+    'y_date': {
         True: GRN+("Date Pass")+END,
         False: RED+("Date Fail")+END,
     }
