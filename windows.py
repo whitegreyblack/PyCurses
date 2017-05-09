@@ -1,24 +1,34 @@
+import background as bg
+
 class Window:
-    def __init__(self, title, parent, win):
-        self.title = title
+    def __init__(self, name, parent, win):
+        self.name = name
         self.parent = parent
         self.win = win
         self.y, self.x = self.win.getmaxyx()
         self.toggle_border, self.toggle_name = False, False
     
-    def toggle_all_on(self):
-        self.toggle_border_on()
+    def toggle_on(self):
+        self.toggle_border_active()
         self.toggle_name_on()
 
     def toggle_border_on(self):
         self.win.border()
         if self.toggle_name:
-            toggle_name_on()
+            self.toggle_name_on()
         self.win.refresh()
 
     def toggle_name_on(self):
-        self.win.addstr(0,1,"{}".format(self.title))
+        self.win.addstr(0,1,"{}".format(self.name))
         self.win.refresh()
+
+    def toggle_border_active(self, cl=None):
+        self.win.border(bg.li, bg.li, bg.li, bg.li,
+            bg.li, bg.li, bg.li, bg.li)
+            
+    def toggle_off(self):
+        self.win.clear()
+
 '''
         y, x = mainscr.getmaxyx()
         self.window = window

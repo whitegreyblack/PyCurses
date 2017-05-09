@@ -1,18 +1,10 @@
 import background as bg
 
 class Tab:
-    def __init__(self, title, parent, tab):
-        """
-        Args:
-            title: tab name
-            parent: reference to parent object (should be type <tabmanager>)
-            window: reference to curses window object
-            child: reference to child window object
-        """
-        self.title = title
+    def __init__(self, name, parent, tab):
+        self.name = name
         self.parent = parent
         self.tab = tab
-        self.win = None
         self.y,self.x = tab.getmaxyx()
         self.toggle_name = False
         self.toggle_border = False
@@ -25,54 +17,73 @@ class Tab:
         """
         self.tab.border(cl,cl,cl,cl,cl,cl,cl,cl)
 
-    def toggle_all_on(self, cl):
+    def toggle_all_on(self):
         """
-        Changes border color to light and brings up child window
-        Args:
-            cl: color of tab border
+        Draws normal border and tab title
         """
-        self.toggle_border_on(cl)
+        self.toggle_border_on()
         self.toggle_name_on()
         #self.child.toggle_on()
         self.tab.refresh()
         
+    def toggle_on(self):
+        self.toggle_border_active()
+        self.toggle_name_on()
+    
+    def toggle_active(self):
+        self.toggle_border_active()
+        self.toggle_name_on()
+
+    def toggle_inactive(self):
+        self.toggle_border_inactive()
+        self.toggle_name_on()
+        
     def toggle_name_on(self):
         """ Writes tab title to window """
-        self.tab.addstr(1, 1, "{}".format(self.title),bg.re)
+        self.tab.addstr(1, 1, "{}".format(self.name),bg.re)
         self.toggle_name = True
         self.tab.refresh()
     
-    def toggle_border_on(self, cl=None):
+    def toggle_border_on(self):
         """ 
         Draws tab border 
         """
-        if not cl:
-            self.tab.border()
-        else:
-            slef.tab.border(cl, cl, cl, cl, cl, cl, cl, cl)
-        if self.toggle_name: self.toggle_name_on()
+        self.tab.border()
+        if self.toggle_name: 
+            self.toggle_name_on()
         self.toggle_border = True
         self.tab.refresh()
+
     def toggle_border_active(self, cl=None):
-        pass
+        self.tab.border(bg.li, bg.li, bg.li, bg.li,
+            bg.li, bg.li, bg.li, bg.li)
+        self.tab.refresh()
+
+    def toggle_border_inactive(self, cl=None):
+        self.tab.border(bg.bd, bg.bd, bg.bd, bg.bd,
+            bg.bd, bg.bd, bg.bd, bg.bd)
+        self.tab.refresh()
+
     def toggle_all_off(self, cl):
         """
         Changes border color to dark and brings up child window
         Args:
             cl: color of tab border
         """
-        self.toggle_border_switch(cl)
+        self.toggle_border_off()
         self.toggle_name()
         self.tab.refresh()
-        self.child.toggle_off()
-        self.tab.refresh()
+
+    def toggle_off(self):
+        self.toggle_border_inactive()
+        self.toggle_name_on()
 
     def toggle_name_off(self):
         """
         Clears window of name, redraws border if border is on
         """
         self.tab.clear()
-        if toggle_border:
+        if self.toggle_border:
             self.toggle_border_on()
         self.tab.refresh()
 
@@ -81,7 +92,7 @@ class Tab:
         Clears window of border, writes name if name is on
         """
         self.tab.clear()
-        if toggle_name:
+        if self.toggle_name:
             self.toggle_name_on()
         self.tab.refresh()
 
@@ -89,4 +100,24 @@ class Tab:
         """ 
         Calls child load function to load sql data 
         """
-        self.child.load()
+        #@self.child.load()
+        pass
+
+
+"""
+import bases
+import background as bg
+
+class Tab(bases.BaseWidget):
+    def __init__(self, name, parent, tab):
+        super(Tab, self).__init__(name, parent, tab)
+        self.ny = 1
+        self.nx = 1
+    def toggle_active(self):
+        super(Tab, self).toggle_border_active()
+        super(Tab, self).toggle_name_on()
+
+    def toggle_inactive(self):
+        super(Tab, self).toggle_border_inactive()
+        super(Tab, self).toggle_name_on()
+"""
