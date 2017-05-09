@@ -1,11 +1,15 @@
 # simple_menu tester for WINDOWS cmd prompt size=80x80
 import curses
-import tabsmanager
+import manager
 import tabs
+import signal
+import os
+import time
 
 bd = None
 li = None
-titles = ['reciept']
+titles = ['reciepts', 'random']
+
 def main(main_screen):
     global bd, li
     li = curses.ACS_BOARD
@@ -15,13 +19,13 @@ def main(main_screen):
     curses.curs_set(0)
 
     y,x = main_screen.getmaxyx()
-    if y < 80 | x < 80:
-        curses.resize_term(80,80)
-
     main_screen.border()
-    tm = tabsmanager.TabsManager(main_screen)
-    tm.toggle_border_on()
-    tm.toggle_title_on()
+    m = manager.Manager(main_screen)
+    m.toggle_border_on()
+    m.toggle_title_on()
+    m.add_tabs(titles)
+    m.add_wins(titles)
+    m.tm.toggle_border_on()
     c = main_screen.getch(0,0)
     curses.endwin()
 
