@@ -20,7 +20,7 @@ Dependancies
     - sqlite : back end of application
 
 Files:
-    - strings_sql.py - holds py strings containing common sql queries
+    strings_sql.py - holds py strings containing common sql queries
     - strings_log.py - holds py strings containing common logger output
     - reciept_yaml.py - holds yaml object that parses yaml reciepts
     - reciept_py.py - holds object that might be used to interact between front and backend
