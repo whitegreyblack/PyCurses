@@ -1,16 +1,16 @@
-from os import walk, remove
+import os
 import re
 import sys
-from reciept_yaml import Reciept
-from strings_checker import passfail
-import logging
 import yaml
+import logging
+import datetime
 import functools
-from datetime import date
-from db_connection import Connection
+import reciept_yaml
+import strings_checker as strs
 
 # used by printer to print number of files printed
 f_num = 1
+
 # to printer -- create second to printer
 def printer(enabled):
     def wrapper(fn):
@@ -20,7 +20,8 @@ def printer(enabled):
             ret = fn(*args, **kwargs)
             if enabled == ret:
                 try:
-                    print("[{}]({:02}):- {}".format(passfail[fn.__name__][ret],
+                    logging.debug("[{}]({:02}):- {}".format(
+                        strs.passfail[fn.__name__][ret],
                         f_num,args[1].split('.')[0]))
                     f_num += 1
                 except:
@@ -39,6 +40,7 @@ def tryexcept(fn):
             return False
     return wrapper
 
+# handles non-true/false returns and converts into true or false values
 def truefalse(fn):
     @functools.wraps(fn)
     def wrapper(*args, **kwargs):        
@@ -46,18 +48,22 @@ def truefalse(fn):
     return wrapper    
 
 class YamlChecker:
-
+    """ Iterates through each yaml file in target folder and checks for 
+        file and yaml syntax and context before returning a list of 
+        verified files to be used in insertion into database """
 
     def __init__(self, folder='reciepts'):
         """ initialize the folder holding files to check """
+        FORMAT = '%(message)s'
+        logging.basicConfig(filename='debug.log', format='%(message)s', level=logging.DEBUG)
+        logging.debug("-- LOGGER :- FileChecker() --")
         self.folder = folder
-        self.conn = Connection()
 
     def fs_safe(self):
         """ iterate through each file in directory """
         delete = []
         commit = []
-        for _, _, files in walk(self.folder):
+        for _, _, files in os.walk(self.folder):
             for f in files:
                 # will pass down an existing file name in directory
                 if not (self.f_safe(f) and self.y_safe(f)):
@@ -70,9 +76,9 @@ class YamlChecker:
     def fs_delete(self, files):
         """ verify delete from user before removal """
         for i in range(len(files)):
-            if input("({:02}/{:02}) Delete {}?: ".format(
-                i+1,len(files), files[i]))=="yes":
-                pass
+            query = "{:02})/{:02}) Delete {}?: "
+            if input(query.format(i+1,len(files), files[i]))=="yes":
+                    pass
 
     def f_safe(self, file):
         """ calls file checks in order of serial encounter """
@@ -98,7 +104,7 @@ class YamlChecker:
     @tryexcept
     def f_load(self, file):
         """ check file is a yaml object after file load """
-        return isinstance(yaml.load(self.f_open(file)), Reciept)
+        return isinstance(yaml.load(self.f_open(file)), reciept_yaml.Reciept)
 
     #@printer(False)
     @tryexcept
@@ -124,8 +130,8 @@ class YamlChecker:
     def y_date(self, f, o):
         """ check date identifier in yaml object """
         y, m , d = o.date
-        start, end = date(2017,1,1), date.today()
-        return start < date(o.date[0], o.date[1], o.date[2]) <= end
+        start, end = datetime.date(2017,1,1), datetime.date.today()
+        return start < datetime.date(o.date[0], o.date[1], o.date[2]) <= end
 
     @printer(False)
     def y_prod(self, file, obj):
@@ -147,6 +153,10 @@ class YamlChecker:
 if __name__ == "__main__":
     FORMAT = '%(message)s'
     logging.basicConfig(filename='debug.log', format='%(message)s', level=logging.DEBUG)
-    logging.info("Checking Files")
-    check = YamlChecker(sys.argv[1]) if len(sys.argv) == 2 else YamlChecker('testfolder/')
+    logging.debug("-- LOGGER :- FileChecker() --")
+    if len(sys.argv) == 2:
+        logging.debug("Folder To Use Empty")
+        logging.debug("Debug File Unspecified")
+        exit(-1)
+    check = YamlChecker(sys.argv[1])
     print(check.fs_safe())

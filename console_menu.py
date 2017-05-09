@@ -1,12 +1,12 @@
 # simple_menu tester for WINDOWS cmd prompt size=80x80
-import curses
-import manager
-import tabs
-import signal
 import os
+import tabs
 import time
-import background as bg
 import bases
+import curses
+import signal
+import manager
+import background as bg
 
 titles = ['reciepts', 'random']
 

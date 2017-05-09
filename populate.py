@@ -3,106 +3,89 @@ import sys
 import yaml
 import sqlite3
 import logging
+import functools
+import filechecker
 import strings_log as log
-from db_connection import Connection, sys
+import db_connection as conn 
 from reciept_yaml import Reciept
-from checker import YamlChecker
 
-folder = 'reciepts/'
+# used for exit system message at end of program
+exc_err = False
 
-def func_wrap(fn):
-    def wrapper(*args):
-        try:
+# wrapper to raise exceptions for functions
+def logger(try_msg, fail_msg, pass_msg):
+    def wrapper(fn):
+        @functools.wraps(fn)
+        def log(*args, **kwargs):
+            global exc_err
+            if len(args):
+                logging.debug(try_msg.format(args[0]))
+            try:
+                ret = fn(*args, **kwargs)
+                logging.debug(pass_msg)
+                return ret
+            except:
+                logging.debug(fail_msg)
+                exc_err = True
+        return log
+    return wrapper
+
+# creates initial logger messages
+def exitter(err, nrm):
+    def wrapper(fn):
+        @functools.wraps(fn)
+        def handle(*args, **kwargs):
+            logging.basicConfig(
+                filename='debug.log', 
+                format='%(message)s', 
+                level=logging.DEBUG)
+            logging.debug(log.sql_populate)
             fn(*args)
-        except Exception as e:
-            print(type(e))
-    return wrapper()
+            if exc_err:
+                logging.debug(err)
+            else:
+                logging.debug(nrm)
+        return handle
+    return wrapper
 
-def exit_handler_err(errstr):
-    logging.warning(sys.exc_info()[0])
-    logging.debug(errstr)
-    logging.debug(log.sys_exit_err)
-    logging.debug("")
-    exit(-1)
 
-def exit_handler_nrm(conn):
-    conn_exit(conn)
-    logging.debug(log.sql_conn_cls)
-    logging.debug(log.sys_exit_nrm)
-    logging.debug("")
-    #exit(0)
+@logger(log.sql_conn_try, log.sql_conn_err, log.sql_conn_scs)
+def conn_func(*args):
+    return conn.Connection()
 
-def func_handler(enter, err, scs, fnc, *args):
-    logging.debug(enter)
-    try:
-        return fnc(*args)
-    except:
-        exit_handler_err(err)
-    else:
-        logging.debug(scs)
+@logger(log.yml_load_try, log.yml_load_err, log.yml_load_scs)
+def load_func(file, data):
+    return yaml.load(data)
 
-def conn_exit(conn):
-    del conn
+@logger(log.sys_read_try, log.sys_read_err, log.sys_read_scs)
+def read_func(file, fin):
+    return fin.read()
 
-def conn_func(unneeded):
-    return Connection()
+@logger(log.sys_open_try, log.sys_open_err, log.sys_open_scs)
+def open_func(file):
+    with open(file, 'r') as f:
+        return read_func(file, f)
 
-def push_func(conn, head, body):
-    conn.insert(head, body)
+@logger(log.sql_push_try, log.sql_push_err, log.sql_push_scs)
+def push_func(file, conn, head, body):
+    conn.insert(head, body) 
 
-def open_func(args):
-    def read_func(file):
-        return file.read()
-
-    def load_func(file):
-        return yaml.load(file)
-
-    with open(args, 'r') as file:
-            data = func_handler(
-                log.sys_read_try.format(args),
-                log.sys_read_err,
-                log.sys_read_scs,
-                read_func,
-                file)
-            #logging.debug(data)
-            obj = func_handler(
-                log.yml_load_try.format(args),
-                log.yml_load_err,
-                log.yml_load_scs,
-                load_func,
-                data)
-            h,b = obj.build()
-            return h, b
-            
+@exitter(log.sys_exit_err, log.sys_exit_nrm)
 def Populate(files):
-    print(files)
-    logging.debug(log.sql_populate)
-    conn = func_handler(
-                log.sql_conn_try, 
-                log.sql_conn_err, 
-                log.sql_conn_scs, 
-                conn_func, 
-                None)
-    
+    con = conn_func()
     for file in files:
-        h, b = func_handler(
-            log.sys_open_try.format(folder+file), 
-            log.sys_open_err, 
-            log.sys_open_scs, 
-            open_func, 
-            folder+file)
-        logging.debug(log.sql_push_try.format(h,b))
-        func_handler(
-            log.sql_push_try.format(h,b),
-            log.sql_push_err,
-            log.sql_push_scs,
-            push_func,
-            conn, h, b)
-    exit_handler_nrm(conn)
+        dat = open_func(folder+file)
+        obj = load_func(folder+file, dat)
+        h,b = obj.build()
+        push_func(file, con, h ,b)
 
 if __name__ == "__main__":
-    logging.basicConfig(filename='debug.log', format='%(message)s', level=logging.DEBUG)
-    if len(sys.argv) == 2:
-        Populate(YamlChecker(sys.argv[1].replace("\\",'/')).fs_safe())
-    else:
-        Populate(YamlChecker('testfolder/').fs_safe())
+    global folder
+    if len(sys.argv) < 2:
+        if input("No target input folder\nContinue?: ")=="yes":
+            folder = "testfolder/"
+            Populate(filechecker.YamlChecker('testfolder/').fs_safe())
+    else:   
+        folder = sys.argv[1].replace("\\","/")
+        files = filechecker.YamlChecker(sys.argv[1].replace("\\",'/')).fs_safe()
+        Populate(files)

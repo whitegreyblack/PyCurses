@@ -37,7 +37,7 @@ class Tab:
     def toggle_inactive(self):
         self.toggle_border_inactive()
         self.toggle_name_on()
-        
+
     def toggle_name_on(self):
         """ Writes tab title to window """
         self.tab.addstr(1, 1, "{}".format(self.name),bg.re)
@@ -102,22 +102,3 @@ class Tab:
         """
         #@self.child.load()
         pass
-
-
-"""
-import bases
-import background as bg
-
-class Tab(bases.BaseWidget):
-    def __init__(self, name, parent, tab):
-        super(Tab, self).__init__(name, parent, tab)
-        self.ny = 1
-        self.nx = 1
-    def toggle_active(self):
-        super(Tab, self).toggle_border_active()
-        super(Tab, self).toggle_name_on()
-
-    def toggle_inactive(self):
-        super(Tab, self).toggle_border_inactive()
-        super(Tab, self).toggle_name_on()
-"""
