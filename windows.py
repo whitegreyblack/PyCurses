@@ -1,4 +1,5 @@
 import background as bg
+import db_connection as db
 
 class Window:
     def __init__(self, name, parent, win):
@@ -7,6 +8,7 @@ class Window:
         self.win = win
         self.y, self.x = self.win.getmaxyx()
         self.toggle_border, self.toggle_name = False, False
+        self.conn = db.Connection()
     
     def toggle_on(self):
         self.toggle_border_active()

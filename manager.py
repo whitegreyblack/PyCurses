@@ -1,7 +1,7 @@
-import db_connection
 import background as bg
 import tabmanager as tm
 import winmanager as wm
+import db_connection as db
 
 class Manager:
     def __init__(self, window):
@@ -84,6 +84,9 @@ class Manager:
     def load(self, conn):
         [i.load() for i in self.tabs]
     '''
+    def load_data():
+        self.tm.load()
+        self.wm.load()
 
     def del_all(self):
         del self.tm

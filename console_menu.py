@@ -2,7 +2,6 @@
 import os
 import tabs
 import time
-import bases
 import curses
 import signal
 import manager
@@ -22,10 +21,9 @@ def main(main_screen):
         curses.KEY_DOWN: 1
     }
 
+    # basic setup
     y,x = main_screen.getmaxyx()
     main_screen.border()
-
-    
     m = manager.Manager(main_screen)
     m.toggle_border_on()
     m.toggle_title_on()
@@ -36,9 +34,8 @@ def main(main_screen):
     m.toggle_tabs_name()
     m.toggle_tabs_border_inactive(bg.bd)
     m.toggle_tab_border_active(bg.li)
-    # m.toggle_wins_name()
-    # m.toggle_wins_border()
-    # m.toggle_win_border_active(bg.li)
+    m.toggle_win_border_active(bg.li)
+    m.load_data()
     c = main_screen.getch(0,0)
     while c != ord('q'):
         if c in hkeys.keys():
