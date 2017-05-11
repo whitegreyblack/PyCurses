@@ -35,7 +35,7 @@ def main(main_screen):
     m.toggle_tabs_border_inactive(bg.bd)
     m.toggle_tab_border_active(bg.li)
     m.toggle_win_border_active(bg.li)
-    m.load_data()
+    #m.load_data()
     c = main_screen.getch(0,0)
     while c != ord('q'):
         if c in hkeys.keys():

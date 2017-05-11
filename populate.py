@@ -71,7 +71,7 @@ def push_func(file, conn, head, body):
     conn.insert(head, body) 
 
 @exitter(log.sys_exit_err, log.sys_exit_nrm)
-def Populate(files):
+def Populate(folder, files):
     con = conn_func()
     for file in files:
         dat = open_func(folder+file)
@@ -80,12 +80,11 @@ def Populate(files):
         push_func(file, con, h ,b)
 
 if __name__ == "__main__":
-    global folder
     if len(sys.argv) < 2:
         if input("No target input folder\nContinue?: ")=="yes":
             folder = "testfolder/"
-            Populate(filechecker.YamlChecker('testfolder/').fs_safe())
+            Populate(folder, filechecker.YamlChecker('testfolder/').fs_safe())
     else:   
         folder = sys.argv[1].replace("\\","/")
         files = filechecker.YamlChecker(sys.argv[1].replace("\\",'/')).fs_safe()
-        Populate(files)
+        Populate(folder, files)
