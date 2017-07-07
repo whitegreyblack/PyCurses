@@ -1,25 +1,37 @@
-import sys
-import curses
-from populate import Populate, logging, log
-from db_connection import sqlite3, Connection
-from checker import YamlChecker
-from datetime import date
-from data import RecieptData
-from tabs import Tab
-import calendar
-
-hi, bd, li, key, limit = None, None, None, None, 30
-tabnames = ["RECIEPT",
-            ]
-
-class WinCalendar:
-    def __init__(self, parent, window):
-        self.parent = parent
-        self.window = window
-        self.year = calendar.TextCalendar()
+import background as bg
+import db_connection as db
 
 class Window:
-    def __init__(self, mainscr, window):
+    def __init__(self, name, parent, win):
+        self.name = name
+        self.parent = parent
+        self.win = win
+        self.y, self.x = self.win.getmaxyx()
+        self.toggle_border, self.toggle_name = False, False
+        self.conn = db.Connection()
+    
+    def toggle_on(self):
+        self.toggle_border_active()
+        self.toggle_name_on()
+
+    def toggle_border_on(self):
+        self.win.border()
+        if self.toggle_name:
+            self.toggle_name_on()
+        self.win.refresh()
+
+    def toggle_name_on(self):
+        self.win.addstr(0,1,"{}".format(self.name))
+        self.win.refresh()
+
+    def toggle_border_active(self, cl=None):
+        self.win.border(bg.li, bg.li, bg.li, bg.li,
+            bg.li, bg.li, bg.li, bg.li)
+            
+    def toggle_off(self):
+        self.win.clear()
+
+'''
         y, x = mainscr.getmaxyx()
         self.window = window
         self.mainscr = mainscr
@@ -29,6 +41,7 @@ class Window:
         self.left.border(), self.right.border()
         self.datapos = 0
         self.months = WinCalendar(self, self.right)
+
     def setparent(self, parent):
         self.parent = parent
     def toggle_on(self):
@@ -56,12 +69,12 @@ class Window:
                     calendar.month_name[m[0]], m[1]))
                 i+=2
             self.window.addstr(i, 60, "Total = {}".format(self.datahead.total))
-        '''
+        """
         if self.parent.title.lower()=="grocery":
             i = 2
         if self.parent.title.lower()=="payment":
             self.window.addstr(7,1,'{} active'.format(self.parent.title))
-        '''
+        """
         self.window.overwrite(self.mainscr)
         #self.window.refresh()
         self.toggleMonths()
@@ -95,66 +108,4 @@ class Window:
             self.databody = self.parent.parent.conn.load_body("asdf")
         elif self.parent.title.lower()=="grocery":
             self.data = self.parent.parent.conn.loadByGroup("type",self.parent.title.lower())
-
-class TabsManager:
-    def __init__(self, parent):
-        self.conn = Connection()
-        y, x = parent.getmaxyx()
-        self.tabs = [Tab(tabnames[i], self, parent.subwin(2, 9, 0, i*10), Window(parent,parent.subwin(y-2, x, 2, 0))) for i in range(len(tabnames))]
-        self.count = len(self.tabs)
-        [(i.toggle_off(), i.child.load()) for i in self.tabs]
-        self.tabs[0].toggle_on()
-        self.active = self.tabs[0]
-        parent.hline(2, 0, bd, x)
-    def update(self,i,j):
-        self.tabs[i].toggle_off()
-        self.tabs[j].toggle_on()
-        self.active = self.tabs[j]
-    def load(self, conn):
-        [i.load() for i in self.tabs]
-
-def main(mainscreen):
-    # fill sqlite db
-    Populate(YamlChecker(sys.argv[1].replace("\\",'/')).fs_safe())
-    #Populate(YamlChecker(sys.argv[1].replace("\\",'/')).fs_safe())
-    # variables
-    curses.init_pair(1,curses.COLOR_BLACK, curses.COLOR_WHITE)
-    curses.curs_set(0)
-    pos = newpos = 0
-    global bd, li, keys
-    bd, li, keys = curses.ACS_CKBOARD, curses.ACS_BOARD, {curses.KEY_LEFT:-1,curses.KEY_RIGHT:1,ord('\t'):1,curses.KEY_BTAB:-1}
-    hkeys = dict([(49,0),(50,1),(51,2)])
-    vkeys = [curses.KEY_UP, curses.KEY_DOWN]
-    # tabs and child windows
-    tm = TabsManager(mainscreen)    
-
-    # user input
-    char = mainscreen.getch()
-    while char != ord('q'):
-        if char in keys.keys() or char in hkeys.keys():
-            if char in keys.keys():
-                newpos = pos+keys[char]
-                if newpos < 0:
-                    newpos = tm.count-1
-                if newpos > tm.count-1:
-                    newpos = 0
-            elif char in hkeys.keys():
-                newpos = hkeys[char]
-            tm.update(pos,newpos)
-            pos = newpos
-        elif char in vkeys:
-            if char == vkeys[0]:
-                tm.active.child.datahead.scroll_dn()
-                #tm.active.child.refresh(tm.active.child.datapos, -1)
-                tm.active.child.toggle_on()
-            if char == vkeys[1]:
-                tm.active.child.datahead.scroll_up()
-                #tm.active.child.refresh(tm.active.child.datapos, 1)
-                tm.active.child.toggle_on()
-        char = mainscreen.getch()
-    curses.endwin()
-    print(chr(27)+"[2J")
-    sys.stderr.write("\x1b2J\x1b[H")
-if __name__ == "__main__":
-    logging.basicConfig(filename='debug.log', format='%(message)s', level=logging.DEBUG)
-    curses.wrapper(main)
+'''

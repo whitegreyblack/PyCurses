@@ -1,10 +1,10 @@
 --- !Reciept
 store: Taco Johns
-date: [2017,4,27]
+date: [2017,4,22]
 type: fast food
 prod:
   {
-    taco salad: 5.69,
+    taco salad: 5.69
   }
 sub: 5.69
 tax: 0.48

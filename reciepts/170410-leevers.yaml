@@ -1,0 +1,18 @@
+--- !Reciept
+store: Leevers    
+date: [2017,4,10]
+type: grocery         
+prod:             
+  {
+    mini carrots (2): 4.00,
+    bananas: 2.59,
+    brocolli: 1.00,
+    sweat peas: 1.00,
+    beef stock: 3.39,
+    ground pepper: 1.00,
+    chuck roast: 8.01,
+    potatoes: 2.99,
+  }    
+sub: 23.98
+tax: 0.00
+tot: 23.98

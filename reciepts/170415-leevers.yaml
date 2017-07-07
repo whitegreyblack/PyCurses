@@ -1,0 +1,23 @@
+--- !Reciept
+store: Leevers
+date: [2017,4,15]
+type: grocery
+prod:
+  {
+    celery: 1.19,
+    green onions: 1.00,
+    mini carrots (2): 4.00,
+    yellow onions: 2.39,
+    brocolli: 1.00,
+    sweat pea: 1.00,
+    green beans(2): 2.00,
+    mixed veggies: 1.00,
+    diced tomatoes: 1.00,
+    beef stock: 3.99,
+    aluminum foil: 1.00,
+    bottom round roast: 9.97,
+    large eggs: 0.79,
+  }
+sub: 33.72
+tax: 0.30
+tot: 34.02

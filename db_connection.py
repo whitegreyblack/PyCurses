@@ -4,7 +4,6 @@ import sys
 import logging
 import strings_log as log
 import strings_sql as sql
-from reciept_py import RecieptHeader, RecieptBody, sys
 
 # Database Object
 class Connection:
@@ -23,7 +22,8 @@ class Connection:
         [self.conn.execute(sql.bodyinsert, (k, "{0:.2f}".format(products[k]),code)) for k in products.keys()]
         self.conn.commit()
     def load(self):
-        head = self.conn.execute(sql.algrocery)
-        return head
+        return self.conn.execute(sql.algrocery)
+    def load_body(self, codes):
+        pass
     def loadByGroup(self, group, value):
         return self.conn.execute(sql.hdgrocery.format(group, value))
