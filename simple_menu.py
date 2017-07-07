@@ -1,12 +1,13 @@
 import sys
 import curses
+from checker import YamlChecker
 from populate import Populate, logging, log
 from db_connection import sqlite3, Connection
 
 hi, bd, li, key, limit = None, None, None, None, 30
 tabnames = ["RECIEPT",
             "GROCERY",
-            ]
+    ]
 
 class Tab:
     def __init__(self, title, parent, window, child):
@@ -49,19 +50,18 @@ class Window:
         self.right = window.subwin(y-4, x//2-1, 3, x//2)
         self.border()
         self.left.border(), self.right.border()
-        self.datapos = 0
+        self.datahead = None
     def setparent(self, parent):
         self.parent = parent
     def toggle_on(self):
         if self.parent.title.lower()=="reciept":
             i = 2
             for store, date, _, _, _, _, total in self.datahead.data:
-                if i // 2 - 1== self.datahead.pos:
+                if i // 2 - 1 == self.datahead.pos:
                     self.window.addstr(i,2,"{} {} {:.2f}".format(store, date, total), curses.A_REVERSE)
                 else:
                     self.window.addstr(i,2,"{} {} {:.2f}".format(store, date, total))
                 i+=2
-            self.window.addstr(10,2,"{}".format(self.datahead.pos))
         if self.parent.title.lower()=="grocery":
             i = 2
         if self.parent.title.lower()=="payment":
@@ -73,10 +73,16 @@ class Window:
         self.border()
         self.window.refresh()
     def refresh(self, i, j):
-        s, d, _, _, _, _, t = self.datahead.data[i]
-        self.window.addstr(i+2, 2, "{} {} {:2f}".format(s, d, t))
-        s, d, _, _, _, _, t = self.datahead.data[j]
-        self.window.addstr(j+2, 2, "{} {} {:2f}".format(s, d, t), curses.A_REVERSE)
+        self.mainscr.addstr(1, 2, "this works")
+        self.window.addstr(0,2, "nothere")
+        if self.parent.title.lower()=="reciept":
+            self.window.addstr(i+j, 2, "changing")
+            s, d, _, _, _, _, t = self.datahead.data[i]
+            self.window.addstr(40, 2, "datahead")
+            self.window.addstr(i+2, 2, "{} {} {:2f}".format(s, d, t), curses.A_REVERSE)
+            s, d, _, _, _, _, t = self.datahead.data[j]
+            self.window.addstr(j+2, 2, "{} {} {:2f}".format(s, d, t), curses.A_REVERSE)
+        self.window.addstr(35, 2, "asdfd")
     def border(self):
         self.window.border(bd,bd,bd,bd,bd,bd,bd,bd)
     def load(self):
@@ -96,7 +102,9 @@ class TabsManager:
     def __init__(self, parent):
         self.conn = Connection()
         y, x = parent.getmaxyx()
-        self.tabs = [Tab(tabnames[i], self, parent.subwin(2, 9, 0, i*10), Window(parent,parent.subwin(y-2, x, 2, 0))) for i in range(len(tabnames))]
+        self.tabs = [Tab(tabnames[i], self, parent.subwin(2, 9, 0, i*10), 
+            Window(parent,parent.subwin(y-2, x, 2, 0))) 
+            for i in range(len(tabnames))]
         self.count = len(self.tabs)
         [(i.toggle_off(), i.child.load()) for i in self.tabs]
         self.tabs[0].toggle_on()
@@ -111,16 +119,27 @@ class TabsManager:
 
 def main(mainscreen):
     # fill sqlite db
-    Populate()
+    Populate(YamlChecker(sys.argv[1]))
 
     # variables
-    curses.init_pair(1,curses.COLOR_BLACK, curses.COLOR_WHITE)
+    curses.init_pair(1,
+        curses.COLOR_BLACK, 
+        curses.COLOR_WHITE
+    )
     curses.curs_set(0)
     pos = newpos = 0
+
     global bd, li, keys
-    bd, li, keys = curses.ACS_CKBOARD, curses.ACS_BOARD, {curses.KEY_LEFT:-1,curses.KEY_RIGHT:1,ord('\t'):1,curses.KEY_BTAB:-1}
+    bd, li = curses.ACS_CKBOARD, curses.ACS_BOARD 
+    keys = {
+        curses.KEY_LEFT: -1,
+        curses.KEY_RIGHT: 1,
+        ord('\t'): 1,
+        curses.KEY_BTAB: -1
+    }
     hkeys = dict([(49,0),(50,1),(51,2)])
     vkeys = [curses.KEY_UP, curses.KEY_DOWN]
+
     # tabs and child windows
     tm = TabsManager(mainscreen)    
 
@@ -139,16 +158,23 @@ def main(mainscreen):
             tm.update(pos,newpos)
             pos = newpos
         elif char in vkeys:
+            mainscreen.addstr(4,2, "here")
+            old, new = 0, 0
             if char == vkeys[0]:
-                tm.active.child.datahead.scroll(-1)
-                tm.active.child.refresh(tm.active.child.datapos, -1)
-            if char == vkeys[1]:
-                tm.active.child.datahead.scroll(1)
-                tm.active.child.refresh(tm.active.child.datapos, 1)
+                mainscreen.addstr(30, 2, "not")
+                old, new = tm.active.child.datahead.scroll(-1)
+                tm.active.child.refresh(old, new)
+                mainscreen.addstr(31, 2, "{}".format(tm.active.child.datahead.data[new]))
+            if char == vkeys[1] and tm.active.child.datahead is not None:
+                old, new = tm.active.child.datahead.scroll(1)
+                tm.active.child.refresh(old, new)
+            mainscreen.addstr(10, 1, "Old {}".format(old))
+            mainscreen.addstr(11, 1, "New {}".format(new))
+            mainscreen.addstr(15, 1, "Act: {}".format(tm.active.title))
         char = mainscreen.getch()
     curses.endwin()
-    print(chr(27)+"[2J")
-    sys.stderr.write("\x1b2J\x1b[H")
+    #print(chr(27)+"[2J")
+    #sys.stderr.write("\x1b2J\x1b[H")
 if __name__ == "__main__":
     logging.basicConfig(filename='debug.log', format='%(message)s', level=logging.DEBUG)
     curses.wrapper(main)

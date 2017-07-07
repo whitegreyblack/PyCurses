@@ -1,4 +1,5 @@
-from os import walk, remove
+from os import walk
+import sys
 import re
 from reciept_yaml import Reciept
 from strings_checker import strings
@@ -9,8 +10,12 @@ from datetime import date
 
 # used by printer to print number of files printed
 file_num = 1
+file_str = "[{}]({:02}):- {}"
 # to printer -- create second to printer
+
+
 def printer(enabled):
+    ''' allows print statements to stdout as well as logging '''
     def wrapper(fn):
         @functools.wraps(fn)
         def log(*args, **kwargs):
@@ -18,17 +23,21 @@ def printer(enabled):
             ret = fn(*args, **kwargs)
             if enabled == ret:
                 try:
-                    print("[{}]({:02}):- {}".format(strings[fn.__name__][ret],
-                        file_num,args[1].split('.')[0].split('-')[1]))
+                    print(file_str.format(
+                        strings[fn.__name__][ret],
+                        file_num,
+                        args[1].split('.')[0].split('-')[1]))
                     file_num += 1
                 except:
+                    print(args)
                     raise
             return ret
         return log
     return wrapper
 
-# handles exceptions and returns false instead
+
 def tryexcept(fn):
+    ''' handles exceptions and returns false instead '''
     @functools.wraps(fn)
     def wrapper(*args, **kwargs):
         try:
@@ -37,26 +46,32 @@ def tryexcept(fn):
             return False
     return wrapper
 
+
 def truefalse(fn):
     @functools.wraps(fn)
-    def wrapper(*args, **kwargs):        
+    def wrapper(*args, **kwargs):
         return True if fn(*args, **kwargs) else False
-    return wrapper    
+    return wrapper
+
 
 class YamlChecker:
-
+    """ whitebox: (input:-folder str, output:-list) """
     def __init__(self, folder='reciepts'):
         """ initialize the folder holding files to check """
         self.folder = folder
 
     def files_safe(self):
         """ iterate through each file in directory """
-        delete = []
-        commit = []
+        delete = []  # files to delete/modify
+        commit = []  # files to be committed into db
         for _, _, files in walk(self.folder):
+            print(len(files))
             for file in files:
-                # will pass down an existing file name in directory
-                if not (self.file_safe(file) and self.yaml_safe(file)): # and db_safe()
+                """ passes the filename down """
+                ret = self.file_safe(file) \
+                    and self.yaml_safe(file)
+                print(file, ret)
+                if not ret:  # and db_safe()
                     delete.append(file)
                 else:
                     commit.append(file)
@@ -65,25 +80,35 @@ class YamlChecker:
 
     def files_delete(self, files):
         """ verify delete from user before removal """
+        check = "({:02}/{}) Delete {}?: "
+        keywords = ["yes", "no"]
         for i in range(len(files)):
-            if input("({:02}/{}) Delete {}?: ".format(
-                i+1,len(files), files[i]))=="yes":
+            confirm = raw_input(check.format(
+                i+1,
+                len(files),
+                files[i]))
+            if confirm in keywords:
+                pass
+            else:
                 pass
 
     def file_safe(self, file):
         """ calls file checks in order of serial encounter """
-        return self.file_regex(file) and self.file_read(file) and self.file_load(file)
+        return self.file_regex(file) \
+            and self.file_read(file) \
+            and self.file_load(file)
 
     @printer(False)
     @truefalse
     def file_regex(self, file):
-        """ checks file name match & non empty file & syntax correctness """ 
-        return re.compile("[0-9]{6}-[a-z]{,25}\.yaml").match(file)
+        """ checks file name match,non empty file,syntax """
+        regex = "[0-9]{6}-[a-z_]{,25}\.yaml"
+        return re.compile(regex).match(file)
 
     @printer(False)
     @truefalse
     def file_read(self, file):
-        """ check file is not empty and creates a valid yaml obj """
+        """ check file content and creates a valid yaml obj """
         with open(self.folder+file) as f:
             return f.read()
 
@@ -98,38 +123,49 @@ class YamlChecker:
         """ creates and returns yaml object """
         with open(self.folder+file) as f:
             return yaml.load(f.read())
-    
+
     @printer(True)
     def yaml_safe(self, file):
         """ check contents of yaml object """
         obj = self.yaml_read(file)
-        name = self.yaml_store(file, obj)
-        date = self.yaml_date(file, obj)
-        prod = self.yaml_prod(file, obj)
-        return name and date and prod
+        return self.yaml_store(file, obj) \
+            and self.yaml_date(file, obj) \
+            and self.yaml_prod(file, obj)
 
     @printer(False)
     @tryexcept
     def yaml_store(self, file, obj):
-        return file.split('.')[0].split('-')[1] in obj.store.replace(" ","").lower()
+        """ check yaml store with store in filename """
+        fname = file.split('.')[0].split('-')[1]
+        store = obj.store.replace(" ", "").lower()
+        return fname in store
 
     @printer(False)
     @tryexcept
     def yaml_date(self, file, obj):
-        y, m , d = obj.date
-        start, end = date(2017,1,1), date.today()
-        return start < date(obj.date[0], obj.date[1], obj.date[2]) < end
+        """ check yaml date with file date """
+        y, m, d = obj.date
+        start, end = date(2017, 1, 1), date.today()
+        filedate = date(obj.date[0], obj.date[1], obj.date[2])
+        return start < filedate < end
 
     def yaml_prod(self, file, obj):
         """ iterate through yaml object[prod]:{str:int,[...]} """
         for key in obj.prod.keys():
-            val = obj.prod[key]
+            if len(key) > 25: 
+                return False
+            if str(obj.prod[key]) > 6:
+                return False
             return True
 
 if __name__ == "__main__":
-    FORMAT = '%(message)s'
-    logging.basicConfig(filename='debug.log', format='%(message)s', level=logging.DEBUG)
+    if len(sys.argv) < 2:
+        print("incorrect args")
+        exit(-1)
+    ''' Setup basic logger '''
+    logging.basicConfig(
+            filename='debug.log',
+            format='%(message)s',
+            level=logging.DEBUG)
     logging.info("Checking Files")
-    #check = YamlChecker('testfolder/')
-    #print(check.files_safe())
-    print(YamlChecker('testfolder/').files_safe())
+    print(YamlChecker(sys.argv[1]).files_safe())
