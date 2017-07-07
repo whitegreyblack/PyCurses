@@ -2,6 +2,8 @@
 title MAKE
 set args=0
 for %%x in (%*) do set /A args+=1
+
+rem start of argument parsing and matching
 if %args%==0 goto badarg
 if %args%==1 if "%1"=="check" goto checkall
 if %args%==2 if "%1"=="check" goto check
@@ -12,7 +14,7 @@ if %args%==1 if "%1"=="clean" (
 	    del "%%~f"
     ))
     echo done cleaning
-    if exist "__pycache__/" del /Q "__pycache__"
+    if exist "__pycache__/" del /F "__pycache__"
     if exist "__pycache__/" rmdir "__pycache__"
 
     goto :eof
@@ -25,6 +27,8 @@ if %args%==3 if "%1"=="reciept" if "%2"=="real" (
     goto recieptsetup
 )
 goto eof
+
+rem Start of goto branching and argument cases
 :recieptsetup
 set "file=%folder%%~3%.yaml"
 echo --- Creating Yaml File: %file% ---
@@ -40,15 +44,28 @@ echo tax: >> %file%
 echo tot: >> %file%
 goto eof
 :check
-if "%2"=="parser" flake8 checker.py
-goto eof
-if "%2"=="db" flake8 populate.py
+if "%2"=="parser" (
+	:parse
+	echo linting checker
+	flake8 checker.py
+	if "%~2"=="" goto db
+	goto eof)
+if "%2"=="db" (
+	:db
+	echo linting populate
+	flake8 populate.py
+	if "%~2"=="" goto gui
+	goto eof)
+if "%2"=="gui" (
+	:gui
+	echo linting gui
+	flake8 revert.py
+	if "%~2"=="" goto eof
+	goto eof)
 goto eof
 :checkall
-echo checking syntax
-flake8 checker.py
-flake8 populate.py
-goto eof
+echo linting all files
+goto parse
 :badarg
 echo incorrect args
 echo USAGE: make [check]

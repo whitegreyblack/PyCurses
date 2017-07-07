@@ -93,11 +93,11 @@ class YamlChecker:
                 files[i]))
             if confirm in keywords:
                 pass
-                #TODO -- deletion
-            #elif TODO: -- modification
+                # TODO -- deletion
+            # e lif TODO: -- modification
             else:
                 pass
-                #TODO -- skip
+                # TODO -- skip
 
     def file_safe(self, file):
         ''' calls file checks in order of serial encounter '''
