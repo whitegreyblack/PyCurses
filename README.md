@@ -1,6 +1,9 @@
 "# PyCurses" 
+A Python Curses wrapper for a cleaner and much more user-friendly way to setup a curses program
 
-This program will be a multi step development. Currently on Step 1 backtesting and Step 2 development
+This program will be a multi step development on the Windows platform. Currently on Step 1 backtesting and Step 2 development
+
+The aim of this project will be to, hopefully, create a grouping of objects that allow the user to create a program in curses the way they want to much more easily than the current library.
 
 - Step 1 will be getting basic front end, file handling, and back end connection classes created
     - Tab and Window Objects

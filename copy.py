@@ -1,13 +1,12 @@
 import sys
 import curses
-import filechecker
+from checker import YamlChecker
 from populate import Populate, logging, log
 from db_connection import sqlite3, Connection
 
 hi, bd, li, key, limit = None, None, None, None, 30
 tabnames = ["RECIEPT",
             "GROCERY",
-            "EXERCISE",
             ]
 
 class Tab:
@@ -156,7 +155,7 @@ if __name__ == "__main__":
         print("No target folder\nExitting...")
         exit(-1)
     # fill sqlite db
-    Populate(sys.argv[1].replace("\\","/"), 
-            filechecker.YamlChecker(sys.argv[1].replace("\\","/")).fs_safe())
+    Populate(sys.argv[1].replace("\\","/"),
+            YamlChecker(sys.argv[1].replace("\\","/")).files_safe())
 
     curses.wrapper(main)

@@ -5,8 +5,13 @@ import yaml
 import logging
 import datetime
 import functools
-import reciept_yaml
+from reciept_yaml import Reciept
 import strings_checker as strs
+
+# logging info
+FORMAT = '%(message)s'
+logging.basicConfig(filename='debug.log', format='%(message)s', level=logging.DEBUG)
+logging.debug("-- LOGGER :- FileChecker() --")
 
 # used by printer to print number of files printed
 f_num = 1
@@ -58,6 +63,13 @@ class YamlChecker:
         logging.basicConfig(filename='debug.log', format='%(message)s', level=logging.DEBUG)
         logging.debug("-- LOGGER :- FileChecker() --")
         self.folder = folder
+        self.files = sum([1 for _, _, files in os.walk(folder) for f in files])
+
+    def fs_safe_timed(self):
+        delete = []
+        commit = []
+        for _, _, files in os.walk(self.folder):
+            pass
 
     def fs_safe(self):
         """ iterate through each file in directory """
@@ -104,7 +116,7 @@ class YamlChecker:
     @tryexcept
     def f_load(self, file):
         """ check file is a yaml object after file load """
-        return isinstance(yaml.load(self.f_open(file)), reciept_yaml.Reciept)
+        return isinstance(yaml.load(self.f_open(file)), Reciept)
 
     #@printer(False)
     @tryexcept
@@ -151,10 +163,7 @@ class YamlChecker:
         return True if get == sub and add == tot else False
 
 if __name__ == "__main__":
-    FORMAT = '%(message)s'
-    logging.basicConfig(filename='debug.log', format='%(message)s', level=logging.DEBUG)
-    logging.debug("-- LOGGER :- FileChecker() --")
-    if len(sys.argv) == 2:
+    if len(sys.argv) < 2:
         logging.debug("Folder To Use Empty")
         logging.debug("Debug File Unspecified")
         exit(-1)

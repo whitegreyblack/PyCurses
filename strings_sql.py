@@ -10,3 +10,6 @@ bodyinsert = """insert or ignore into recieptbody values (?,?,?)"""
 algrocery = """select * from reciepthead"""
 hdgrocery = """select * from reciepthead where {}='{}'"""
 bdgrocery = """select * from reciepthead where code={}"""
+
+mindate = """select min(date) from reciepthead"""
+maxdate = """select max(date) from reciepthead"""
