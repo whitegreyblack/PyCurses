@@ -5,19 +5,19 @@ RED ='\x1b[1;31;40m'
 END ='\x1b[0m'
 
 passfail = {
-    'f_safe' : {
+    'file_safe' : {
         True: GRN+("File Pass")+END,
         False: RED+("File Fail")+END,
     },
-    'f_regex': {
+    'file_regex': {
         True: GRN+("Regx Pass")+END,
         False: RED+("Regx Fail")+END,
     },
-    'f_read': {
+    'file_read': {
         True: GRN+("Read Pass")+END,
         False: RED+("Read Fail")+END
     },
-    'f_load': {
+    'file_load': {
         True: GRN+("Load Pass")+END,
         False: RED+("Load Fail")+END,
     },
@@ -25,27 +25,27 @@ passfail = {
         True: GRN+("Store Pass")+END,
         False: RED+("Store Fail")+END,
     },
-    'y_safe': {
+    'yaml_safe': {
         True: GRN+("Yaml Pass")+END,
         False: RED+("Yaml Fail")+END,
     },
-    'y_read': {
+    'yaml_read': {
         True: GRN+("Read Pass")+END,
         False: RED+("Read Fail")+END,
     },
-    'y_store': {
+    'yaml_store': {
         True: GRN+("Name Pass")+END,
         False: RED+("Name Fail")+END,
     },
-    'y_date': {
+    'yaml_date': {
         True: GRN+("Date Pass")+END,
         False: RED+("Date Fail")+END,
     },
-    'y_prod': {
+    'yaml_prod': {
         True: GRN+("Prod Pass")+END,
         False: RED+("Prod Fail")+END,
     },
-    'y_card': {
+    'yaml_card': {
         True: GRN+("Card Pass")+END,
         False: RED+("Card Fail")+END,
     },
