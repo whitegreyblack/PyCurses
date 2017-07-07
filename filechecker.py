@@ -6,7 +6,7 @@ import logging
 import datetime
 import functools
 from reciept_yaml import Reciept
-import strings_checker as strs
+import strings_checker as strings
 
 # logging info
 FORMAT = '%(message)s'
@@ -26,7 +26,7 @@ def printer(enabled):
             if enabled == ret:
                 try:
                     logging.debug("[{}]({:02}):- {}".format(
-                        strs.passfail[fn.__name__][ret],
+                        strings.passfail[fn.__name__][ret],
                         f_num,args[1].split('.')[0]))
                     f_num += 1
                 except:

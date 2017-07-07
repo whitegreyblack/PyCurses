@@ -1,0 +1,11 @@
+--- !Reciept 
+store: Bek Internet 
+date: [2017, 7, 6]
+type: internet
+prod: 
+  { 
+    bill payment: 73.59
+  } 
+sub: 73.59
+tax: 0.00
+tot: 73.59

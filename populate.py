@@ -2,9 +2,9 @@ import sys
 import yaml
 import logging
 import functools
-from checker import YamlChecker
 import strings_log as log
 import db_connection as conn
+from checker import YamlChecker
 
 # used for exit system message at end of program
 exc_err = False

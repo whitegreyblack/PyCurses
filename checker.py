@@ -1,12 +1,12 @@
-from os import walk
 import re
 import sys
+import yaml
+import logging
+import functools
+from os import walk
+from datetime import date
 from reciept_yaml import Reciept
 from strings_checker import passfail as strings
-import logging
-import yaml
-import functools
-from datetime import date
 
 # used by printer to print number of files printed
 file_num = 1
@@ -23,7 +23,6 @@ def printer(enabled):
             ret = fn(*args, **kwargs)
             if enabled == ret:
                 try:
-                    logging.debug("a")
                     print(file_str.format(
                         strings[fn.__name__][ret],
                         file_num,
@@ -67,8 +66,6 @@ class YamlChecker:
         delete = []  # files to delete/modify
         commit = []  # files to be committed into db
         for _, _, files in walk(self.folder):
-            for file in files:
-                print(file)
             for file in files:
                 ext = (file.split('.'))[-1]
                 if ext == "yaml":
@@ -180,7 +177,7 @@ class YamlChecker:
         sub = int(obj.sub*100)
         add = int((obj.sub+obj.tax)*100)
         tot = int(obj.tot*100)
-        return True if get == sub and add == tot else False
+        return get == sub and add == tot
 
 
 if __name__ == "__main__":

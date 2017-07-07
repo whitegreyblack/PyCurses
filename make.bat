@@ -14,7 +14,7 @@ if %args%==1 if "%1"=="clean" (
 	    del "%%~f"
     ))
     echo done cleaning
-    if exist "__pycache__/" del /F "__pycache__"
+    if exist "__pycache__/" del /Q "__pycache__"
     if exist "__pycache__/" rmdir "__pycache__"
 
     goto :eof
@@ -60,7 +60,7 @@ if "%2"=="gui" (
 	:gui
 	echo linting gui
 	flake8 revert.py
-	if "%~2"=="" goto eof
+	if "%~2"=="" goto pop
 	goto eof)
 goto eof
 :checkall
