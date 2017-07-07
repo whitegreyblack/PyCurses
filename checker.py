@@ -27,7 +27,7 @@ def printer(enabled):
                     print(file_str.format(
                         strings[fn.__name__][ret],
                         file_num,
-                        args[1].split('.')[0].split('-')[1]))
+                        args[1].split('.')[0]))
                     file_num += 1
                 except:
                     print(args)
@@ -70,13 +70,15 @@ class YamlChecker:
             for file in files:
                 print(file)
             for file in files:
-                ''' passes the filename down '''
-                ret = self.file_safe(file) \
-                    and self.yaml_safe(file)
-                if not ret:  # and db_safe()
-                    delete.append(file)
-                else:
-                    commit.append(file)
+                ext = (file.split('.'))[-1]
+                if ext == "yaml":
+                    ''' passes the filename down '''
+                    ret = self.file_safe(file) \
+                        and self.yaml_safe(file)
+                    if not ret:  # and db_safe()
+                        delete.append(file)
+                    else:
+                        commit.append(file)
         self.files_delete(delete)
         return commit
 

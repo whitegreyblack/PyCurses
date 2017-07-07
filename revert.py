@@ -1,6 +1,6 @@
 import sys
 import curses
-import filechecker
+import checker
 from populate import Populate, logging, log
 from db_connection import sqlite3, Connection
 
@@ -29,7 +29,8 @@ class Tab:
         self.window.refresh()
         self.child.toggle_off()
     def toggle_name(self):
-        self.window.addstr(1, 1, "{}".format(self.title))
+        self.window.addstr(1, 1, "{}".format(self.title[0:7]))
+        pass
     def load(self):
         self.child.load()
 class Data:
@@ -157,6 +158,6 @@ if __name__ == "__main__":
         exit(-1)
     # fill sqlite db
     Populate(sys.argv[1].replace("\\","/"), 
-            filechecker.YamlChecker(sys.argv[1].replace("\\","/")).fs_safe())
+            checker.YamlChecker(sys.argv[1].replace("\\","/")).files_safe())
 
     curses.wrapper(main)

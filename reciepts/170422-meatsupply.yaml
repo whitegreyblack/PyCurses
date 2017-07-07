@@ -1,9 +1,5 @@
 --- !Reciept
-<<<<<<< HEAD
-store: Valley Meats
-=======
 store: VC Meat Supply
->>>>>>> 761c76ba3b167cf7c3550b9f8804c74725aac07a
 date: [2017,4,22]
 type: butcher
 prod:

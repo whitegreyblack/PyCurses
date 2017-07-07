@@ -4,7 +4,7 @@ import yaml
 import sqlite3
 import logging
 import functools
-import filechecker
+import checker
 import strings_log as log
 import db_connection as conn 
 from reciept_yaml import Reciept
@@ -83,8 +83,8 @@ if __name__ == "__main__":
     if len(sys.argv) < 2:
         if input("No target input folder\nContinue?: ")=="yes":
             folder = "testfolder/"
-            Populate(folder, filechecker.YamlChecker('testfolder/').fs_safe())
+            Populate(folder, checker.YamlChecker('testfolder/').files_safe())
     else:   
         folder = sys.argv[1].replace("\\","/")
-        files = filechecker.YamlChecker(sys.argv[1].replace("\\",'/')).fs_safe()
+        files = checker.YamlChecker(sys.argv[1].replace("\\",'/')).files_safe()
         Populate(folder, files)
