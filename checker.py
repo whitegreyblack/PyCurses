@@ -1,12 +1,13 @@
 import re
 import sys
 import yaml
+import click
 import logging
 import functools
 from os import walk
 from datetime import date
 from reciept_yaml import Reciept
-from strings_checker import passfail as strings
+from strings import passfail as strings
 
 # used by printer to print number of files printed
 file_num = 1
@@ -180,15 +181,23 @@ class YamlChecker:
         return get == sub and add == tot
 
 
-if __name__ == "__main__":
+@click.command()
+@click.option('-f', help='Folder Containing Yaml Files')
+@click.option('-p', is_flag=True, help='MODE: Print')
+@click.option('-l', is_flag=False, help='MODE: Logger')
+@click.option('-d', is_flag=False, help='MODE: Debug')
+def main(f, p, l, d):
+    if not f:
+        exit('Incorrect Args')
     ''' Check input args - exit if incorrect '''
-    if len(sys.argv) < 2:
-        print("incorrect args")
-        exit(-1)
+    logging.info("Checking Files")
+    YamlChecker(sys.argv[1]).files_safe()
+    logging.info("Checking Finished")
+
+if __name__ == "__main__":
     ''' Setup basic logger '''
     logging.basicConfig(
             filename='debug.log',
             format='%(message)s',
             level=logging.DEBUG)
-    logging.info("Checking Files")
-    print(YamlChecker(sys.argv[1]).files_safe())
+    main()

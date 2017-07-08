@@ -11,3 +11,5 @@ test: clean
 populate: clean
 	python populate.py testfolder/
 
+push: clean
+	git push origin master
