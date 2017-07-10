@@ -3,6 +3,10 @@ clean:
 	find . -name '*.pyo' -exec rm --force {} +
 	find . -name '*.log' -exec rm --force {} +
 	find . -name '*.db' -exec rm --force {} +
+
+lint: clean
+	flake8 --exclude=.log .
+
 check: clean
 	python checker.py testfolder/
 

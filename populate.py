@@ -2,7 +2,7 @@ import sys
 import yaml
 import logging
 import functools
-import strings_log as log
+import strings as log
 import db_connection as conn
 from checker import YamlChecker
 

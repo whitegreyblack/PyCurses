@@ -47,7 +47,7 @@ RED = '\x1b[1;31;40m'
 END = '\x1b[0m'
 
 passfail = {
-    'file_safe' : {
+    'file_safe': {
         True: GRN+("File Pass")+END,
         False: RED+("File Fail")+END,
     },
@@ -101,7 +101,7 @@ headcreate = """create table if not exists reciepthead (store varchar(25),
     subtotal real, tax real, total real, UNIQUE(store, date, total))"""
 headinsert = """insert or ignore into reciepthead values (?,?,?,?,?,?,?);"""
 
-bodycreate = """create table if not exists recieptbody (item varchar(25), 
+bodycreate = """create table if not exists recieptbody (item varchar(25),
     price real, code varchar(30), UNIQUE(item, price, code))"""
 bodyinsert = """insert or ignore into recieptbody values (?,?,?)"""
 

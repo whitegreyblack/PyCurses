@@ -1,5 +1,6 @@
 import windows as wins
 
+
 class WinManager:
     def __init__(self, parent):
         """
@@ -10,17 +11,20 @@ class WinManager:
         self.wins = []
         self.parent = parent
         self.y, self.x = self.parent.window.getmaxyx()
-        self.window = self.parent.window.subwin(self.y-2, self.x, 2, 0) 
+        self.window = self.parent.window.subwin(self.y-2, self.x, 2, 0)
         self.active = 0
-    
+
     def add_wins(self, titles):
         ty, tx = 2, 0
         for title in titles:
             self.wins.append(wins.Window(
-                title, 
-                self, 
+                title,
+                self,
                 self.window.subwin(
-                self.y-2, self.x, ty, tx)))
+                    self.y-2,
+                    self.x,
+                    ty,
+                    tx)))
 
     def toggle_border_on(self):
         self.window.border()

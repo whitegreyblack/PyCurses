@@ -1,6 +1,7 @@
 import background as bg
 import db_connection as db
 
+
 class Window:
     def __init__(self, name, parent, win):
         self.name = name
@@ -9,7 +10,7 @@ class Window:
         self.y, self.x = self.win.getmaxyx()
         self.toggle_border, self.toggle_name = False, False
         self.conn = db.Connection()
-    
+
     def toggle_on(self):
         self.toggle_border_active()
         self.toggle_name_on()
@@ -21,13 +22,12 @@ class Window:
         self.win.refresh()
 
     def toggle_name_on(self):
-        self.win.addstr(0,1,"{}".format(self.name))
+        self.win.addstr(0, 1, "{}".format(self.name))
         self.win.refresh()
 
     def toggle_border_active(self, cl=None):
-        self.win.border(bg.li, bg.li, bg.li, bg.li,
-            bg.li, bg.li, bg.li, bg.li)
-            
+        self.win.border(bg.li, bg.li, bg.li, bg.li, bg.li, bg.li, bg.li, bg.li)
+
     def toggle_off(self):
         self.win.clear()
 
@@ -50,7 +50,7 @@ class Window:
             for store, date, _, _, _, _, total in self.datahead.data:
                 if i // 2 - 1 == self.datahead.pos:
                     self.window.addstr(i,2,"{d} | {n:{l}} | {t:5.2f}".format(
-                        n=store, 
+                        n=store,
                         l=self.datahead.maxas,
                         d=date,
                         t=total
@@ -58,7 +58,7 @@ class Window:
                 else:
                     self.window.addstr(i,2,"{d} | {n:{l}} | {:5.2f}".format(
                         total,
-                        n=store, 
+                        n=store,
                         l=self.datahead.maxas,
                         d=date,
                         ))
@@ -79,7 +79,7 @@ class Window:
         #self.window.refresh()
         self.toggleMonths()
         self.window.refresh()
-    def toggle_off(self):  
+    def toggle_off(self):
         self.window.clear()
         self.border()
         self.window.refresh()
@@ -89,23 +89,28 @@ class Window:
                 i = 40
                 #month = self.months.year.formatmonth(2017, m[0])
                 #self.window.addstr(i, 60, "{}".format(type(month)))
-                #self.window.addstr(i, 3, "{}".format(self.months.year.formatmonth(2017, m[0])))
+                #self.window.addstr(i, 3, "{}".format(
+                    self.months.year.formatmonth(2017, m[0])))
                 #i+= 5
                 # for l in self.months.year.formatmonth(2017, m[0]):
                 #     self.window.addstr(35, 3, "{}".format(l))
                 #     i+=1
-                
+
     def refresh(self, i, j):
         s, d, _, _, _, _, t = self.datahead.data[i]
-        self.window.addstr(i+2, 2, "{} {} {:2f}".format(s, d, t))
+        self.window.addstr(
+            i+2, 2, "{} {} {:2f}".format(s, d, t))
         s, d, _, _, _, _, t = self.datahead.data[j]
-        self.window.addstr(j+2, 2, "{} {} {:2f}".format(s, d, t), curses.A_REVERSE)
+        self.window.addstr(
+            j+2, 2, "{} {} {:2f}".format(s, d, t), curses.A_REVERSE)
     def border(self):
         self.window.border(bd,bd,bd,bd,bd,bd,bd,bd)
     def load(self):
         if self.parent.title.lower()=="reciept":
-            self.datahead = RecieptData([row for row in self.parent.parent.conn.load()])
+            self.datahead = RecieptData(
+                    [row for row in self.parent.parent.conn.load()])
             self.databody = self.parent.parent.conn.load_body("asdf")
         elif self.parent.title.lower()=="grocery":
-            self.data = self.parent.parent.conn.loadByGroup("type",self.parent.title.lower())
+            self.data = self.parent.parent.conn.loadByGroup(
+                    "type", self.parent.title.lower())
 '''
