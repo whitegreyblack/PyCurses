@@ -1,9 +1,9 @@
 import sys
 import curses
 from checker import YamlChecker
-from populate import Populate, logging
-from db_connection import Connection
-
+from populate import Populate
+from database import Connection
+import logging
 hi, bd, li, key, limit = None, None, None, None, 30
 tabnames = ["RECIEPT",
             "GROCERY",
@@ -71,13 +71,13 @@ class Window:
             i = 2
             for store, date, _, _, _, _, total in self.datahead.data:
                 if i // 2 - 1 == self.datahead.pos:
-                    self.window.addstr(i, 2, "{} {} {:.2f}".format(
+                    self.window.addstr(i, 2, "{:15} {:11} {:6.2f}".format(
                         store, date, total), curses.A_REVERSE)
                 else:
-                    self.window.addstr(i, 2, "{} {} {:.2f}".format(
+                    self.window.addstr(i, 2, "{:15} {:11} {:6.2f}".format(
                         store, date, total))
                 i += 2
-            self.window.addstr(10, 2, "{}".format(self.datahead.pos))
+            #self.window.addstr(10, 2, "{}".format(self.datahead.pos))
         if self.parent.title.lower() == "grocery":
             i = 2
         if self.parent.title.lower() == "payment":
@@ -93,10 +93,10 @@ class Window:
 
     def refresh(self, i, j):
         s, d, _, _, _, _, t = self.datahead.data[i]
-        self.window.addstr(i+2, 2, "{} {} {:2f}".format(s, d, t))
+        self.window.addstr(i+2, 2, "{:15} {:12} {:6.2f}".format(s, d, t))
         s, d, _, _, _, _, t = self.datahead.data[j]
         self.window.addstr(
-                j+2, 2, "{} {} {:2f}".format(s, d, t),
+                j+2, 2, "{:15} {:12} {:6.2f}".format(s, d, t),
                 curses.A_REVERSE)
 
     def border(self):
@@ -202,8 +202,9 @@ if __name__ == "__main__":
         print("No target folder\nExitting...")
         exit(-1)
     # fill sqlite db
-    Populate(
-            sys.argv[1].replace("\\", "/"),
-            YamlChecker(sys.argv[1].replace("\\", "/")).files_safe())
+    folder = sys.argv[1].replace("\\", "/")
+    commit, modify = YamlChecker(folder).files_safe()
+    print(folder)
+    Populate(folder, commit)
 
     curses.wrapper(main)

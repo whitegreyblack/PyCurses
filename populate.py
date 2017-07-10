@@ -39,6 +39,7 @@ def push_func(file, conn, head, body):
 @exitter(log.pop['sys_exit_err'], log.pop['sys_exit_nrm'])
 def Populate(folder, files):
     con = conn_func()
+    print(files)
     for file in files:
         dat = open_func(folder + file)
         obj = load_func(folder + file, dat)
