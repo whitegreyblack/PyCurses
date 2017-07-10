@@ -6,7 +6,7 @@ import logging
 import functools
 from os import walk
 from datetime import date
-from reciept_yaml import Reciept
+from reciept import Reciept
 from strings import passfail as strings
 
 # used by printer to print number of files printed
@@ -25,6 +25,10 @@ def printer(enabled):
             if enabled == ret:
                 try:
                     print(file_str.format(
+                        strings[fn.__name__][ret],
+                        file_num,
+                        args[1].split('.')[0]))
+                    logging.info(file_str.format(
                         strings[fn.__name__][ret],
                         file_num,
                         args[1].split('.')[0]))
@@ -55,17 +59,33 @@ def truefalse(fn):
         return True if fn(*args, **kwargs) else False
     return wrapper
 
-
+def tin(func, *args, **kwargs):
+    logging.info("Entering function: {}".format(func.__name__))
+    print("Entering function: {}".format(func.__name__))
+def tout(func, *args, **kwargs):
+    logging.info("Exitting function: {}".format(func.__name__))
+    print("Exitting function: {}".format(func.__name__))
+def wrap(pre, post):
+    def decorate(func):
+        def call(*args, **kwargs):
+            pre(func, *args, **kwargs)
+            result = func(*args, **kwargs)
+            post(func, *args, **kwargs)
+            return result
+        return call
+    return decorate
 class YamlChecker:
     ''' whitebox: (input:-folder str, output:-list) '''
     def __init__(self, folder='reciepts'):
         ''' initialize the folder holding files to check '''
         self.folder = folder
 
+    @wrap(tin, tout)
     def files_safe(self):
         ''' iterate through each file in directory '''
         delete = []  # files to delete/modify
         commit = []  # files to be committed into db
+        logging.info("Using: {}".format(self.folder))
         for _, _, files in walk(self.folder):
             for file in files:
                 ext = (file.split('.'))[-1]
@@ -77,7 +97,9 @@ class YamlChecker:
                         delete.append(file)
                     else:
                         commit.append(file)
-        self.files_delete(delete)
+        logging.info("To Delete: {}".format(delete))
+        logging.info("TO Commit: {}".format(commit))
+        #self.files_delete(delete)
         return commit
 
     def files_delete(self, files):
@@ -91,18 +113,16 @@ class YamlChecker:
                 files[i]))
             if confirm in keywords:
                 pass
-                # TODO -- deletion
-            # e lif TODO: -- modification
             else:
                 pass
-                # TODO -- skip
-
+    @wrap(tin, tout) 
+    @printer(True)
     def file_safe(self, file):
         ''' calls file checks in order of serial encounter '''
         return self.file_regex(file) \
             and self.file_read(file) \
             and self.file_load(file)
-
+    @wrap(tin, tout)
     @printer(False)
     @truefalse
     def file_regex(self, file):
@@ -110,6 +130,7 @@ class YamlChecker:
         regex = "[0-9]{6}-[a-z_]{,25}\.yaml"
         return re.compile(regex).match(file)
 
+    @wrap(tin, tout)
     @printer(False)
     @truefalse
     def file_read(self, file):
@@ -117,18 +138,26 @@ class YamlChecker:
         with open(self.folder+file) as f:
             return f.read()
 
+    @wrap(tin, tout)
     @printer(False)
     @tryexcept
     def file_load(self, file):
         ''' check file is a yaml object after file load '''
+        print(file, self.folder+file, type(self.folder+file))
         with open(self.folder+file) as f:
-            return isinstance(yaml.load(f.read()), Reciept)
-
+            obj = yaml.load(f.read())
+            logging.info("{} is {}: {}".format(file,
+                'Reciept', 
+                isinstance(obj, Reciept)))
+            print("{} is {}: {}".format(file, "Reciept", isinstance(obj, Reciept)))
+            return isinstance(obj, Reciept)
+        print('finished loading')
+    @wrap(tin. tout)
     def yaml_read(self, file):
         ''' creates and returns yaml object '''
         with open(self.folder+file) as f:
             return yaml.load(f.read())
-
+    @wrap(tin, tout)
     @printer(True)
     def yaml_safe(self, file):
         ''' check contents of yaml object '''
@@ -191,7 +220,8 @@ def main(f, p, l, d):
         exit('Incorrect Args')
     ''' Check input args - exit if incorrect '''
     logging.info("Checking Files")
-    YamlChecker(sys.argv[1]).files_safe()
+    # YamlChecker(sys.argv[1]).files_safe()
+    print(YamlChecker(f.replace("\\", '/')).files_safe())
     logging.info("Checking Finished")
 
 if __name__ == "__main__":
