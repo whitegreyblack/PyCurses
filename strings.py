@@ -40,12 +40,11 @@ sql_slct_scs = "SQL: Select Success"
 # FORUSE: USED IN CHECKER FOR PRINT OUTPUT TO LOGGER AND STDOUT
 # MORE  : USES TERMINAL COLOR CODES FOR COLORED OUTPUT (PASS=GREEN|FAIL=RED)
 # -----------------------------------------------------------------------------
-FLD = '\x1b[0;34;40m'
+ORG = '\x1b[0;34;40m'
 YEL = '\x1b[0;33;40m'
 GRN = '\x1b[1;32;40m'
 RED = '\x1b[1;31;40m'
 END = '\x1b[0m'
-
 passfail = {
     'file_safe': {
         True: GRN+("File Pass")+END,

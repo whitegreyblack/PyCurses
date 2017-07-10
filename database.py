@@ -1,9 +1,14 @@
-# connection.py
+# -----------------------------------------------------------------------------
+# Author  : Sam Whang | whitegreyblack
+# FileName: database.py
+# FileInfo: Connection object to access sqlite3 database
+# -----------------------------------------------------------------------------
 import sqlite3
 import sys
 import logging
 import strings_log as log
 import strings_sql as sql
+
 
 # Database Object
 class Connection:

@@ -9,7 +9,7 @@ import sys
 
 
 class Reciept(yaml.YAMLObject):
-    """ Python Reciept using Yaml Object Parent for DB insertions """
+    __doc__ = """Python Reciept using Yaml Object Parent for DB insertions"""
     yaml_tag = u'!Reciept'
 
     def __init__(self, *args):
