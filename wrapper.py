@@ -30,17 +30,18 @@ def printer(enabled):
             ret = fn(*args, **kwargs)
             if enabled == ret:
                 try:
-                    print(file_str.format(
-                        passfail[fn.__name__][ret],
-                        file_num,
-                        args[1].split('.')[0]))
+                    # moving everything to logger
+                    # print(file_str.format(
+                    #    passfail[fn.__name__][ret],
+                    #    file_num,
+                    #    args[1].split('.')[0]))
                     logging.info(file_str.format(
                         passfail[fn.__name__][ret],
                         file_num,
                         args[1].split('.')[0]))
                     file_num += 1
                 except BaseException:
-                    print(args)
+                    # print(args)
                     raise
             return ret
         return log
@@ -136,8 +137,8 @@ def exitter(err, nrm):
     def wrapper(fn):
         @functools.wraps(fn)
         def handle(*args, **kwargs):
-            print("-"*80)
-            print("Populate")
+            logging.debug("-"*80)
+            logging.debug("Populate")
             logging.debug(pop['sql_populate'])
             fc, tot = fn(*args)
             fc = [int(j) for i in fc for j in i].pop()
@@ -148,10 +149,10 @@ def exitter(err, nrm):
             else:
                 logging.debug(nrm)
             # print statistics
-            print("\tFiles Loaded: {:6}".format(len(args[1])))
-            print("\tFiles in DB : {:6}".format(fc))
-            print("\tTotal Usage : {:.2f}".format(sum(tot)))
-            print("\tAverage/File: {:6.2f}".format(avg))
-            print("-"*80)
+            logging.debug("\tFiles Loaded: {:6}".format(len(args[1])))
+            logging.debug("\tFiles in DB : {:6}".format(fc))
+            logging.debug("\tTotal Usage : {:.2f}".format(sum(tot)))
+            logging.debug("\tAverage/File: {:6.2f}".format(avg))
+            logging.debug("-"*80)
         return handle
     return wrapper
