@@ -2,19 +2,27 @@
 # Author  : Sam Whang | whitegreyblack
 # Filename: wrapper.py
 # FileInfo: Contains wrapper definitions used in pycurses
-# ---------------------------------------------------------------------------- 
-
+# ----------------------------------------------------------------------------
 import functools
 import logging
-from strings import passfail, ORG, GRN, RED, END
+from strings import passfail, ORG, GRN, RED, END, pop
+
+
 # used by printer to print number of files printed
 file_num = 1
 file_str = "\t[{}]({:02}):- {}"
 spacer = []
 tab = "  "
+exc_err = False
+
+logging.basicConfig(
+    filename='debug.log',
+    format='%(message)s',
+    level=logging.DEBUG)
+
 
 def printer(enabled):
-    ''' allows print statements to stdout as well as logging '''
+    # allows print statements to stdout as well as logging
     def wrapper(fn):
         @functools.wraps(fn)
         def log(*args, **kwargs):
@@ -102,3 +110,48 @@ def trace(func):
     return call
 
 
+def logger(msgs):
+    # wrapper to raise exceptions for functions
+    try_msg, fail_msg, pass_msg = msgs
+
+    def wrapper(fn):
+        @functools.wraps(fn)
+        def log(*args, **kwargs):
+            global exc_err
+            if len(args):
+                logging.debug(try_msg.format(args[0]))
+            try:
+                ret = fn(*args, **kwargs)
+                logging.debug(pass_msg)
+                return ret
+            except:
+                logging.debug(fail_msg)
+                exc_err = True
+        return log
+    return wrapper
+
+
+def exitter(err, nrm):
+    # creates initial logger messages
+    def wrapper(fn):
+        @functools.wraps(fn)
+        def handle(*args, **kwargs):
+            print("-"*80)
+            print("Populate")
+            logging.debug(pop['sql_populate'])
+            fc, tot = fn(*args)
+            fc = [int(j) for i in fc for j in i].pop()
+            tot = [float(j) for i in tot for j in i]
+            avg = sum(tot)/fc
+            if exc_err:
+                logging.debug(err)
+            else:
+                logging.debug(nrm)
+            # print statistics
+            print("\tFiles Loaded: {:6}".format(len(args[1])))
+            print("\tFiles in DB : {:6}".format(fc))
+            print("\tTotal Usage : {:.2f}".format(sum(tot)))
+            print("\tAverage/File: {:6.2f}".format(avg))
+            print("-"*80)
+        return handle
+    return wrapper

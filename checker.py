@@ -12,12 +12,19 @@ from os import walk
 from datetime import date
 from reciept import Reciept
 
+
 class YamlChecker:
     # whitebox: (input:-folder str, output:-list)
     def __init__(self, folder='reciepts'):
+        logging.info("-"*80)
+        logging.info("Checker")
+        print("Checker")
         # initialize the folder holding files to check
         self.folder = folder
         self.startdate = None
+
+    def __del__(self):
+        logging.info("-"*80)
 
     @wrap.trace
     def files_safe(self):
@@ -36,9 +43,7 @@ class YamlChecker:
                         delete.append(file)
                     else:
                         commit.append(file)
-        #logging.info("To Delete: {}".format(delete))
-        #logging.info("TO Commit: {}".format(commit))
-        # self.files_delete(delete)
+        # TODO: self.files_delete(delete)
         return commit, delete
 
     def files_delete(self, files):
@@ -91,10 +96,10 @@ class YamlChecker:
         ''' check file is a yaml object after file load '''
         with open(self.folder + file) as f:
             obj = yaml.load(f.read())
-            logging.info("\t{} is {}: {}".format(file,
-                                                 'YAMLObject',
-                                                 isinstance(obj, yaml.YAMLObject)))
-            # print("{} is {}: {}".format(file, "Reciept", isinstance(obj, Reciept)))
+            logging.info(
+                "\t{} is {}: {}".format(
+                    file, 'YAMLObject', isinstance(
+                        obj, yaml.YAMLObject)))
             return isinstance(obj, yaml.YAMLObject)
 
     @wrap.trace
@@ -205,9 +210,4 @@ def main(f, p, l, d):
 
 
 if __name__ == "__main__":
-    # Setup basic logger
-    logging.basicConfig(
-        filename='debug.log',
-        format='%(message)s',
-        level=logging.DEBUG)
     main()
