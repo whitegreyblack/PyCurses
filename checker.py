@@ -17,8 +17,7 @@ class YamlChecker:
     # whitebox: (input:-folder str, output:-list)
     def __init__(self, folder='reciepts'):
         logging.info("-"*80)
-        logging.info("Checker")
-        print("Checker")
+        logging.info("# Checker")
         # initialize the folder holding files to check
         self.folder = folder
         self.startdate = None
@@ -33,6 +32,7 @@ class YamlChecker:
         commit = []  # files to be committed into db
         logging.info("".join(wrap.spacer) + "Using: {}".format(self.folder))
         for _, _, files in walk(self.folder):
+            files = sorted(files)
             for file in files:
                 ext = (file.split('.'))[-1]
                 if ext == "yaml":
