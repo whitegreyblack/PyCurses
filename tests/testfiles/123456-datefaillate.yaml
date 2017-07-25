@@ -1,0 +1,11 @@
+--- !Reciept
+store: Date Fail Late
+date: [2018,5,3]
+type: fast food
+prod:
+  {
+    whopper (2): 4.49,
+    bacon and cheese (2): 2.70,
+  }
+tax: 0.61
+tot: 7.80

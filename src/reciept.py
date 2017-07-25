@@ -32,8 +32,10 @@ class Reciept(yaml.YAMLObject):
     def __repr__(self):
         return "{}({}: {})".format(self.__class__.__name__,
                                    self.store, self.frmt(self.tot))
+
     def build(self):
         return self.head(), self.body()
+
     def head(self):
         return self.store, self.date, self.type, self.code, \
             self.frmt(self.sub), self.frmt(self.tax), self.frmt(self.tot)

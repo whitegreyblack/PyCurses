@@ -17,7 +17,7 @@ tab = "  "
 exc_err = False
 
 logging.basicConfig(
-    filename='logs/debug.log',
+    filename='debug.log',
     format='%(message)s',
     level=logging.DEBUG)
 
