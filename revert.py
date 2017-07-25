@@ -1,14 +1,19 @@
 import sys
 import curses
+import background as bg
 from checker import YamlChecker
 from populate import Populate
 from database import Connection
 import logging
-hi, bd, li, key, limit = None, None, None, None, 30
+
+
+hi, bd, li, key = None, None, None, None
 tabnames = ["RECIEPT",
             "GROCERY",
             "EXERCISE",
-            ]
+            "PAYMENTS",
+            "CALENDAR",
+            "CONTACTS",]
 
 
 class Tab:
@@ -77,7 +82,7 @@ class Window:
                     self.window.addstr(i, 2, "{:15} {:11} {:6.2f}".format(
                         store, date, total))
                 i += 2
-            #self.window.addstr(10, 2, "{}".format(self.datahead.pos))
+            # self.window.addstr(10, 2, "{}".format(self.datahead.pos))
         if self.parent.title.lower() == "grocery":
             i = 2
         if self.parent.title.lower() == "payment":
@@ -125,18 +130,22 @@ class ListManager:
 class TabsManager:
     def __init__(self, parent):
         self.conn = Connection()
-        y, x = parent.getmaxyx()
-        self.tabs = [
-            Tab(tabnames[i],
-                self,
-                parent.subwin(2, 9, 0, i*10),
-                Window(parent, parent.subwin(y-2, x, 2, 0)))
-            for i in range(len(tabnames))]
+        self.parent = parent
+        self.tabs = []
+        self.add()
+    def add(self):
+        y, x = self.parent.getmaxyx()
+        for i in range(len(tabnames)):
+            t = Tab(tabnames[i], self, self.parent.subwin(2, 9, 0, i*10),
+                    Window(self.parent, self.parent.subwin(y-2, x, 2, 0)))
+            self.tabs.append(t)
         self.count = len(self.tabs)
-        [(i.toggle_off(), i.child.load()) for i in self.tabs]
+        for i in self.tabs:
+            i.toggle_off()
+            i.child.load()
         self.tabs[0].toggle_on()
         self.active = self.tabs[0]
-        parent.hline(2, 0, bd, x)
+        self.parent.hline(2, 0, bd, x)
 
     def update(self, i, j):
         self.tabs[i].toggle_off()
@@ -144,24 +153,41 @@ class TabsManager:
         self.active = self.tabs[j]
 
     def load(self, conn):
-        [i.load() for i in self.tabs]
+        for i in self.tabs:
+            i.load()
+        # [i.load() for i in self.tabs]
+
+
+def setup():
+    global bd, li, keys
+    curses.init_pair(1, curses.COLOR_BLACK, curses.COLOR_WHITE)
+    curses.curs_set(0)
+
+    bd = bg.bd
+    li = bg.li
+
+    LEFT = curses.KEY_LEFT
+    RIGHT = curses.KEY_RIGHT
+    UP = curses.KEY_UP
+    DOWN = curses.KEY_DOWN
+    TAB = ord('\t')
+    BTAB = curses.KEY_BTAB
+
+    # change tabs
+    keys = {LEFT: -1, RIGHT: 1, TAB: 1, BTAB: -1}
+    # tab selection
+    hkeys = dict([(49, 0), (50, 1), (51, 2)])
+    # content scroll
+    vkeys = [UP, DOWN]
+    
+    return hkeys, vkeys, keys
 
 
 def main(mainscreen):
     # variables
-    curses.init_pair(1, curses.COLOR_BLACK, curses.COLOR_WHITE)
-    curses.curs_set(0)
+    hkeys, vkeys, keys = setup()
     pos = newpos = 0
-    global bd, li, keys
-    bd = curses.ACS_CKBOARD
-    li = curses.ACS_BOARD
-    LEFT = curses.KEY_LEFT
-    RIGHT = curses.KEY_RIGHT
-    TAB = ord('\t')
-    BTAB = curses.KEY_BTAB
-    keys = {LEFT: -1, RIGHT: 1, TAB: 1, BTAB: -1}
-    hkeys = dict([(49, 0), (50, 1), (51, 2)])
-    vkeys = [curses.KEY_UP, curses.KEY_DOWN]
+
     # tabs and child windows
     tm = TabsManager(mainscreen)
 
@@ -190,21 +216,16 @@ def main(mainscreen):
         char = mainscreen.getch()
     curses.endwin()
     print(chr(27)+"[2J")
-    sys.stderr.write("\x1b2J\x1b[H")
+    #sys.stderr.write("\x1b2J\x1b[H")
 
 
 if __name__ == "__main__":
-    logging.basicConfig(
-            filename='debug.log',
-            format='%(message)s',
-            level=logging.DEBUG)
     if len(sys.argv) < 2:
-        print("No target folder\nExitting...")
-        exit(-1)
+        exit("No target folder\nExitting...")
+
     # fill sqlite db
     folder = sys.argv[1].replace("\\", "/")
     commit, modify = YamlChecker(folder).files_safe()
-    print(folder)
     Populate(folder, commit)
 
     curses.wrapper(main)

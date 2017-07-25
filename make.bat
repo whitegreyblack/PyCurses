@@ -14,6 +14,10 @@ if %args%==1 if "%1"=="clean" (
 	    del "%%~f"
     ))
     echo done cleaning
+    if exist "src/debug.log" del "src/debug.log"
+    if exist "src/food.db" del "src/food.db"
+    if exist "src/__pycache__/" del /Q "src/__pycache__"
+    if exist "src/__pycache__/" rmdir "src/__pycache__"
     if exist "__pycache__/" del /Q "__pycache__"
     if exist "__pycache__/" rmdir "__pycache__"
 

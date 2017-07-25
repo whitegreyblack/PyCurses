@@ -5,7 +5,7 @@ import yaml
 import logging
 import datetime
 import functools
-from reciept_yaml import Reciept
+from reciept import Reciept
 import strings_checker as strings
 
 # logging info
@@ -55,7 +55,8 @@ def truefalse(fn):
 class YamlChecker:
     """ Iterates through each yaml file in target folder and checks for 
         file and yaml syntax and context before returning a list of 
-        verified files to be used in insertion into database """
+        verified files to be used in insertion into database 
+    """
 
     def __init__(self, folder='reciepts'):
         """ initialize the folder holding files to check """
