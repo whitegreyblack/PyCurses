@@ -53,5 +53,7 @@ if __name__ == "__main__":
     if len(sys.argv) < 2:
         exit("Incorrect Args - Unspecified Folder")
     folder = sys.argv[1].replace("\\", "/")
+    if "/" not in folder:
+        folder = folder + "/"
     files, _ = YamlChecker(folder).files_safe()
     Populate(folder, files)

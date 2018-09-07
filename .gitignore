@@ -1,0 +1,8 @@
+# log files
+*.log
+
+# vs code settings folder
+.vscode/
+
+# python cache folder
+__pycache__/
