@@ -1,6 +1,21 @@
 "# PyCurses" 
 A Python Curses based Project
 
+# PYCURSES
+
+# SETUP
+- python3 -m pip install yaml
+
+# Folder Structure
+Reciepts:
+    Yaml Files
+
+Src -> Source:
+    Python Files
+
+DB:
+    Sqlite3 Databases
+
 This program will be a multi step development on the Windows platform. Currently on Step 1 backtesting and Step 2 development
 
 The aim of this project is to create a program that allows for the ETL of yaml objects using several technologies.
