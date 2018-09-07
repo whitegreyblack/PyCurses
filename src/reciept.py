@@ -1,12 +1,13 @@
+#!/usr/env python3
+__Author__ = "Sam Whang"
+
 # -----------------------------------------------------------------------------
-# Author  : Sam Whang | whitegreyblack
 # FileName: Reciept
 # FileInfo: Python Object used in parsing YAML files during runtime
 # -----------------------------------------------------------------------------
 from datetime import date
 import yaml
 import sys
-
 
 class Reciept(yaml.YAMLObject):
     __doc__ = """Python Reciept using Yaml Object Parent for DB insertions"""
