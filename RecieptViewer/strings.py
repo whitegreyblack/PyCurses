@@ -1,5 +1,5 @@
 # -----------------------------------------------------------------------------
-# AUTHOR: Sam Whang | whitegreyblack
+# AUTHOR: Sam Whang
 # FILE  : STRINGS.PY
 # FORUSE: STARTUP DURING FILE/YAML CHECKING
 # MORE  : (INFO|DEBUG|WARNING) [TRY|ERROR|SUCCESS] STRINGS FOR LOGGER

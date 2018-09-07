@@ -7,10 +7,10 @@ import sqlite3
 import logging
 from strings import stmts
 
-# Database Object
-
-
 class Connection:
+    '''
+    Database object
+    '''
     def __init__(self):
         # create connection to db
         self.conn = sqlite3.connect('food.db', 0)
