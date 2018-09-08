@@ -10,7 +10,7 @@ import curses
 from Views import WindowView
 from Views.ViewCard import ViewCard
 from Models.product import Product
-def main():
+def main(screen):
     """
     Overview:
 
@@ -22,9 +22,15 @@ def main():
     Finally we bring in the data from db into the models to view onto the
     screen
     """
-    WindowView.cards = [ViewCard(Product("example")),
-                        ViewCard(Product("asdfa"))]
-    curses.wrapper(WindowView.main)
+    terminal_width = curses.COLS
+    terminal_height = curses.LINES
+    window = WindowView.Window('Reciepts',
+                               terminal_width,
+                               terminal_height)
 
+    window.add_window(Card(Product('example')))
+    
+    window.draw(screen)
+    screen.getch()
 if __name__ == "__main__":
-    main()
+    curses.wrapper(main)
