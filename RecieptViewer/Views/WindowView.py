@@ -1,4 +1,7 @@
 import curses
+
+cards = None
+
 def main(screen): 
     terminal_lines = curses.LINES
     terminal_cols = curses.COLS
@@ -22,7 +25,9 @@ def main(screen):
         screen.addstr(0, 1, 'Reciept Viewer')
 
         # get bounds of main panel to add string
-        
+        card_length = vertical_divider - 3
+        for index, card in enumerate(cards):
+            screen.addstr(index + 1, 1, card.description(card_length))
 
         screen.getch()
     else:
