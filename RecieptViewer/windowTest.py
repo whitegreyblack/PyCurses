@@ -2,24 +2,6 @@ import curses
 
 cards = None
 
-class Window:
-    def __init__(self, title, x, y):
-        self.title = title
-        self.term_width = x
-        self.term_height = y
-        self.width = x - 2
-        self.height = y - 2
-        self.windows = []
-
-    def add_window(self, window):
-        self.windows.append(window)
-
-    def draw(self, screen):
-        screen.border()
-        screen.addstr(0, 1, self.title)
-        for window in self.windows:
-            window.draw(screen)
-
 def main(screen): 
     terminal_lines = curses.LINES
     terminal_cols = curses.COLS
