@@ -25,7 +25,7 @@ def main(screen):
     terminal_width = curses.COLS
     terminal_height = curses.LINES
     curses.curs_set(0)
-
+    curses.init_pair(1, curses.COLOR_BLACK, curses.COLOR_WHITE)
     window = Window('Reciepts',
                     terminal_width,
                     terminal_height)

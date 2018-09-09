@@ -6,6 +6,9 @@ User Interface Control Components
 
 __author__ = "Samuel Whang"
 
+import curses
+from utils import border
+
 class Window:
     def __init__(self, title, x, y):
         self.title = title
@@ -31,30 +34,34 @@ class ScrollList:
         self.y = y
         self.width = width
         self.height = height
+        self.index = 0
 
     def add_item(self, item):
         self.items.append(item)
 
     def draw(self, screen):
-        screen.addch(self.y, self.x, '+')
-        screen.addch(self.height, self.x, '+')
-        screen.addch(self.y, self.width, '+')
-        screen.addch(self.height, self.width, '+')
-         
+        border(screen, self.x, self.y, self.width, self.height)
+        screen.addch(self.y + 1, self.x + self.width, curses.ACS_BLOCK)
         for index, item in enumerate(self.items):
-            item.draw(screen, self.x + 1, self.y + index + 1)
+            item.draw(screen,
+                      self.x + 1, 
+                      self.y + index + 1, 
+                      self.index == index)
 
 class Card:
     def __init__(self, model, title=None):
         self.model = model
-        self.focused = False
+        self.selected = False
 
     @property
     def description(self):
         return self.model.description[0:10]
 
-    def draw(self, screen, x, y):
-        screen.addstr(y, x, self.description)
+    def draw(self, screen, x, y, selected):
+        if selected:
+            screen.addstr(y, x, self.description, curses.color_pair(1))
+        else:
+            screen.addstr(y, x, self.description)
 
 def test_card():
     from models import Product
