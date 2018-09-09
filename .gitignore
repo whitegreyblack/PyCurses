@@ -6,3 +6,6 @@
 
 # python cache folder
 __pycache__/
+
+# vim temp files
+*.swp
