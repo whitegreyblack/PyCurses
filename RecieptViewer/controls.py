@@ -21,27 +21,51 @@ class Window:
     def add_window(self, window):
         self.windows.append(window)
 
+    def send_signal(self, command):
+        for window in self.windows:
+            if hasattr(window, 'selected') and window.selected:
+                window.get_signal(command)
+
     def draw(self, screen):
         screen.border()
         screen.addstr(0, 1, self.title)
+        dimensions = f"{self.term_width}, {self.term_height}"
+        screen.addstr(0, self.term_width - len(dimensions) - 1, dimensions)
         for window in self.windows:
             window.draw(screen)
 
 class ScrollList:
-    def __init__(self, x, y, width, height):
+    def __init__(self, x, y, width, height, title=None, selected=False):
         self.items = []
         self.x = x
         self.y = y
         self.width = width
         self.height = height
+        self.title = title
         self.index = 0
+        self.selected = selected
 
     def add_item(self, item):
         self.items.append(item)
 
+    def get_signal(self, command):
+        if command == curses.KEY_DOWN:
+            self.index = min(self.index + 1, len(self.items) - 1)
+        elif command == curses.KEY_UP:
+            self.index = max(self.index - 1, 0)
+
     def draw(self, screen):
-        border(screen, self.x, self.y, self.width, self.height)
-        screen.addch(self.y + 1, self.x + self.width, curses.ACS_BLOCK)
+        border(screen,
+               self.x, 
+               self.y, 
+               self.width - self.x, 
+               self.height - self.y)
+        
+        if self.title:
+            screen.addstr(self.y, self.x + 1, self.title) 
+
+        screen.addstr(self.y, self.x - 1, str(self.index))
+        # screen.addch(self.y + 1, self.width, curses.ACS_BLOCK)
         for index, item in enumerate(self.items):
             item.draw(screen,
                       self.x + 1, 
@@ -78,7 +102,16 @@ class ProductForm(Form):
         super().__init__(x, y, width, height, model, title)
 
     def draw(self, screen):
-        border(screen, self.x, self.y, self.width, self.height)
+        border(screen, 
+               self.x, 
+               self.y, 
+               self.width, 
+               self.height - self.y)
+
+        screen.addstr(self.y, 
+                      self.x + 1, 
+                      f"{self.x}, {self.y}, {self.width}, {self.height}")
+
         # title
         if self.title:
             screen.addstr(self.y + 1, self.x + 1, self.title)
