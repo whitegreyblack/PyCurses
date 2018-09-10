@@ -1,4 +1,3 @@
-#!/usr/env/bin python3
 """Application.py : Reciept Viewer App
 
 Handles application functionality between Views/Models/Controller
@@ -7,7 +6,7 @@ Handles application functionality between Views/Models/Controller
 __author__ = "Samuel Whang"
 
 import curses
-from controls import Window, ScrollList, Card
+from controls import Window, ScrollList, Card, ProductForm
 from models import Product
 
 def main(screen):
@@ -38,8 +37,16 @@ def main(screen):
     scroller.add_item(card1)
     scroller.add_item(card2)
     window.add_window(scroller) 
+
+    window.add_window(ProductForm(18, 
+                                  1, 
+                                  terminal_width - 2 - 18,
+                                  terminal_height - 2,
+                                  Product('example')))
+
     window.draw(screen)
 
+    '''
     card3 = Card(Product('Filename: example.yaml'))
     card3.draw(screen, 19, 1, False)
 
@@ -48,6 +55,7 @@ def main(screen):
 
     card5 = Card(Product('Date : 01/01/2020'))
     card5.draw(screen, 19, 4, False)
+    '''
     screen.getch()
 
 if __name__ == "__main__":

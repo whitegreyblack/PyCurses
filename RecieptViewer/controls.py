@@ -63,6 +63,29 @@ class Card:
         else:
             screen.addstr(y, x, self.description)
 
+class Form:
+    def __init__(self, x, y, width, height, model, title=None):
+        self.x = x
+        self.y = y
+        self.width = width
+        self.height = height
+        self.model = model
+        self.title = title
+        self.selected = False
+
+class ProductForm(Form):
+    def __init__(self, x, y, width, height, model, title=None):
+        super().__init__(x, y, width, height, model, title)
+
+    def draw(self, screen):
+        border(screen, self.x, self.y, self.width, self.height)
+        # title
+        if self.title:
+            screen.addstr(self.y + 1, self.x + 1, self.title)
+        
+        # details
+        screen.addstr(self.y + 3, self.x + 1, "Store: Example Store")
+
 def test_card():
     from models import Product
     card = ViewCard(Product("example"))
