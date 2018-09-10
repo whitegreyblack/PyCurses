@@ -1,14 +1,14 @@
 import curses
 
-cards = None
+cards = []
 
 def main(screen): 
     terminal_lines = curses.LINES
     terminal_cols = curses.COLS
 
     if (curses.COLS <= 80):
-        # accounts for border characters taking up two lines horizontally and
-        # vertically each
+        # accounts for border characters taking up two lines 
+        # horizontally and vertically each
         screen_length = terminal_cols - 2
         screen_height = terminal_lines - 2
 
@@ -29,7 +29,7 @@ def main(screen):
         for index, card in enumerate(cards):
             screen.addstr(index + 1, 1, card.description(card_length))
 
-        # screen.getch()
+        screen.getch()
     else:
         # Desktop view
         raise NotYetImplementedError()

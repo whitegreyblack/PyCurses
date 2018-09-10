@@ -37,9 +37,17 @@ def main(screen):
     card2 = Card(product2)
     scroller.add_item(card1)
     scroller.add_item(card2)
-    window.add_window(scroller)
-    
+    window.add_window(scroller) 
     window.draw(screen)
+
+    card3 = Card(Product('Filename: example.yaml'))
+    card3.draw(screen, 19, 1, False)
+
+    card4 = Card(Product('Store: Example Store'))
+    card4.draw(screen, 19, 3, False)
+
+    card5 = Card(Product('Date : 01/01/2020'))
+    card5.draw(screen, 19, 4, False)
     screen.getch()
 
 if __name__ == "__main__":

@@ -55,7 +55,7 @@ class Card:
 
     @property
     def description(self):
-        return self.model.description[0:10]
+        return self.model.description
 
     def draw(self, screen, x, y, selected):
         if selected:
