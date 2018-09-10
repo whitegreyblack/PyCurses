@@ -17,14 +17,41 @@ class Window:
         self.width = x - 2
         self.height = y - 2
         self.windows = []
+        self.index = 0
+
+    @property
+    def current_window(self):
+        for window in self.windows:
+            if hasattr(window, 'selected') and window.selected:
+                return window
 
     def add_window(self, window):
         self.windows.append(window)
 
-    def send_signal(self, command):
+    def add_windows(self, windows):
+        for window in windows:
+            self.windows.append(window)
+
+    def add_keymap(self, keymap):
+        self.keymap = keymap
+
+    def change_window(self):
+        current = self.current_window()
+        current.selected = False
+
+    def get_window(self, window_id):
         for window in self.windows:
-            if hasattr(window, 'selected') and window.selected:
-                window.get_signal(command)
+            if window.wid == window_id:
+                return window
+
+    def send_signal(self, command):
+        if (command, self.current_window.wid) in self.keymap:
+            self.current_window.get_signal(command)
+            next_window_id = self.keymap[(command, self.current_window.wid)]
+            if next_window_id is not self.current_window.wid:
+                next_window = self.get_window(next_window_id)
+                self.current_window.selected = False
+                next_window.selected = True
 
     def draw(self, screen):
         screen.border()
@@ -35,7 +62,8 @@ class Window:
             window.draw(screen)
 
 class ScrollList:
-    def __init__(self, x, y, width, height, title=None, selected=False):
+    def __init__(self, x, y, width, height, title=None, wid='ScrollList', selected=False):
+        self.wid = wid
         self.items = []
         self.x = x
         self.y = y
@@ -47,6 +75,10 @@ class ScrollList:
 
     def add_item(self, item):
         self.items.append(item)
+
+    def add_items(self, items):
+        for item in items:
+            self.items.append(item)
 
     def get_signal(self, command):
         if command == curses.KEY_DOWN:
@@ -88,24 +120,25 @@ class Card:
             screen.addstr(y, x, self.description)
 
 class Form:
-    def __init__(self, x, y, width, height, model, title=None):
+    def __init__(self, x, y, width, height, model, wid='Form', title=None):
         self.x = x
         self.y = y
         self.width = width
         self.height = height
         self.model = model
+        self.wid = 'Form'
         self.title = title
         self.selected = False
 
 class ProductForm(Form):
-    def __init__(self, x, y, width, height, model, title=None):
-        super().__init__(x, y, width, height, model, title)
+    #def __init__(self, x, y, width, height, model, title=None):
+    #    super().__init__(wid, x, y, width, height, model, title)
 
     def draw(self, screen):
-        border(screen, 
-               self.x, 
-               self.y, 
-               self.width, 
+        border(screen,
+               self.x,
+               self.y,
+               self.width,
                self.height - self.y)
 
         screen.addstr(self.y, 

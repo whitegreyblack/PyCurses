@@ -8,33 +8,34 @@ __author__ = "Samuel Whang"
 import curses
 from controls import Window, ScrollList, Card, ProductForm
 from models import Product
+from keymap import KeyMap
 
 terminal_width, terminal_height = 0, 0
 
 def initialize():
+    """Curses related settings"""
     curses.curs_set(0)
     curses.init_pair(1, curses.COLOR_BLACK, curses.COLOR_WHITE)
-    return curses.COLS, curses.LINES
 
 def setup_windows():
-    window = Window('Viewer',
-                    terminal_width,
-                    terminal_height)
+    """Create UI components and add to the screen"""
+    window = Window('Viewer', terminal_width, terminal_height)
 
-    product1 = Product('example1')
-    product2 = Product('example2')
-    scroller = ScrollList(1, 1, 16, terminal_height - 2, 'Reciepts', True)
-    card1 = Card(product1)
-    card2 = Card(product2)
-    scroller.add_item(card1)
-    scroller.add_item(card2)
-    window.add_window(scroller) 
+    card1 = Card(Product('Leevers  $2.31'))
+    card2 = Card(Product('example2'))
+    scroller = ScrollList(1, 1, window.width // 4, window.height, 'Reciepts', selected=True)
+    scroller.add_items([card1, card2])
+    form = ProductForm((window.width // 4) + 1, # add 1 for offset
+                       1,
+                       window.width - (window.width // 4) - 1, # sub 1 to counter offset
+                       window.height,
+                       Product('example'))
+    window.add_windows([scroller, form])
 
-    window.add_window(ProductForm(17,
-                                  1, 
-                                  terminal_width - 2 - 17,
-                                  terminal_height - 2,
-                                  Product('example')))
+    keymap = dict()
+    keymap[(curses.KEY_UP, 'ScrollList')] = 'ScrollList'
+    keymap[(curses.KEY_DOWN, 'ScrollList')] = 'ScrollList'
+    window.add_keymap(keymap)
     return window
 
 def input_handler(screen):
@@ -63,8 +64,8 @@ def main(screen):
         key = screen.getch()
         if key == 27 or key == ord('q'):
             break
-        elif key == curses.KEY_DOWN or key == curses.KEY_UP:
-            window.send_signal(key) 
+        else:
+            window.send_signal(key)
         screen.erase()
         window.draw(screen)
 
