@@ -1,7 +1,10 @@
 """
 yamlchecker.py: YamlChecker provides methods to iterate through and validate
-                yaml files
+                yaml files. It can be used as a stand alone script to check
+                the files as they are written for any errors. Used before
+                inserting data into the database.
 """
+
 __author__ = "Samuel Whang"
 
 import re
@@ -12,6 +15,7 @@ import decorators as wrap
 from os import walk
 from datetime import date
 from YamlObjects import Reciept
+import utils
 
 border = "-" * 80
 
@@ -36,16 +40,16 @@ class YamlChecker:
         logging.info("".join(wrap.spacer) + "Using: {}".format(self.folder))
         for _, _, files in walk(self.folder):
             files = sorted(files)
-            for file in files:
-                ext = (file.split('.'))[-1]
-                if ext == "yaml":
+            for file_name in files:
+                filename, extension = utils.filename_and_extension(file_name)
+                if extension == ".yaml":
                     # passes the filename test
-                    ret = self.file_safe(file) \
-                        and self.yaml_safe(file)
+                    ret = (self.file_safe(file_name) 
+                           and self.yaml_safe(file_name))
                     if not ret:  # and db_safe()
-                        delete.append(file)
+                        delete.append(file_name)
                     else:
-                        commit.append(file)
+                        commit.append(file_name)
         # TODO: self.files_delete(delete)
         return commit, delete
 
@@ -95,12 +99,19 @@ class YamlChecker:
     @wrap.trace
     @wrap.printer(False)
     @wrap.tryexcept
-    def file_load(self, file):
+    def file_load(self, file_name):
         ''' check file is a yaml object after file load '''
-        with open(self.folder + file) as f:
-            obj = yaml.load(f.read())
-            logging.info(f"\t{file} is YamlObject: {isinstance(obj, YAMLObject)}"
-            return isinstance(obj, yaml.YAMLObject)
+        logging.info(f"\tOpening file for reading: {self.folder + file_name}")
+        with open(self.folder + file_name) as yamlfile:
+            logging.info("\tReading lines from yaml file")
+            lines = yamlfile.read()
+            logging.info("\tFinished reading lines")
+            logging.info("\tLoading lines into yaml loader")
+            yamlobj = yaml.load(lines)
+            logging.info("\tLoaded yaml object")
+            valid_yaml = isinstance(yamlobj, yaml.YAMLObject)
+            logging.info(f"\tValid YamlObject: {valid_yaml}")
+            return isinstance(yamlobj, yaml.YAMLObject)
 
     @wrap.trace
     def yaml_read(self, file):

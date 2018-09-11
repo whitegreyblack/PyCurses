@@ -40,6 +40,7 @@ class Connection:
         self.conn.execute(statements.create_products_table())
         self.conn.commit()
         logging.debug(f"{self.__class__.__name__}: built tables in database.")
+
 '''
     def insert(self, head, body):
         # insert row into reciept head and body

@@ -4,7 +4,7 @@ import strings as log
 from database import Connection
 from checker import YamlChecker
 from wrapper import logger, exitter
-from utils import format_directory_path, check_directory_path
+import utils
 
 # used for exit system message at end of program
 exc_err = False
@@ -33,7 +33,9 @@ def push_func(file, conn, head, body):
 @exitter(log.pop['sys_exit_err'], log.pop['sys_exit_nrm'])
 def populate(folder, files):
     con = conn_func()
-    for file in files:
+    for file_name in files:
+        filename, extension = utils.filename_and_extension(file_name)
+        if extension
         dat = open_func(folder + file)
         obj = load_func(folder + file, dat)
         obj.hash()
@@ -46,8 +48,8 @@ if __name__ == "__main__":
     if len(sys.argv) < 2:
         exit("ERROR: incorrect number of arguments specified - missing folder")
 
-    folder = format_directory_path(sys.argv[1])
-    if not check_directory_path(folder):
+    folder = utils.format_directory_path(sys.argv[1])
+    if not utils.check_directory_path(folder):
         exit("Folder argument specified is not a folder")
 
     validator = YamlChecker(folder)

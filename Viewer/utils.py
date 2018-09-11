@@ -1,12 +1,19 @@
-#!/usr/env/bin python3
-
+"""
+utils.py : common utility functions used throughout the program. Includes path
+           splitting and checking using the os library, a custom curses border
+           drawer, and variable formatting.
+"""
 __author__ = "Samuel Whang"
 
-from typing import Union
+from typing import Union, Tuple
 import curses
 import os
 
 def format_directory_path(path: str) -> str:
+    """
+    Replaces windows style path seperators to forward-slashes and adds another
+    slash to the end of the string
+    """
     formatted_path = path.replace('\\', '/')
     if formatted_path[-1] is not '/':
         formatted_path += '/'
@@ -15,7 +22,13 @@ def format_directory_path(path: str) -> str:
 def check_directory_path(path: str) -> bool:
     return os.path.isdir(path)
 
-def border(screen: object, x: int, y: int, dx: int, dy: int): -> None
+def filename_and_extension(path: str) -> Tuple[str, str]:
+    return os.path.splitext(path)
+
+def border(screen: object, x: int, y: int, dx: int, dy: int) -> None:
+    """
+    Draws a box with the given input parameters using the default characters
+    """
     screen.vline(y, x, curses.ACS_SBSB, dy)
     screen.vline(y, x + dx, curses.ACS_SBSB, dy)
     screen.hline(y, x, curses.ACS_BSBS, dx)
