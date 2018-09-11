@@ -5,10 +5,11 @@ Handles application functionality between Views/Models/Controller
 
 __author__ = "Samuel Whang"
 
+import os
 import curses
 from controls import Window, ScrollList, Card, ProductForm
 from models import Product
-from keymap import KeyMap
+# from keymap import KeyMap
 
 terminal_width, terminal_height = 0, 0
 
@@ -27,14 +28,21 @@ def setup_windows():
     scroller.add_items([card1, card2])
     form = ProductForm((window.width // 4) + 1, # add 1 for offset
                        1,
-                       window.width - (window.width // 4) - 1, # sub 1 to counter offset
+                       window.width - (window.width // 4) - 1, 
                        window.height,
                        Product('example'))
     window.add_windows([scroller, form])
 
     keymap = dict()
-    keymap[(curses.KEY_UP, 'ScrollList')] = 'ScrollList'
-    keymap[(curses.KEY_DOWN, 'ScrollList')] = 'ScrollList'
+    keymap[(curses.KEY_UP, scroller.wid)] = scroller.wid
+    keymap[(curses.KEY_DOWN, scroller.wid)] = scroller.wid
+    keymap[(curses.KEY_ENTER, scroller.wid)] = form.wid
+    # 10 : New Line Character
+    keymap[(10, scroller.wid)] = form.wid
+    # 27 : Escape Key Code
+    keymap[(27, scroller.wid)] = None
+    keymap[(27, form.wid)] = scroller.wid
+    keymap[(ord('q'), scroller.wid)] = None
     window.add_keymap(keymap)
     return window
 
@@ -62,12 +70,13 @@ def main(screen):
     window.draw(screen)
     while 1:
         key = screen.getch()
-        if key == 27 or key == ord('q'):
+        retval = window.send_signal(key)
+        if not retval:
             break
-        else:
-            window.send_signal(key)
         screen.erase()
         window.draw(screen)
 
 if __name__ == "__main__":
+    os.environ.setdefault('ESCDELAY', '25')
     curses.wrapper(main)
+    curses.endwin()

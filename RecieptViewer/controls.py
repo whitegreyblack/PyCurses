@@ -44,14 +44,20 @@ class Window:
             if window.wid == window_id:
                 return window
 
-    def send_signal(self, command):
+    def send_signal(self, command, debug=False):
         if (command, self.current_window.wid) in self.keymap:
+            print(f"{self.current_window.wid}")
             self.current_window.get_signal(command)
             next_window_id = self.keymap[(command, self.current_window.wid)]
+
+            if next_window_id is None:
+                return False
+            
             if next_window_id is not self.current_window.wid:
                 next_window = self.get_window(next_window_id)
                 self.current_window.selected = False
                 next_window.selected = True
+        return True
 
     def draw(self, screen):
         screen.border()
@@ -80,18 +86,16 @@ class ScrollList:
         for item in items:
             self.items.append(item)
 
-    def get_signal(self, command):
+    def get_signal(self, command, debug=False):
         if command == curses.KEY_DOWN:
             self.index = min(self.index + 1, len(self.items) - 1)
         elif command == curses.KEY_UP:
             self.index = max(self.index - 1, 0)
 
     def draw(self, screen):
-        border(screen,
-               self.x, 
-               self.y, 
-               self.width - self.x, 
-               self.height - self.y)
+        dx = self.width - self.x
+        dy = self.height - self.y
+        border(screen, self.x, self.y, dx, dy)
         
         if self.title:
             screen.addstr(self.y, self.x + 1, self.title) 
@@ -102,8 +106,10 @@ class ScrollList:
             item.draw(screen,
                       self.x + 1, 
                       self.y + index + 1, 
-                      self.index == index)
-
+                      self.selected and self.index == index)
+        
+        if not self.selected:
+            screen.addstr(self.y + index + 2, self.x + 1, 'UNSELECTED')
 class Card:
     def __init__(self, model, title=None):
         self.model = model
@@ -135,22 +141,20 @@ class ProductForm(Form):
     #    super().__init__(wid, x, y, width, height, model, title)
 
     def draw(self, screen):
-        border(screen,
-               self.x,
-               self.y,
-               self.width,
-               self.height - self.y)
-
+        border(screen, self.x, self.y, self.width, self.height - self.y)
         screen.addstr(self.y, 
                       self.x + 1, 
                       f"{self.x}, {self.y}, {self.width}, {self.height}")
-
-        # title
         if self.title:
             screen.addstr(self.y + 1, self.x + 1, self.title)
-        
-        # details
+       
+        if self.selected:
+            screen.addstr(self.y + 2, self.x + 1, 'Selected')
+
         screen.addstr(self.y + 3, self.x + 1, "Store: Example Store")
+
+    def get_signal(self, command):
+        return
 
 def test_card():
     from models import Product
