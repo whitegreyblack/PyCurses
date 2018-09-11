@@ -208,6 +208,5 @@ def main(f, p, l, d):
     logging.info("Checking Finished\n")
     logging.info("-" * 80)
 
-
 if __name__ == "__main__":
     main()

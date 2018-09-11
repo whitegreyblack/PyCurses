@@ -9,6 +9,7 @@ import os
 import curses
 from controls import Window, ScrollList, Card, ProductForm
 from models import Product
+from database import Connection
 # from keymap import KeyMap
 
 terminal_width, terminal_height = 0, 0
@@ -22,6 +23,12 @@ def initialize():
     curses.init_pair(2, 
                      curses.COLOR_BLACK, 
                      curses.COLOR_BLUE | curses.COLOR_GREEN)
+
+def setup_database():
+    connection = Connection()
+    connection.drop_tables()
+    connection.build_tables()
+    return connection
 
 def setup_cards():
     return [Card(Product(fruit, price))
@@ -58,9 +65,6 @@ def setup_windows():
     window.add_keymap(keymap)
     return window
 
-def input_handler(screen):
-    screen.getch()
-
 def main(screen):
     """
     Overview:
@@ -78,6 +82,7 @@ def main(screen):
     terminal_height = curses.LINES
 
     initialize()
+    connection = setup_database()
     window = setup_windows()
     window.draw(screen)
     while 1:

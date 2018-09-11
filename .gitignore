@@ -9,3 +9,9 @@ __pycache__/
 
 # vim temp files
 *.swp
+
+# log files
+*.log
+
+# db files
+*.db

@@ -1,11 +1,13 @@
-# -----------------------------------------------------------------------------
-# Author  : Sam Whang | whitegreyblack
-# FileName: database.py
-# FileInfo: Connection object to access sqlite3 database
-# -----------------------------------------------------------------------------
+"""
+database.py: Connection object to access sqlite3 database
+"""
+
+__author__ = "Samuel Whang"
+
 import sqlite3
 import logging
-from strings import stmts
+# from strings import stmts
+import statements
 
 class Connection:
     '''
@@ -13,20 +15,32 @@ class Connection:
     '''
     def __init__(self):
         # create connection to db
-        self.conn = sqlite3.connect('food.db', 0)
-        logging.debug("\tDB: Created Connection")
-        self.build_tables()
+        logging.basicConfig(filename="dbconnection.log", level=logging.DEBUG)
+        logging.debug(f"{self.__class__.__name__}: creating database connection.")  
+        self.conn = sqlite3.connect('reciepts.db')
+        logging.debug(f"{self.__class__.__name__}: created database connection.")
+
+    def __exit__(self):
+        logging.debug(f"{self.__class__.__name__}: closing database connection.")
+        self.conn.close()
+        logging.debug(f"{self.__class__.__name__}: closed database connection.")
+
+    def drop_tables(self):
+        # delete tables in sqlite
+        logging.debug(f"{self.__class__.__name__}: dropping tables in database.")
+        self.conn.execute(statements.drop_table('reciepts'))
+        self.conn.execute(statements.drop_table('products'))
+        self.conn.commit()
+        logging.debug(f"{self.__class__.__name__}: dropped tables in database.")
 
     def build_tables(self):
         # create tables in sqlite
-        self.conn.execute(stmts['headcreate'])
-        self.conn.execute(stmts['bodycreate'])
+        logging.debug(f"{self.__class__.__name__}: building tables in database.")
+        self.conn.execute(statements.create_reciepts_table())
+        self.conn.execute(statements.create_products_table())
         self.conn.commit()
-        logging.debug("\tDB: Created Tables")
-
-    def __exit__(self, et, ev, tb):
-        self.conn.close()
-
+        logging.debug(f"{self.__class__.__name__}: built tables in database.")
+'''
     def insert(self, head, body):
         # insert row into reciept head and body
         code, products = body
@@ -34,7 +48,7 @@ class Connection:
         [self.conn.execute(stmts['bodyinsert'], (k, "{0:.2f}".format(
             products[k]), code)) for k in products.keys()]
         self.conn.commit()
-        logging.debug("\tDB: Insertions Completed")
+        logging.debug(f"{self.__class__.__name__}: insert row")
 
     def stats(self):
         # returns information used in statistics printing
@@ -65,3 +79,4 @@ class Connection:
     def getMaxDate(self):
         # return earliest date in database
         return (self.conn.execute(stmts['maxdate'])).replace("-", ",")
+'''
