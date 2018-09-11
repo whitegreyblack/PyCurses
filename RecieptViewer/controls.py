@@ -46,7 +46,6 @@ class Window:
 
     def send_signal(self, command, debug=False):
         if (command, self.current_window.wid) in self.keymap:
-            print(f"{self.current_window.wid}")
             self.current_window.get_signal(command)
             next_window_id = self.keymap[(command, self.current_window.wid)]
 
@@ -101,29 +100,46 @@ class ScrollList:
             screen.addstr(self.y, self.x + 1, self.title) 
 
         screen.addstr(self.y, self.x - 1, str(self.index))
-        # screen.addch(self.y + 1, self.width, curses.ACS_BLOCK)
         for index, item in enumerate(self.items):
+            if self.index == index:
+                screen.addch(self.y + index + 1, 
+                             self.width, 
+                             curses.ACS_BLOCK)
             item.draw(screen,
                       self.x + 1, 
                       self.y + index + 1, 
-                      self.selected and self.index == index)
+                      self.width,
+                      self.height,
+                      self.selected,
+                      self.index == index)
         
-        if not self.selected:
-            screen.addstr(self.y + index + 2, self.x + 1, 'UNSELECTED')
 class Card:
     def __init__(self, model, title=None):
         self.model = model
+        self.title = title
         self.selected = False
 
-    @property
-    def description(self):
-        return self.model.description
-
-    def draw(self, screen, x, y, selected):
-        if selected:
-            screen.addstr(y, x, self.description, curses.color_pair(1))
+    def format_description(self, length):
+        fields = self.model.description
+        formats = self.model.formats
+        space = max(0, length - sum(len(fo.format(fi)) 
+                        for fi, fo in zip(fields, formats)))
+        return self.model.format_criteria.format(fields[0],
+                                                 ' ' * space,
+                                                 fields[1])
+            
+    def draw(self, screen, x, y, dx, dy, focused, selected):
+        description = self.format_description(dx - x)
+        if focused and selected:
+            screen.addstr(y, x, 
+                          description, 
+                          curses.color_pair(1))
+        elif selected:
+            screen.addstr(y, x,
+                          description,
+                          curses.color_pair(2))
         else:
-            screen.addstr(y, x, self.description)
+            screen.addstr(y, x, description)
 
 class Form:
     def __init__(self, x, y, width, height, model, wid='Form', title=None):
