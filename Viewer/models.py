@@ -5,18 +5,28 @@ Data models to hold data from db
 
 __author__ = "Samuel Whang"
 
-class Store:
-    __slots__ = ['name',]
-    def __init__(self, store_name):
-        self.name = store_name
+from typing import Union
 
-class Card:
-    __slots__ = ['number',]
-    def __init__(self, card_number: str):
-       self.number = card_number
+Currency = Union[int, float]
+
+class Transaction:
+    def __init__(self, 
+                 total: Currency, 
+                 payment: Currency, 
+                 subtotal: Currency, 
+                 tax: Currency = 0,
+                 change: Currency = 0.00):
+        self.subtotal = subtotal
+        self.total = total
+        
+        self.payment = payment
+        self.change = payment - total
+
+        if self.change < 0:
+            raise ValueError('payment less than total cost')
 
 class Product:
-    def __init__(self, name: str, price: [int, float]):
+    def __init__(self, name: str, price: Currency):
         self.name = name
         self.name_format = '{}'
         self.price = float(price)
@@ -34,8 +44,23 @@ class Product:
     def format_criteria(self):
         return '{}{}{:.2f}'
 
+class Reciept:
+    def __init__(self, 
+                 store: str, 
+                 date: str, 
+                 category: str, 
+                 items: list, 
+                 transaction: Transaction):
+        """Initialize fields used in reciept"""
+        self.store = store
+        self.date = date
+        self.category = category
+        self.products = items
+        self.subtotal = subtotal
+        self.tax = tax
+        self.total = total
+        self.payment = payment
+
 if __name__ == "__main__":
-    product = Product("example")
+    product = Product("example", 4)
     print(product.description)
-    print(f"{Card.__name__}: {Card.__slots__}")
-    print(f"{Store.__name__}: {Store.__slots__}")
