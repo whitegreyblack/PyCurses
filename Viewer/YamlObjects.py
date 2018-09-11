@@ -1,11 +1,12 @@
-#!/usr/env python3
+"""
+YamlObjects.py : holds all objects used during transporting data from yaml
+                 to database
+"""
+
 __Author__ = "Sam Whang"
 
-# -----------------------------------------------------------------------------
-# FileName: Reciept
-# FileInfo: Python Object used in parsing YAML files during runtime
-# -----------------------------------------------------------------------------
 from datetime import date
+from utils import format_float as frmt_flt
 import yaml
 import sys
 
@@ -23,23 +24,24 @@ class Reciept(yaml.YAMLObject):
         self.tot = args[6]
 
     def hash(self):
-        self.date = date(self.date[0],self.date[1],self.date[2]).isoformat()
+        self.date = date(self.date[0], self.date[1], self.date[2]).isoformat()
         self.code = self.store.replace(".", "")
         self.code += self.date
 
-    def frmt(self, n):
-        return "{:.2f}".format(n)
-
     def __repr__(self):
-        return "{}({}: {})".format(self.__class__.__name__,
-                                   self.store, self.frmt(self.tot))
+        return f"{self.__class__.__name__}({self.store}: {frmt_flt(self.tot)})"
 
     def build(self):
         return self.head(), self.body()
 
     def head(self):
-        return self.store, self.date, self.type, self.code, \
-            self.frmt(self.sub), self.frmt(self.tax), self.frmt(self.tot)
+        return(self.store,
+               self.date,
+               self.type,
+               self.code,
+               frmt_flt(self.sub),
+               frmt_flt(self.tax),
+               frmt_flt(self.tot))
 
     def body(self):
         return self.code, self.prod

@@ -1,29 +1,32 @@
-# -----------------------------------------------------------------------------
-# Author: Sam Whang | whitegreyblack
-# FileName: checker.py
-# FileInfo: Parser object to verify valid yaml files
-# -----------------------------------------------------------------------------
+"""
+yamlchecker.py: YamlChecker provides methods to iterate through and validate
+                yaml files
+"""
+__author__ = "Samuel Whang"
+
 import re
 import yaml
 import click
 import logging
-import wrapper as wrap
+import decorators as wrap
 from os import walk
 from datetime import date
-from reciept import Reciept
+from YamlObjects import Reciept
 
+border = "-" * 80
 
 class YamlChecker:
-    # whitebox: (input:-folder str, output:-list)
     def __init__(self, folder='reciepts'):
-        logging.info("-"*80)
-        logging.info("# Checker")
-        # initialize the folder holding files to check
+        logging.basicConfig(filename='yamlchecker.log', level=logging.INFO)
+        logging.info(border)
+        logging.info(f"{self.__class__.__name__}: Initializing yaml checker")
         self.folder = folder
         self.startdate = None
+        logging.info(f"{self.__class__.__name__}: Initialized yaml checker")
 
     def __del__(self):
-        logging.info("-"*80)
+        logging.info(f"{self.__class__.__name__}: Deleting yaml checker")
+        logging.info(border)
 
     @wrap.trace
     def files_safe(self):
@@ -63,7 +66,7 @@ class YamlChecker:
     @wrap.trace
     def file_safe(self, file):
         # calls file checks in order of serial encounter
-        logging.info("".join(wrap.spacer) + "Using: {}".format(file))
+        logging.info(f"{''.join(wrap.spacer)}Using: {file}")
         return self.file_regex(file) \
             and self.file_read(file) \
             and self.file_load(file)
@@ -96,10 +99,7 @@ class YamlChecker:
         ''' check file is a yaml object after file load '''
         with open(self.folder + file) as f:
             obj = yaml.load(f.read())
-            logging.info(
-                "\t{} is {}: {}".format(
-                    file, 'YAMLObject', isinstance(
-                        obj, yaml.YAMLObject)))
+            logging.info(f"\t{file} is YamlObject: {isinstance(obj, YAMLObject)}"
             return isinstance(obj, yaml.YAMLObject)
 
     @wrap.trace
@@ -107,9 +107,7 @@ class YamlChecker:
         ''' creates and returns yaml object '''
         with open(self.folder + file) as f:
             obj = yaml.load(f.read())
-            logging.info("\t{} is {}: {}".format(file,
-                                                 'Reciept',
-                                                 isinstance(obj, Reciept)))
+            logging.info(f"\t{file} is {Reciept}: {isinstance(obj, Reciept)}")
             return obj
 
     @wrap.trace
@@ -117,10 +115,10 @@ class YamlChecker:
     def yaml_safe(self, file):
         ''' check contents of yaml object '''
         obj = self.yaml_read(file)
-        return self.yaml_store(file, obj) \
-            and self.yaml_date(file, obj) \
-            and self.yaml_prod(file, obj) \
-            and self.yaml_card(file, obj)
+        return (self.yaml_store(file, obj)
+                and self.yaml_date(file, obj)
+                and self.yaml_prod(file, obj)
+                and self.yaml_card(file, obj))
 
     @wrap.trace
     @wrap.printer(False)
@@ -186,6 +184,14 @@ class YamlChecker:
             get, sub, int(mul(obj.tax)), tot))
         return get == sub and add == tot
 
+def usage():
+    return """
+USAGE: -f [arg] -[ p | l | d ]
+    -f -> folder containing yaml files
+    -p -> print mode flag
+    -l -> logger mode flag
+    -d -> debug mode flag
+"""[1:]
 
 @click.command()
 @click.option('-f', help='Folder Containing Yaml Files')
@@ -193,20 +199,29 @@ class YamlChecker:
 @click.option('-l', is_flag=False, help='MODE: Logger')
 @click.option('-d', is_flag=False, help='MODE: Debug')
 def main(f, p, l, d):
-    # check input args -- exit if incorrect
+    logging.basicConfig(filename="yamlchecker.log", level=logging.INFO)
+
+    # check required input args -- exit if incorrect
     if not f:
-        exit('Incorrect Args')
-    logging.info("-" * 80)
-    logging.info("\nChecking Files")
+        print('ERROR: incorrect arg - no input folder flag and arg specified')
+        print(usage()) 
+        exit()
+
+    logging.info(border)
+    logging.info("main(): checking files")
+
     c, d = YamlChecker(f.replace("\\", '/')).files_safe()
-    logging.info("Files to DELETE:")
+
+    logging.info("main(): files to delete:")
     for i in d:
         logging.info(wrap.tab + i)
-    logging.info("Files to COMMIT:")
+
+    logging.info("main(): files to commit:")
     for i in c:
         logging.info(wrap.tab + i)
-    logging.info("Checking Finished\n")
-    logging.info("-" * 80)
+
+    logging.info("main(): completed checking files")
+    logging.info(border)
 
 if __name__ == "__main__":
     main()

@@ -10,7 +10,7 @@ class SQLType:
     BLOB = 'BLOB'
     
     @staticmethod
-    def VARCHAR(length:int=0) -> str:
+    def VARCHAR(length: int = 0) -> str:
         if length == 0:
             return "VARCHAR"
         return f"VARCHAR({length})"
@@ -28,7 +28,7 @@ def create_reciepts_table():
                                      ('date', SQLType.VARCHAR(10)), 
                                      ('category', SQLType.VARCHAR()),
                                      ('products', SQLType.VARCHAR()),
-                                     ('subtax', SQLType.REAL),
+                                     ('subtotal', SQLType.REAL),
                                      ('tax', SQLType.REAL),
                                      ('total', SQLType.REAL),
                                      ('payment', SQLType.REAL)])

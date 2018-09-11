@@ -1,13 +1,13 @@
-# -----------------------------------------------------------------------------
-# Author  : Sam Whang | whitegreyblack
-# Filename: wrapper.py
-# FileInfo: Contains wrapper definitions used in pycurses
-# ----------------------------------------------------------------------------
+"""
+decorators.py: Contains decorator utility functions
+"""
+
+__author__ = "Samuel Whang"
+
 import functools
 import logging
 import sys
 from strings import passfail, ORG, GRN, RED, END, pop
-
 
 # used by printer to print number of files printed
 file_num = 1
@@ -16,11 +16,9 @@ spacer = []
 tab = "  "
 exc_err = False
 
-logging.basicConfig(
-    filename='debug.log',
-    format='%(message)s',
-    level=logging.DEBUG)
-
+logging.basicConfig(filename='decorators.log',
+                    format='%(message)s',
+                    level=logging.INFO)
 
 def printer(enabled):
     # allows print statements to stdout as well as logging
@@ -32,14 +30,11 @@ def printer(enabled):
             if enabled == ret:
                 try:
                     # moving everything to logger
-                    print(file_str.format(
-                        passfail[fn.__name__][ret],
-                        file_num,
-                        args[1].split('.')[0]))
-                    logging.info(file_str.format(
-                        passfail[fn.__name__][ret],
-                        file_num,
-                        args[1].split('.')[0]))
+                    fmtstr = file_str.format(passfail[fn.__name__][ret],
+                                             file_num,
+                                             args[1].split('.')[0])
+                    print(fmtstr)
+                    logging.info(fmtstr)
                     file_num += 1
                 except BaseException:
                     # print(args)
@@ -47,7 +42,6 @@ def printer(enabled):
             return ret
         return log
     return wrapper
-
 
 def tryexcept(fn):
     # handles exceptions and returns false instead
@@ -59,14 +53,12 @@ def tryexcept(fn):
             return False
     return wrapper
 
-
 def truefalse(fn):
     # handles converting return vals to boolean
     @functools.wraps(fn)
     def wrapper(*args, **kwargs):
         return True if fn(*args, **kwargs) else False
     return wrapper
-
 
 def tin(func, *args, **kwargs):
     # wrapper to trace function enter
@@ -78,7 +70,6 @@ def tin(func, *args, **kwargs):
             func.__name__ +
             END))
     # print("Entering: [{}]".format(func.__name__))
-
 
 def tout(result, func, *args, **kwargs):
     # wrapper to trace function exit
@@ -99,7 +90,6 @@ def tout(result, func, *args, **kwargs):
                 END))
     # print("Exitting: [{}]".format(func.__name__))
 
-
 def trace(func):
     def call(*args, **kwargs):
         global spacer
@@ -110,7 +100,6 @@ def trace(func):
         spacer.pop()
         return result
     return call
-
 
 def logger(msgs):
     # wrapper to raise exceptions for functions
@@ -131,7 +120,6 @@ def logger(msgs):
                 exc_err = True
         return log
     return wrapper
-
 
 def exitter(err, nrm):
     # creates initial logger messages
