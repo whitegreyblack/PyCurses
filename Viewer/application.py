@@ -83,11 +83,14 @@ def main(screen):
     terminal_height = curses.LINES
 
     initialize()
-    checker = YamlChecker('../reciepts/')
+    checker = YamlChecker('../testdata/')
     valid_files, _ = checker.files_safe()
-    yaml_objs = [checker.yaml_read(valid_file)
-                    for valid_file in valid_files]
+    yaml_objs = {
+        valid_file: checker.yaml_read(valid_file)
+                    for valid_file in valid_files
+    }
     connection = setup_database()
+    connection.insert_reciepts(yaml_objs)
     window = setup_windows()
     window.draw(screen)
     screen.addstr(0, 0, f"{len(yaml_objs)}")

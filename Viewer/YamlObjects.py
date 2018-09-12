@@ -16,13 +16,14 @@ class Reciept(yaml.YAMLObject):
 
     def __init__(self, *args):
         self.store = args[0]
-        self,date = args[1]
-        self.type = args[2]
-        self.prod = args[3]
-        self.sub = args[4]
+        self.date = args[1]
+        self.category = args[2]
+        self.products = args[3]
+        self.subtotal = args[4]
         self.tax = args[5]
-        self.tot = args[6]
+        self.total = args[6]
 
+    '''
     def hash(self):
         self.date = date(self.date[0], self.date[1], self.date[2]).isoformat()
         self.code = self.store.replace(".", "")
@@ -45,3 +46,4 @@ class Reciept(yaml.YAMLObject):
 
     def body(self):
         return self.code, self.prod
+    '''

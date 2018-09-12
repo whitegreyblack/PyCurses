@@ -24,19 +24,24 @@ def drop_table(table_name):
     return f"DROP TABLE IF EXISTS {table_name};"
 
 def create_reciepts_table():
-    return create_table('reciepts', [('store', SQLType.VARCHAR()),
+    return create_table('reciepts', [('filename', SQLType.TEXT),
+                                     ('store', SQLType.VARCHAR()),
                                      ('date', SQLType.VARCHAR(10)), 
                                      ('category', SQLType.VARCHAR()),
-                                     ('products', SQLType.VARCHAR()),
                                      ('subtotal', SQLType.REAL),
                                      ('tax', SQLType.REAL),
                                      ('total', SQLType.REAL),
                                      ('payment', SQLType.REAL)])
 
 def create_products_table():
-    return create_table('products', [('name', SQLType.VARCHAR()),
+    return create_table('products', [('filename', SQLType.TEXT),
+                                     ('name', SQLType.VARCHAR()),
                                      ('price', SQLType.REAL),
                                      ('quantity', SQLType.INT)])
+
+def insert_reciepts_command(table, num_fields):
+    fields = ', '.join(['?' for i in range(num_fields)])
+    return f"INSERT INTO {table} VALUES ({fields});"
 '''
 def create_payments_table():
     return create_table('payments', [('name', SQLType.VARCHAR()), 

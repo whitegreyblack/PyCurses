@@ -8,14 +8,17 @@ import sqlite3
 import logging
 # from strings import stmts
 import statements
-
+import datetime
+from utils import filename_and_extension as fileonly
+from utils import format_float as real
+from utils import format_date as date
 class Connection:
     '''
     Database object
     '''
     def __init__(self):
         # create connection to db
-        logging.basicConfig(filename="dbconnection.log", level=logging.DEBUG)
+        logging.basicConfig(filename="dbconnection.log", level=logging.INFO)
         logging.debug(f"{self.__class__.__name__}: creating database connection.")  
         self.conn = sqlite3.connect('reciepts.db')
         logging.debug(f"{self.__class__.__name__}: created database connection.")
@@ -41,16 +44,35 @@ class Connection:
         self.conn.commit()
         logging.debug(f"{self.__class__.__name__}: built tables in database.")
 
-'''
-    def insert(self, head, body):
-        # insert row into reciept head and body
+    def insert_reciepts(self, yaml_objs: dict):
+        # insert reciept rows into reciepts table
+        logging.debug(f"{self.__class__.__name__}: inserting reciepts data")
+        insert_command = statements.insert_reciepts_command('reciepts', 8) 
+        for file_name, yaml_obj in yaml_objs.items():
+            file_only, _ = fileonly(file_name)
+            self.conn.execute(insert_command, (file_only,
+                                               yaml_obj.store,
+                                               date(yaml_obj.date),
+                                               yaml_obj.category,
+                                               real(yaml_obj.subtotal),
+                                               real(yaml_obj.tax),
+                                               real(yaml_obj.total),
+                                               real(yaml_obj.payment)))
+        logging.debug(f"{self.__class__.__name__}: inserting data complete")
+            # now do the products
+        '''
         code, products = body
         self.conn.execute(stmts['headinsert'], head)
         [self.conn.execute(stmts['bodyinsert'], (k, "{0:.2f}".format(
             products[k]), code)) for k in products.keys()]
         self.conn.commit()
         logging.debug(f"{self.__class__.__name__}: insert row")
+        '''
 
+    def insert_products(self, products):
+        # insert product row into products table
+        pass
+'''
     def stats(self):
         # returns information used in statistics printing
         fc = self.conn.execute(stmts['filecount'])

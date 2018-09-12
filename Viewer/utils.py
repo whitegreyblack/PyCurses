@@ -7,6 +7,7 @@ __author__ = "Samuel Whang"
 
 from typing import Union, Tuple
 import curses
+import datetime
 import os
 
 def format_directory_path(path: str) -> str:
@@ -40,3 +41,6 @@ def border(screen: object, x: int, y: int, dx: int, dy: int) -> None:
 
 def format_float(number: Union[int, float]) -> float:
     return f"{number:.2f}"
+
+def format_date(date) -> str:
+    return datetime.date(date[0], date[1], date[2]).isoformat()

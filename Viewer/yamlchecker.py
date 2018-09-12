@@ -28,7 +28,7 @@ class YamlChecker:
         self.startdate = None
         logging.info(f"{self.__class__.__name__}: Initialized yaml checker")
 
-    def __del__(self):
+    def __exit__(self):
         logging.info(f"{self.__class__.__name__}: Deleting yaml checker")
         logging.info(border)
 
@@ -163,21 +163,21 @@ class YamlChecker:
     @wrap.printer(False)
     def yaml_prod(self, file, obj):
         # iterate through yaml object[prod]:{str:int,[...]}
-        for key in obj.prod.keys():
+        for key in obj.products.keys():
             if not isinstance(key, str):
-                logging.info('\tkey({}) is not str'.format(key))
+                logging.info(f"\tProduct Key({key}) is not a string object")
                 return False
             if len(key) > 25:
                 logging.info('\tkey({}) is too big'.format(key))
                 return False
-            if not isinstance(obj.prod[key], float):
-                logging.info('\tprod({}) is not float'.format(obj.prod[key]))
+            if not isinstance(obj.products[key], float):
+                logging.info('\tprod({}) is not float'.format(obj.products[key]))
                 return False
-            if len(str(obj.prod[key])) > 6:
-                logging.info('\tprod({}).is too big'.format(obj.prod[key]))
+            if len(str(obj.products[key])) > 6:
+                logging.info('\tprod({}).is too big'.format(obj.products[key]))
                 return False
-            logging.info('\t{}: {}'.format(key, obj.prod[key]))
-        logging.info('\tProducts Passed: {}'.format(len(obj.prod.keys())))
+            logging.info('\t{}: {}'.format(key, obj.products[key]))
+        logging.info('\tProducts Passed: {}'.format(len(obj.products.keys())))
         return True
 
     @wrap.trace
@@ -187,14 +187,14 @@ class YamlChecker:
         # check payment identifiers in yaml object
         def mul(x):
             return x * 100
-        get = [obj.prod[key] for key in obj.prod.keys()]
+        get = [obj.products[key] for key in obj.products.keys()]
         get = int(mul(sum(get)))
-        sub = int(mul(obj.sub))
-        add = int(mul(obj.sub + obj.tax))
-        tot = int(mul(obj.tot))
+        subtotal = int(mul(obj.subtotal))
+        add = int(mul(obj.subtotal + obj.tax))
+        total = int(mul(obj.total))
         logging.info('\tsum: {}\n\tsub: {}\n\ttax: {}\n\ttot: {}'.format(
-            get, sub, int(mul(obj.tax)), tot))
-        return get == sub and add == tot
+            get, subtotal, int(mul(obj.tax)), total))
+        return get == subtotal and add == total
 
 def usage():
     return """
@@ -222,15 +222,16 @@ def main(f, p, l, d):
     logging.info(border)
     logging.info("main(): checking files")
 
-    c, d = YamlChecker(f.replace("\\", '/')).files_safe()
-
+    commits, deletes = YamlChecker(f.replace("\\", '/')).files_safe()
+    
     logging.info("main(): files to delete:")
-    for i in d:
-        logging.info(wrap.tab + i)
+    for delete in deletes:
+        logging.info(wrap.tab + delete)
 
     logging.info("main(): files to commit:")
-    for i in c:
-        logging.info(wrap.tab + i)
+    for commit in commits:
+        logging.info(wrap.tab + commit)
+        print(commit)
 
     logging.info("main(): completed checking files")
     logging.info(border)
