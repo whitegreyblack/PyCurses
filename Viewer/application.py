@@ -10,6 +10,7 @@ import curses
 from controls import Window, ScrollList, Card, ProductForm
 from models import Product
 from database import Connection
+from yamlchecker import YamlChecker
 # from keymap import KeyMap
 
 terminal_width, terminal_height = 0, 0
@@ -82,9 +83,14 @@ def main(screen):
     terminal_height = curses.LINES
 
     initialize()
+    checker = YamlChecker('../reciepts/')
+    valid_files, _ = checker.files_safe()
+    yaml_objs = [checker.yaml_read(valid_file)
+                    for valid_file in valid_files]
     connection = setup_database()
     window = setup_windows()
     window.draw(screen)
+    screen.addstr(0, 0, f"{len(yaml_objs)}")
     while 1:
         key = screen.getch()
         retval = window.send_signal(key)

@@ -71,9 +71,9 @@ class YamlChecker:
     def file_safe(self, file):
         # calls file checks in order of serial encounter
         logging.info(f"{''.join(wrap.spacer)}Using: {file}")
-        return self.file_regex(file) \
-            and self.file_read(file) \
-            and self.file_load(file)
+        return (self.file_regex(file)
+            and self.file_read(file)
+            and self.file_load(file))
 
     @wrap.trace
     @wrap.printer(False)
@@ -118,11 +118,12 @@ class YamlChecker:
         ''' creates and returns yaml object '''
         with open(self.folder + file) as f:
             obj = yaml.load(f.read())
-            logging.info(f"\t{file} is {Reciept}: {isinstance(obj, Reciept)}")
+            valid_yaml = isinstance(obj, Reciept)
+            logging.info(f"\tValid YamlObject: {valid_yaml}")
             return obj
 
     @wrap.trace
-    @wrap.printer(True)
+    @wrap.printer(False)
     def yaml_safe(self, file):
         ''' check contents of yaml object '''
         obj = self.yaml_read(file)

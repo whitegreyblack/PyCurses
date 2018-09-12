@@ -11,7 +11,7 @@ from strings import passfail, ORG, GRN, RED, END, pop
 
 # used by printer to print number of files printed
 file_num = 1
-file_str = "\t[{}]({:02}):- {}"
+file_str = "[{}]({:02}):- {}"
 spacer = []
 tab = "  "
 exc_err = False
