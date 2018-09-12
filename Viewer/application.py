@@ -105,4 +105,3 @@ def main(screen):
 if __name__ == "__main__":
     os.environ.setdefault('ESCDELAY', '25')
     curses.wrapper(main)
-    curses.endwin()
