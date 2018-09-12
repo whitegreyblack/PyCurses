@@ -9,6 +9,7 @@ import logging
 # from strings import stmts
 import statements
 import datetime
+from utils import setup_logger
 from utils import filename_and_extension as fileonly
 from utils import format_float as real
 from utils import format_date as date
@@ -18,35 +19,47 @@ class Connection:
     '''
     def __init__(self):
         # create connection to db
-        logging.basicConfig(filename="dbconnection.log", level=logging.INFO)
-        logging.debug(f"{self.__class__.__name__}: creating database connection.")  
+        self.logargs = {'classname': self.__class__.__name__}
+        self.logger = setup_logger('dblog', 'db.log')
+        self.log("creating database connection.")  
+
         self.conn = sqlite3.connect('reciepts.db')
-        logging.debug(f"{self.__class__.__name__}: created database connection.")
+
+        self.log("created database connection.")
 
     def __exit__(self):
-        logging.debug(f"{self.__class__.__name__}: closing database connection.")
+        self.log("closing database connection.")
+
         self.conn.close()
-        logging.debug(f"{self.__class__.__name__}: closed database connection.")
+
+        self.log("closed database connection.")
+
+    def log(self, message):
+        self.logger.info(message, extra=self.logargs)
 
     def drop_tables(self):
         # delete tables in sqlite
-        logging.debug(f"{self.__class__.__name__}: dropping tables in database.")
+        self.log("dropping tables in database.")
+
         self.conn.execute(statements.drop_table('reciepts'))
         self.conn.execute(statements.drop_table('products'))
         self.conn.commit()
-        logging.debug(f"{self.__class__.__name__}: dropped tables in database.")
+
+        self.log("dropped tables in database.")
 
     def build_tables(self):
         # create tables in sqlite
-        logging.debug(f"{self.__class__.__name__}: building tables in database.")
+        self.log("building tables in database.")
+
         self.conn.execute(statements.create_reciepts_table())
         self.conn.execute(statements.create_products_table())
         self.conn.commit()
-        logging.debug(f"{self.__class__.__name__}: built tables in database.")
+
+        self.log("built tables in database.")
 
     def insert_reciepts(self, yaml_objs: dict):
-        # insert reciept rows into reciepts table
-        logging.debug(f"{self.__class__.__name__}: inserting reciepts data")
+        self.log("inserting reciepts data into database.")
+
         insert_command = statements.insert_reciepts_command('reciepts', 8) 
         for file_name, yaml_obj in yaml_objs.items():
             file_only, _ = fileonly(file_name)
@@ -58,7 +71,7 @@ class Connection:
                                                real(yaml_obj.tax),
                                                real(yaml_obj.total),
                                                real(yaml_obj.payment)))
-        logging.debug(f"{self.__class__.__name__}: inserting data complete")
+        self.log("completed inserting reciepts data.")
             # now do the products
         '''
         code, products = body
@@ -66,7 +79,7 @@ class Connection:
         [self.conn.execute(stmts['bodyinsert'], (k, "{0:.2f}".format(
             products[k]), code)) for k in products.keys()]
         self.conn.commit()
-        logging.debug(f"{self.__class__.__name__}: insert row")
+        self.logger.info(f"{self.__class__.__name__}: insert row")
         '''
 
     def insert_products(self, products):
@@ -103,3 +116,6 @@ class Connection:
         # return earliest date in database
         return (self.conn.execute(stmts['maxdate'])).replace("-", ",")
 '''
+
+if __name__ == "__main__":
+    db = Connection()

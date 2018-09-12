@@ -22,7 +22,8 @@ border = "-" * 80
 class YamlChecker:
     def __init__(self, folder='reciepts'):
         self.logargs = {'classname': self.__class__.__name__}
-        self.logger = utils.setup_logger('yamlcheckerlogger', 'filechecks.log')
+        self.logger = utils.setup_logger(name='yamlcheckerlogger', 
+                                         logfile='filechecks.log')
 
         self.log("Initializing yaml checker")
 
@@ -225,9 +226,8 @@ def main(f, p, l, d):
         print(usage()) 
         exit()
 
-    logargs = {'classname': YamlChecker.__name__}
+    logargs = {'classname': YamlChecker.__name__ + 'main()'}
     logger = utils.setup_logger('yamlchecker.main', 'filecheck-main.log')
-    logger.info("main(): checking files", extra=logargs)
 
     filepath = utils.format_directory_path(f)
     if not utils.check_directory_path(filepath):
@@ -235,19 +235,20 @@ def main(f, p, l, d):
         print('ERROR: File specified is not a directory')
         exit()
 
+    logger.info(f"checking files in {filepath}", extra=logargs)
     commits, deletes = YamlChecker(filepath).files_safe()
     
     if deletes:
-        logger.info("main(): files to delete:", extra=logargs)
+        logger.info("files to delete:", extra=logargs)
         for delete in deletes:
             logger.info(wrap.tab + delete, extra=logargs)
 
     if commits:
-        logger.info("main(): files to commit:", extra=logargs)
+        logger.info("files to commit:", extra=logargs)
         for commit in commits:
-            logger.info(wrap.tab + commit, extra=logargs)
+            logger.info('+' + wrap.tab + commit, extra=logargs)
 
-    logger.info("main(): completed checking files", extra=logargs)
+    logger.info("completed checking files", extra=logargs)
 
 if __name__ == "__main__":
     main()
