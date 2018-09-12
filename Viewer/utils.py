@@ -7,8 +7,30 @@ __author__ = "Samuel Whang"
 
 from typing import Union, Tuple
 import curses
+import logging
 import datetime
 import os
+
+def setup_logger(name, logfile, level=logging.INFO, logformat=None):
+    """Handles creation of multiple loggers"""
+    if logformat is None:
+        logformat = "%(asctime)s %(classname)s %(message)s"
+
+    formatter = logging.Formatter(logformat, "%H:%M:%S")
+
+    with open(logfile, 'w'):
+        pass
+
+    handler = logging.FileHandler(logfile)
+    handler.setFormatter(formatter)
+
+    logger = logging.getLogger(name)
+    logger.setLevel(level)
+    logger.addHandler(handler)
+    return logger
+
+def log_message(logger, message, extra=None):
+    logger.info(message, extra)
 
 def format_directory_path(path: str) -> str:
     """

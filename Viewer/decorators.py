@@ -93,11 +93,11 @@ def tout(result, func, *args, **kwargs):
 def trace(func):
     def call(*args, **kwargs):
         global spacer
-        spacer.append(tab)
+        # spacer.append(tab)
         tin(func, *args, **kwargs)
         result = func(*args, **kwargs)
         tout(result, func, *args, **kwargs)
-        spacer.pop()
+        # spacer.pop()
         return result
     return call
 
