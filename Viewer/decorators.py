@@ -7,6 +7,7 @@ __author__ = "Samuel Whang"
 import functools
 import logging
 import sys
+import utils
 from strings import passfail, ORG, GRN, RED, END, pop
 
 # used by printer to print number of files printed
@@ -16,9 +17,15 @@ spacer = []
 tab = "  "
 exc_err = False
 
+logargs = {'classname': 'wrapper'}
+decoratorlog = utils.setup_logger('wrapperlog', 'wrapper.log')
+'''
 logging.basicConfig(filename='decorators.log',
                     format='%(message)s',
-                    level=logging.INFO)
+                    level=log)
+'''
+def log(message):
+    decoratorlog.info(message, extra=logargs)
 
 def printer(enabled):
     # allows print statements to stdout as well as logging
@@ -34,7 +41,7 @@ def printer(enabled):
                                              file_num,
                                              args[1].split('.')[0])
                     print(fmtstr)
-                    logging.info(fmtstr)
+                    log(fmtstr)
                     file_num += 1
                 except BaseException:
                     # print(args)
@@ -63,7 +70,7 @@ def truefalse(fn):
 def tin(func, *args, **kwargs):
     # wrapper to trace function enter
     global spacer
-    logging.info(
+    log(
         "".join(spacer) +
         "Entering: [{}]".format(
             ORG +
@@ -75,14 +82,14 @@ def tout(result, func, *args, **kwargs):
     # wrapper to trace function exit
     global spacer
     if result:
-        logging.info(
+        log(
             "".join(spacer) +
             "Exitting: [{}]".format(
                 GRN +
                 func.__name__ +
                 END))
     else:
-        logging.info(
+        log(
             "".join(spacer) +
             "Exitting: [{}]".format(
                 RED +

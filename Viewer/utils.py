@@ -14,7 +14,7 @@ import os
 def setup_logger(name, logfile, level=logging.INFO, logformat=None):
     """Handles creation of multiple loggers"""
     if logformat is None:
-        logformat = "%(asctime)s %(classname)s %(message)s"
+        logformat = "%(asctime)s %(classname)s: %(message)s"
 
     formatter = logging.Formatter(logformat, "%H:%M:%S")
 

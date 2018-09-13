@@ -17,10 +17,14 @@ class Connection:
     '''
     Database object
     '''
-    def __init__(self):
+    def __init__(self, logger=None):
         # create connection to db
         self.logargs = {'classname': self.__class__.__name__}
-        self.logger = setup_logger('dblog', 'db.log')
+
+        self.logger = logger
+        if not self.logger:
+            self.logger = setup_logger('dblog', 'db.log')
+
         self.log("creating database connection.")  
 
         self.conn = sqlite3.connect('reciepts.db')
@@ -57,65 +61,51 @@ class Connection:
 
         self.log("built tables in database.")
 
-    def insert_reciepts(self, yaml_objs: dict):
+    def inserted_files(self, fields=None):
+        return self.conn.execute("SELECT FILENAME FROM reciepts")
+
+    def insert_files(self, yaml_objs: dict):
+        if not yaml_objs:
+            self.log("no yaml reciepts to insert. returning early")
+            return
+
         self.log("inserting reciepts data into database.")
-
-        insert_command = statements.insert_reciepts_command('reciepts', 8) 
+        
+        inserted_files = self.inserted_files()
+        insert_command = statements.insert_command('reciepts', 8) 
+        product_command = statements.insert_command('products', 3)
         for file_name, yaml_obj in yaml_objs.items():
-            file_only, _ = fileonly(file_name)
-            self.conn.execute(insert_command, (file_only,
-                                               yaml_obj.store,
-                                               date(yaml_obj.date),
-                                               yaml_obj.category,
-                                               real(yaml_obj.subtotal),
-                                               real(yaml_obj.tax),
-                                               real(yaml_obj.total),
-                                               real(yaml_obj.payment)))
-        self.log("completed inserting reciepts data.")
-            # now do the products
-        '''
-        code, products = body
-        self.conn.execute(stmts['headinsert'], head)
-        [self.conn.execute(stmts['bodyinsert'], (k, "{0:.2f}".format(
-            products[k]), code)) for k in products.keys()]
+            if file_name not in inserted_files:
+                self.log(f"inserting data from {file_name}")
+
+                file_only, _ = fileonly(file_name)
+                self.conn.execute(insert_command, (file_only,
+                                                   yaml_obj.store,
+                                                   date(yaml_obj.date),
+                                                   yaml_obj.category,
+                                                   real(yaml_obj.subtotal),
+                                                   real(yaml_obj.tax),
+                                                   real(yaml_obj.total),
+                                                   real(yaml_obj.payment)))
+
+                self.log(f"inserted data from {file_name} into reciepts table")
+                    
+                for product, price in yaml_obj.products.items():
+                    self.log(f"inserting '{product}': '{real(price)}'")
+                    self.conn.execute(product_command, (file_only,
+                                                        product, 
+                                                        real(price)))
+
+                self.log(f"inserted data from {file_name} into products table")
+            else:
+                self.log(f"data from {file_name} already inserted")
+
         self.conn.commit()
-        self.logger.info(f"{self.__class__.__name__}: insert row")
-        '''
-
-    def insert_products(self, products):
-        # insert product row into products table
-        pass
-'''
-    def stats(self):
-        # returns information used in statistics printing
-        fc = self.conn.execute(stmts['filecount'])
-        tot = self.conn.execute(stmts['total'])
-        return fc, tot
-
-    def load(self):
-        # return all reciepts
-        return self.conn.execute(stmts['algrocery'])
-
-    def load_bodies(self, codes):
-        # return list of recieptbodies matching codes
-        return [self.load_body(c) for c in codes]
-
-    def load_body(self, code):
-        # return recieptbody matching code
-        pass
-
-    def loadByGroup(self, group, value):
-        # return reciepts matching group name
-        return self.conn.execute(stmts['hdgrocery'].format(group, value))
-
-    def getMinDate(self):
-        # return latest date in database
-        return (self.conn.execute(stmts['mindate'])).replace("-", ",")
-
-    def getMaxDate(self):
-        # return earliest date in database
-        return (self.conn.execute(stmts['maxdate'])).replace("-", ",")
-'''
+        self.log("completed inserting reciepts data.")
+    
+    def select_reciepts(self):
+        return self.conn.execute("SELECT * FROM reciepts")
 
 if __name__ == "__main__":
-    db = Connection()
+    logger = setup_logger('dblog', 'db.log')
+    db = Connection(logger=logger)

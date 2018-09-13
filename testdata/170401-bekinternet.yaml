@@ -1,0 +1,17 @@
+--- !Reciept
+store: Bek Internet
+date: [2017,4,1]
+category: internet
+products:
+  {
+    wireless service: 7.99,
+    router lease: 6.66,
+    1/4 bps lightband c: 54.17,
+    north dakota state tax: 6.69,
+    valley city city tax: 3.35,
+    broadband usage: 0.00,
+  }
+subtotal: 78.86
+tax: 0.00
+total: 78.86
+payment: 78.86

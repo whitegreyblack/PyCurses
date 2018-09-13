@@ -36,12 +36,12 @@ def create_reciepts_table():
 def create_products_table():
     return create_table('products', [('filename', SQLType.TEXT),
                                      ('name', SQLType.VARCHAR()),
-                                     ('price', SQLType.REAL),
-                                     ('quantity', SQLType.INT)])
+                                     ('price', SQLType.REAL)])
 
-def insert_reciepts_command(table, num_fields):
+def insert_command(table, num_fields):
     fields = ', '.join(['?' for i in range(num_fields)])
     return f"INSERT INTO {table} VALUES ({fields});"
+
 '''
 def create_payments_table():
     return create_table('payments', [('name', SQLType.VARCHAR()), 

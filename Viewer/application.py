@@ -11,6 +11,7 @@ from controls import Window, ScrollList, Card, ProductForm
 from models import Product
 from database import Connection
 from yamlchecker import YamlChecker
+import utils
 # from keymap import KeyMap
 
 terminal_width, terminal_height = 0, 0
@@ -25,10 +26,11 @@ def initialize():
                      curses.COLOR_BLACK, 
                      curses.COLOR_BLUE | curses.COLOR_GREEN)
 
-def setup_database():
-    connection = Connection()
+def setup_database(yaml_objs, logger=None):
+    connection = Connection(logger=logger)
     connection.drop_tables()
     connection.build_tables()
+    connection.insert_files(yaml_objs)
     return connection
 
 def setup_cards():
@@ -82,18 +84,31 @@ def main(screen):
     terminal_width = curses.COLS
     terminal_height = curses.LINES
 
+    logargs = {'classname': 'app_main()'}
+    logger = utils.setup_logger('applog', 'app.log')
+    
+    logger.info('initializing curses library settings', extra=logargs)
     initialize()
-    checker = YamlChecker('../testdata/')
-    valid_files, _ = checker.files_safe()
+    logger.info('done', extra=logargs)
+
+    checker = YamlChecker('../testdata/', logger)
+    try:
+        valid_files, _ = checker.files_safe()
+    except:
+        raise
     yaml_objs = {
         valid_file: checker.yaml_read(valid_file)
                     for valid_file in valid_files
     }
-    connection = setup_database()
-    connection.insert_reciepts(yaml_objs)
+    
+    connection = setup_database(yaml_objs, logger)
+    reciepts = connection.select_reciepts()
+    # reciept_cards = [Reciepts(r) for r in list(reciepts)]
+    logger.info(f"{list(reciepts)}", extra=logargs)
+
     window = setup_windows()
     window.draw(screen)
-    screen.addstr(0, 0, f"{len(yaml_objs)}")
+
     while 1:
         key = screen.getch()
         retval = window.send_signal(key)
