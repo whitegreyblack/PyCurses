@@ -47,13 +47,18 @@ class Window:
     def send_signal(self, command, debug=False):
         if (command, self.current_window.wid) in self.keymap:
             self.current_window.get_signal(command)
+
+            if self.current_window.wid == 'ScrollList':
+                self.get_window('Form').model = self.current_window.current_model
+
             next_window_id = self.keymap[(command, self.current_window.wid)]
 
             if next_window_id is None:
                 return False
-            
+           
             if next_window_id is not self.current_window.wid:
                 next_window = self.get_window(next_window_id)
+                
                 self.current_window.selected = False
                 next_window.selected = True
         return True
@@ -84,6 +89,12 @@ class ScrollList:
     def add_items(self, items):
         for item in items:
             self.items.append(item)
+
+    @property
+    def current_model(self):
+        if self.items:
+            return self.items[self.index]
+        return None
 
     def get_signal(self, command, debug=False):
         if command == curses.KEY_DOWN:
@@ -127,7 +138,7 @@ class Card:
         return self.model.format_criteria.format(fields[0],
                                                  ' ' * space,
                                                  fields[1])
-            
+
     def draw(self, screen, x, y, dx, dy, focused, selected):
         description = self.format_description(dx - x)
         if focused and selected:
@@ -142,7 +153,7 @@ class Card:
             screen.addstr(y, x, description)
 
 class Form:
-    def __init__(self, x, y, width, height, model, wid='Form', title=None):
+    def __init__(self, x, y, width, height, model=None, wid='Form', title=None):
         self.x = x
         self.y = y
         self.width = width
@@ -159,15 +170,18 @@ class ProductForm(Form):
     def draw(self, screen):
         border(screen, self.x, self.y, self.width, self.height - self.y)
         screen.addstr(self.y, 
-                      self.x + 1, 
-                      f"{self.x}, {self.y}, {self.width}, {self.height}")
-        if self.title:
-            screen.addstr(self.y + 1, self.x + 1, self.title)
-       
-        if self.selected:
-            screen.addstr(self.y + 2, self.x + 1, 'Selected')
+                self.width + self.x - len(f"x:{self.x}, y:{self.y}, w:{self.width}, z:{self.height}"), 
+                f"x:{self.x}, y:{self.y}, w:{self.width}, z:{self.height}")
 
-        screen.addstr(self.y + 3, self.x + 1, "Store: Example Store")
+        if self.model:
+            title = self.title if self.title else "Reciept"
+            screen.addstr(self.y + 1, self.x + 1, title)
+           
+            screen.addstr(self.y + 3, self.x + 1, f"Store: {self.model.model.store}")
+        else:
+            screen.addstr((self.y + self.height) // 2, 
+                          ((self.x + self.width) // 2) - (len("No file selected") // 2), 
+                          "No file selected")
 
     def get_signal(self, command):
         return
