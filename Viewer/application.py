@@ -18,7 +18,7 @@ import utils
 terminal_width, terminal_height = 0, 0
 
 def initialize():
-    """Curses related settings"""
+    """Sets Curses related settings"""
     curses.curs_set(0)
     curses.init_pair(1, 
                      curses.COLOR_BLACK, 
@@ -28,13 +28,15 @@ def initialize():
                      curses.COLOR_BLUE | curses.COLOR_GREEN)
 
 def setup_database(yaml_objs, logger=None):
+    """Builds database connection and calls startup methods"""
     connection = Connection(logger=logger)
     connection.drop_tables()
     connection.build_tables()
     connection.insert_files(yaml_objs)
     return connection
 
-def setup_cards(reciept_objs):
+def setup_cards(reciept_objs: dict):
+    """Builds reciept cards from dictionary of reciept objects"""
     cards = []
     for reciept, products in reciept_objs.items():
         transaction = Transaction(reciept.total, 
@@ -50,12 +52,13 @@ def setup_cards(reciept_objs):
         c = Card(r)
         cards.append(c)
     return cards
-    '''
+
+def setup_test_cards():
+    """List of example product cards used in testing"""
     return [Card(Product(fruit, price))
             for fruit, price in zip(
                 ['Apples', 'Oranges', 'Pears', 'Watermelons', 'Peaches'],
                 [3, 5, 888, 24, 55])]
-    '''
 
 def setup_windows(reciept_objs):
     """Create UI components and add to the screen"""

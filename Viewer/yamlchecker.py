@@ -41,7 +41,6 @@ class YamlChecker:
     def log(self, message):
         self.logger.info(message, extra=self.logargs)
 
-    @wrap.trace
     def files_safe(self):
         """Iterate through each file in directory"""
         self.log(f"Verifying yaml files in {self.folder}")
@@ -78,7 +77,6 @@ class YamlChecker:
             else:
                 pass
 
-    @wrap.trace
     def file_safe(self, file):
         """Calls file checks in order of serial encounter"""
         self.log(f"{''.join(wrap.spacer)}Using: {file}")
@@ -86,8 +84,6 @@ class YamlChecker:
             and self.file_read(file)
             and self.file_load(file))
 
-    @wrap.trace
-    @wrap.printer(False)
     @wrap.truefalse
     def file_regex(self, file):
         """Checks file name match,non empty file,syntax"""
@@ -97,8 +93,6 @@ class YamlChecker:
             file, matches is not None))
         return re.compile(regex).match(file)
 
-    @wrap.trace
-    @wrap.printer(False)
     @wrap.truefalse
     def file_read(self, file):
         """Check file content and assert not empty"""
@@ -107,8 +101,6 @@ class YamlChecker:
             self.log("{} was read: {}".format(file, lines is not None))
             return lines
 
-    @wrap.trace
-    @wrap.printer(False)
     @wrap.tryexcept
     def file_load(self, file_name):
         """check file is a yaml object after file load"""
@@ -124,7 +116,6 @@ class YamlChecker:
             self.log(f"Valid YamlObject: {valid_yaml}")
             return isinstance(yamlobj, yaml.YAMLObject)
 
-    @wrap.trace
     def yaml_read(self, file):
         """Creates and returns yaml object"""
         with open(self.folder + file) as f:
@@ -133,18 +124,14 @@ class YamlChecker:
             self.log(f"Valid YamlObject: {valid_yaml}")
             return obj
 
-    @wrap.trace
-    @wrap.printer(False)
-    def yaml_safe(self, file):
+    def yaml_safe(self, filepath):
         """Check contents of yaml object"""
-        obj = self.yaml_read(file)
-        return (self.yaml_store(file, obj)
-                and self.yaml_date(file, obj)
-                and self.yaml_prod(file, obj)
-                and self.yaml_card(file, obj))
+        obj = self.yaml_read(filepath)
+        return (self.yaml_store(filepath, obj)
+                and self.yaml_date(filepath, obj)
+                and self.yaml_prod(filepath, obj)
+                and self.yaml_card(filepath, obj))
 
-    @wrap.trace
-    @wrap.printer(False)
     @wrap.tryexcept
     def yaml_store(self, file, obj):
         """Check yaml store with store in filename"""
@@ -154,57 +141,70 @@ class YamlChecker:
         self.log('{} in {}: {}'.format(fname, store, (fname in store)))
         return fname in store
 
-    @wrap.trace
-    @wrap.printer(False)
     @wrap.tryexcept
     def yaml_date(self, file, obj):
         """Check yaml date with file date"""
         y, m, d = obj.date
+
         if not self.startdate:
             self.startdate = date(y, m, d)
+
         end = date.today()
         filedate = date(y, m, d)
-        self.log('Start Date: {}\nFile Date: {}\nEnd Date: {}'.format(
-            self.startdate.isoformat(),
-            filedate.isoformat(),
-            end.isoformat()))
+
+        self.log(f"\tStart Date: {self.startdate.isoformat()}")
+        self.log(f"\tFile Date: {filedate.isoformat()}")
+        self.log(f"\tEnd Date: {end.isoformat()}")
+
         return self.startdate <= filedate < end
 
-    @wrap.trace
-    @wrap.printer(False)
     def yaml_prod(self, file, obj):
-        # iterate through yaml object[prod]:{str:int,[...]}
-        for key in obj.products.keys():
-            if not isinstance(key, str):
-                self.log(f"Product Key({key}) is not a string object")
+        """iterate through yaml object[prod]:{str:int,[...]}"""
+        for product, price in obj.products.items():
+            # TODO -- better if statements, early exit on condition match
+            nonstring = not isinstance(product, str)
+            invalidlen = 2 <= len(product) <= 25
+            nonfloat = not isinstance(price, float)
+            invalid_v_len = len(str(price)) > 6
+            
+            self.log(f"Checking product and price '{product}': '{price}'")
+
+            if not isinstance(product, str):
+                self.log(f"Product '{product}' is not a string object")
                 return False
-            if len(key) > 25:
-                self.log(f"key({key}) is too big")
+
+            if len(product) > 25:
+                self.log(f"Product '{product}' length is too long")
                 return False
-            if not isinstance(obj.products[key], float):
-                self.log(f"prod({obj.products[key]}) is not float")
+
+            if not isinstance(price, float):
+                self.log(f"Price '{price}' for '{product}' is not float")
                 return False
-            if len(str(obj.products[key])) > 6:
-                self.log(f"prod({obj.products[key]}) is too big")
+
+            if len(str(price)) > 6:
+                self.log(f"Price '{price}' is too long")
                 return False
-            self.log('{}: {}'.format(key, obj.products[key]))
-        self.log(f"Products Passed: {len(obj.products.keys())}")
+
+        self.log(f"Number of products passed: {len(obj.products.keys())}")
         return True
 
-    @wrap.trace
-    @wrap.printer(False)
     @wrap.tryexcept
     def yaml_card(self, file, obj):
-        # check payment identifiers in yaml object
+        """check payment identifiers in yaml object"""
         def mul(x):
             return x * 100
+
         get = [obj.products[key] for key in obj.products.keys()]
         get = int(mul(sum(get)))
         subtotal = int(mul(obj.subtotal))
         add = int(mul(obj.subtotal + obj.tax))
         total = int(mul(obj.total))
-        self.log('calculated subtotal: {}\nobject subtotal: {}\ntax: {}\ntotal: {}'.format(
-            get, subtotal, int(mul(obj.tax)), total))
+
+        self.log(f"\tcalculated subtotal: {get}")
+        self.log(f"\tobject subtotal: {subtotal}")
+        self.log(f"\ttax: {int(mul(obj.tax))}")
+        self.log(f"\ttotal: {total}")
+
         return get == subtotal and add == total
 
 def usage():

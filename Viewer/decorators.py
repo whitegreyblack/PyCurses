@@ -4,6 +4,7 @@ decorators.py: Contains decorator utility functions
 
 __author__ = "Samuel Whang"
 
+import platform
 import functools
 import logging
 import sys
@@ -69,42 +70,30 @@ def truefalse(fn):
 
 def tin(func, *args, **kwargs):
     # wrapper to trace function enter
-    global spacer
-    log(
-        "".join(spacer) +
-        "Entering: [{}]".format(
-            ORG +
-            func.__name__ +
-            END))
-    # print("Entering: [{}]".format(func.__name__))
+    fn_name = func.__name__
+    if platform.system() is not "Windows":
+        fn_name = ORG + fn_name + END
+    log(f"Entering: [{fn_name}]")
 
 def tout(result, func, *args, **kwargs):
     # wrapper to trace function exit
     global spacer
-    if result:
-        log(
-            "".join(spacer) +
-            "Exitting: [{}]".format(
-                GRN +
-                func.__name__ +
-                END))
-    else:
-        log(
-            "".join(spacer) +
-            "Exitting: [{}]".format(
-                RED +
-                func.__name__ +
-                END))
-    # print("Exitting: [{}]".format(func.__name__))
+    fn_name = func.__name__
+    if platform.system() is not "Windows":
+        if result:
+            fn_name = GRN + fn_name + END
+        else:
+            fn_name = RED + fn_name + END
+    log(f"Exitting: [{fn_name}]")
 
 def trace(func):
     def call(*args, **kwargs):
         global spacer
-        # spacer.append(tab)
+        
         tin(func, *args, **kwargs)
         result = func(*args, **kwargs)
         tout(result, func, *args, **kwargs)
-        # spacer.pop()
+
         return result
     return call
 
