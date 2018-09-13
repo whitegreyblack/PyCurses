@@ -7,7 +7,7 @@ __author__ = "Samuel Whang"
 
 import os
 import curses
-from controls import Window, ScrollList, Card, ProductForm
+from controls import Window, ScrollList, Card, RecieptForm
 from models import Product, Reciept, Transaction
 from database import Connection
 from yamlchecker import YamlChecker
@@ -35,7 +35,6 @@ def setup_database(yaml_objs, logger=None):
     return connection
 
 def setup_cards(reciept_objs):
-    
     cards = []
     for reciept, products in reciept_objs.items():
         transaction = Transaction(reciept.total, 
@@ -62,14 +61,19 @@ def setup_windows(reciept_objs):
     """Create UI components and add to the screen"""
     window = Window('Viewer', terminal_width, terminal_height)
 
-    scroller = ScrollList(1, 1, window.width // 4, window.height, 'Products', selected=True)
+    scroller = ScrollList(1, 1, 
+                          window.width // 4, 
+                          window.height, 
+                          'Products', 
+                          selected=True)
+
     reciept_cards = setup_cards(reciept_objs)
     scroller.add_items(setup_cards(reciept_objs))
-    form = ProductForm((window.width // 4) + 1, # add 1 for offset
+    form = RecieptForm((window.width // 4) + 1, # add 1 for offset
                        1,
                        window.width - (window.width // 4) - 1, 
                        window.height,
-                       scroller.current_model)
+                       scroller.model)
     window.add_windows([scroller, form])
 
     keymap = dict()

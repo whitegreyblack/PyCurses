@@ -20,7 +20,7 @@ class Window:
         self.index = 0
 
     @property
-    def current_window(self):
+    def window(self):
         for window in self.windows:
             if hasattr(window, 'selected') and window.selected:
                 return window
@@ -36,8 +36,7 @@ class Window:
         self.keymap = keymap
 
     def change_window(self):
-        current = self.current_window()
-        current.selected = False
+        self.window.selected = False
 
     def get_window(self, window_id):
         for window in self.windows:
@@ -45,21 +44,21 @@ class Window:
                 return window
 
     def send_signal(self, command, debug=False):
-        if (command, self.current_window.wid) in self.keymap:
-            self.current_window.get_signal(command)
+        if (command, self.window.wid) in self.keymap:
+            self.window.get_signal(command)
 
-            if self.current_window.wid == 'ScrollList':
-                self.get_window('Form').model = self.current_window.current_model
+            if self.window.wid == 'ScrollList':
+                self.get_window('Form').model = self.window.model
 
-            next_window_id = self.keymap[(command, self.current_window.wid)]
+            next_window_id = self.keymap[(command, self.window.wid)]
 
             if next_window_id is None:
                 return False
            
-            if next_window_id is not self.current_window.wid:
+            if next_window_id is not self.window.wid:
                 next_window = self.get_window(next_window_id)
                 
-                self.current_window.selected = False
+                self.window.selected = False
                 next_window.selected = True
         return True
 
@@ -91,7 +90,7 @@ class ScrollList:
             self.items.append(item)
 
     @property
-    def current_model(self):
+    def model(self):
         if self.items:
             return self.items[self.index]
         return None
@@ -163,7 +162,7 @@ class Form:
         self.title = title
         self.selected = False
 
-class ProductForm(Form):
+class RecieptForm(Form):
     #def __init__(self, x, y, width, height, model, title=None):
     #    super().__init__(wid, x, y, width, height, model, title)
 
