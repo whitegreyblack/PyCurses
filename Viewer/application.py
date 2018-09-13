@@ -69,7 +69,7 @@ def setup_windows(reciept_objs):
                        1,
                        window.width - (window.width // 4) - 1, 
                        window.height,
-                       Product('example', 4))
+                       scroller.current_model)
     window.add_windows([scroller, form])
 
     keymap = dict()
