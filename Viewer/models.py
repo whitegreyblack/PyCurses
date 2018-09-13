@@ -16,6 +16,7 @@ class Transaction:
                  subtotal: Currency, 
                  tax: Currency = 0,
                  change: Currency = 0.00):
+
         self.subtotal = subtotal
         self.total = total
         
@@ -49,17 +50,26 @@ class Reciept:
                  store: str, 
                  date: str, 
                  category: str, 
-                 items: list, 
+                 products: list, 
                  transaction: Transaction):
         """Initialize fields used in reciept"""
         self.store = store
         self.date = date
         self.category = category
-        self.products = items
-        self.subtotal = subtotal
-        self.tax = tax
-        self.total = total
-        self.payment = payment
+        self.products = products
+        self.transaction = transaction
+
+    @property
+    def description(self):
+        return self.store, self.date
+
+    @property
+    def formats(self):
+        return '{}', '{}'
+
+    @property
+    def format_criteria(self):
+        return '{}{}{}'
 
 if __name__ == "__main__":
     product = Product("example", 4)

@@ -35,7 +35,7 @@ def create_reciepts_table():
 
 def create_products_table():
     return create_table('products', [('filename', SQLType.TEXT),
-                                     ('name', SQLType.VARCHAR()),
+                                     ('product', SQLType.VARCHAR()),
                                      ('price', SQLType.REAL)])
 
 def insert_command(table, num_fields):

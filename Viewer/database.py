@@ -104,7 +104,11 @@ class Connection:
         self.log("completed inserting reciepts data.")
     
     def select_reciepts(self):
-        return self.conn.execute("SELECT * FROM reciepts")
+        return self.conn.execute("SELECT * FROM reciepts;")
+
+    def select_reciept_products(self, reciept):
+        cmd = f"SELECT product, price FROM products WHERE filename = '{reciept}'"
+        return self.conn.execute(cmd)
 
 if __name__ == "__main__":
     logger = setup_logger('dblog', 'db.log')
