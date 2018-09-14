@@ -11,13 +11,15 @@ import logging
 import datetime
 import os
 
-def setup_logger(name, logfile, level=logging.INFO, logformat=None):
+def setup_logger(name, logfile, extra=None, level=logging.INFO, logformat=None):
     """Handles creation of multiple loggers"""
     if logformat is None:
         logformat = "%(asctime)s %(classname)s: %(message)s"
 
     formatter = logging.Formatter(logformat, "%H:%M:%S")
 
+    # if it exists clear it first for new messages only
+    # TODO: option for keeping old logs
     with open(logfile, 'w'):
         pass
 
@@ -27,6 +29,10 @@ def setup_logger(name, logfile, level=logging.INFO, logformat=None):
     logger = logging.getLogger(name)
     logger.setLevel(level)
     logger.addHandler(handler)
+
+    if extra:
+        logger = logging.LoggerAdapter(logger, extra)
+
     return logger
 
 def log_message(logger, message, extra=None):

@@ -1,14 +1,17 @@
 # PYCURSES
 
-# SETUP
+## SETUP
 - python3 -m pip install yaml
+- python3 -m pip install click
+- python3 -m pip install typing
 
-# Folder Structure
-Reciepts:
-    Yaml Files
-
-Src -> Source:
-    Python Files
-
-DB:
-    Sqlite3 Databases
+## Application file used
+- application.py
+    - database.py
+        - statements.py
+            - strings.py
+    - yamlchecker.py
+        - YamlObjects.py
+    - controls.py
+    - models.py
+    - utils.py

@@ -6,6 +6,7 @@ Data models to hold data from db
 __author__ = "Samuel Whang"
 
 from typing import Union
+from collections import namedtuple
 
 Currency = Union[int, float]
 
@@ -23,7 +24,10 @@ def shorten(storename):
 
 def day_month(date):
     pass
-    
+
+point = namedtuple('Point', 'x y')
+pointgrid = namedtuple('PointGrid', 'x y width height')
+
 class Transaction:
     def __init__(self, 
                  total: Currency, 

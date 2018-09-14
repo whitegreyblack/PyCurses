@@ -1,5 +1,6 @@
-"""
-Key Mapping Class: Handles key inputs to actions
+"""keymap.py
+
+Handles key inputs to actions
 """
 
 __author__ = "Samuel Whang"

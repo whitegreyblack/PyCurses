@@ -13,6 +13,7 @@ from utils import setup_logger
 from utils import filename_and_extension as fileonly
 from utils import format_float as real
 from utils import format_date as date
+
 class Connection:
     '''
     Database object
@@ -106,8 +107,19 @@ class Connection:
     def select_reciepts(self):
         return self.conn.execute("SELECT * FROM reciepts;")
 
+    def select_from_table(self, table, fields, condition=None):
+        if condition:
+            select_from_table_with_condition(table, fields, condition)
+        return self.conn.execute(f"SELECT {fields} from {table}")
+
+    def select_from_table_with_condition(self, table, fields, condition):
+        return self.conn.execute(f"SELECT {fields} FROM {table} {condition}");
+
     def select_reciept_products(self, reciept):
-        cmd = f"SELECT product, price FROM products WHERE filename = '{reciept}'"
+        fields = "product, price"
+        table = "products"
+        condition = f"WHERE filname = '{reciepts}'"
+        cmd = f"SELECT {fields} FROM {table} {condition}"
         return self.conn.execute(cmd)
 
 if __name__ == "__main__":
