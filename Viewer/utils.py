@@ -11,11 +11,12 @@ import logging
 import datetime
 import os
 
+default_log ="[%(asctime)s] %(currentfile)s - %(message)s"
+
 def setup_logger(name, logfile, extra=None, level=logging.INFO, logformat=None):
     """Handles creation of multiple loggers"""
     if logformat is None:
-        logformat = "%(asctime)s %(classname)s: %(message)s"
-
+        logformat = default_log
     formatter = logging.Formatter(logformat, "%H:%M:%S")
 
     # if it exists clear it first for new messages only

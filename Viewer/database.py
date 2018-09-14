@@ -20,11 +20,12 @@ class Connection:
     '''
     def __init__(self, logger=None):
         # create connection to db
-        self.logargs = {'classname': self.__class__.__name__}
-
+        
         self.logger = logger
         if not self.logger:
-            self.logger = setup_logger('dblog', 'db.log')
+            self.logger = setup_logger('dblog', 
+                                       'db.log', 
+                                       extra={'currentfile': __file__})
 
         self.log("creating database connection.")  
 
@@ -40,7 +41,7 @@ class Connection:
         self.log("closed database connection.")
 
     def log(self, message):
-        self.logger.info(message, extra=self.logargs)
+        self.logger.info(f"{self.__class__.__name__}: {message}")
 
     def drop_tables(self):
         # delete tables in sqlite
@@ -118,10 +119,10 @@ class Connection:
     def select_reciept_products(self, reciept):
         fields = "product, price"
         table = "products"
-        condition = f"WHERE filname = '{reciepts}'"
+        condition = f"WHERE filename = 'reciepts'"
         cmd = f"SELECT {fields} FROM {table} {condition}"
         return self.conn.execute(cmd)
 
 if __name__ == "__main__":
-    logger = setup_logger('dblog', 'db.log')
+    logger = setup_logger('dblog', 'db.log', extra={'currentfile': __file__})
     db = Connection(logger=logger)
