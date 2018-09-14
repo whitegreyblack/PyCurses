@@ -34,8 +34,8 @@ class Transaction:
 
         self.subtotal = subtotal
         self.total = total
-        
         self.payment = payment
+        self.tax = self.total - self.total
         self.change = payment - total
 
         if self.change < 0:

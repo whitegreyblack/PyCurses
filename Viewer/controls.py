@@ -183,7 +183,17 @@ class RecieptForm(Form):
             title = self.title if self.title else "Reciept"
             screen.addstr(self.y + 1, self.x + 1, title)
            
-            screen.addstr(self.y + 3, self.x + 1, f"Store: {self.model.model.store}")
+            screen.addstr(self.y + 3, self.x + 1, f"Store:    {self.model.model.store}")
+            screen.addstr(self.y + 4, self.x + 1, f"Date :    {self.model.model.date}")
+            screen.addstr(self.y + 5, self.x + 1, f"Category: {self.model.model.category}")
+
+            screen.addstr(self.y + 7, self.x + 1, f"Products:")
+            product_index = 8
+
+            screen.addstr(self.y + 10, self.x + 1, f"Subtotal: {self.model.model.transaction.subtotal}")
+            screen.addstr(self.y + 11, self.x + 1, f"Tax     : {self.model.model.transaction.tax}")
+            screen.addstr(self.y + 12, self.x + 1, f"Total   : {self.model.model.transaction.total}")
+            screen.addstr(self.y + 13, self.x + 1, f"Payment : {self.model.model.transaction.payment}")
         else:
             screen.addstr((self.y + self.height) // 2, 
                           ((self.x + self.width) // 2) - (len("No file selected") // 2), 
