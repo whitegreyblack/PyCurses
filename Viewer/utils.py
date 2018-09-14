@@ -6,10 +6,18 @@ utils.py : common utility functions used throughout the program. Includes path
 __author__ = "Samuel Whang"
 
 from typing import Union, Tuple
+from collections import namedtuple
 import curses
 import logging
 import datetime
 import os
+
+class Event(list):
+    def __call__(self, sender, event):
+        for fn in self:
+            fn(sender, event)
+
+EventArg = namedtuple('EventArg', 'sender msg')
 
 def check_or_create_folder(foldername):
     full_path = os.path.join(os.path.abspath('.'), foldername)
