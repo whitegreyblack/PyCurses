@@ -134,6 +134,13 @@ class Card:
         formats = self.model.formats
         space = max(0, length - sum(len(fo.format(fi)) 
                         for fi, fo in zip(fields, formats)))
+
+        # minimum width should be 80? 
+        if space == 0:
+            fields = self.model.short_description
+            space = max(0, length - sum(len(fo.format(fi))
+                        for fi, fo in zip(fields, formats)))
+
         return self.model.format_criteria.format(fields[0],
                                                  ' ' * space,
                                                  fields[1])

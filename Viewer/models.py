@@ -9,6 +9,21 @@ from typing import Union
 
 Currency = Union[int, float]
 
+shortnames = {
+    'Leevers': 'Leevers',
+    'Bek Internet': 'Bek',
+}
+
+def shorten(storename):
+    store_words = storename.split()
+    for word in store_words:
+        if word in shortnames.keys():
+            return shortnames[word]
+    return storename
+
+def day_month(date):
+    pass
+    
 class Transaction:
     def __init__(self, 
                  total: Currency, 
@@ -62,6 +77,10 @@ class Reciept:
     @property
     def description(self):
         return self.store, self.date
+
+    @property
+    def short_description(self):
+        return shorten(self.store), self.date
 
     @property
     def formats(self):
