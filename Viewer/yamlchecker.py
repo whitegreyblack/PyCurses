@@ -230,7 +230,7 @@ def main(f, p, l, d):
 
     logargs = {'classname': YamlChecker.__name__ + 'main()'}
     logger = utils.setup_logger('yamlchecker.main', 
-                                'filecheck-main.log',
+                                'filechecks.log',
                                 extra=logargs)
 
     filepath = utils.format_directory_path(f)
@@ -240,7 +240,8 @@ def main(f, p, l, d):
         exit()
 
     logger.info(f"checking files in {filepath}")
-    commits, deletes = YamlChecker(filepath).files_safe()
+    checker = YamlChecker(filepath, logger)
+    commits, deletes = checker.files_safe()
     
     if deletes:
         logger.info("files to delete:")

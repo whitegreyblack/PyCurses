@@ -11,16 +11,31 @@ import logging
 import datetime
 import os
 
-def setup_logger(name, logfile, extra=None, level=logging.INFO, logformat=None):
+def check_or_create_folder(foldername):
+    full_path = os.path.join(os.path.abspath('.'), foldername)
+    if not os.path.exists(full_path):
+        os.makedirs(full_path)
+
+def setup_logger(name,
+                 logfile,
+                 logfolder='./logs',
+                 extra=None, 
+                 level=logging.INFO, 
+                 logformat=None):
+
     """Handles creation of multiple loggers"""
     if logformat is None:
         logformat = "%(asctime)s %(classname)s: %(message)s"
 
     formatter = logging.Formatter(logformat, "%H:%M:%S")
 
-    # if it exists clear it first for new messages only
     # TODO: option for keeping old logs
-    with open(logfile, 'w'):
+    # makes sure logs folder exists
+    check_or_create_folder('logs')
+
+    # if it exists clear it first for new messages only
+
+    with open(format_directory_path('./logs') + logfile, 'w'):
         pass
 
     handler = logging.FileHandler(logfile)
@@ -40,8 +55,8 @@ def log_message(logger, message, extra=None):
 
 def format_directory_path(path: str) -> str:
     """
-    Replaces windows style path seperators to forward-slashes and adds another
-    slash to the end of the string
+    Replaces windows style path seperators to forward-slashes and adds
+    another slash to the end of the string
     """
     formatted_path = path.replace('\\', '/')
     if formatted_path[-1] is not '/':
@@ -56,7 +71,7 @@ def filename_and_extension(path: str) -> Tuple[str, str]:
 
 def border(screen: object, x: int, y: int, dx: int, dy: int) -> None:
     """
-    Draws a box with the given input parameters using the default characters
+    Draws a box with given input parameters using the default characters
     """
     screen.vline(y, x, curses.ACS_SBSB, dy)
     screen.vline(y, x + dx, curses.ACS_SBSB, dy)
