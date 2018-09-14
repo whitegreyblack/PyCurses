@@ -25,8 +25,7 @@ def setup_logger(name,
 
     """Handles creation of multiple loggers"""
     if logformat is None:
-        logformat = "%(asctime)s %(classname)s: %(message)s"
-
+        logformat = default_log
     formatter = logging.Formatter(logformat, "%H:%M:%S")
 
     # TODO: option for keeping old logs

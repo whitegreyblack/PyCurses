@@ -120,9 +120,11 @@ def main(screen):
                                           'total',
                                           'payment'])
 
-    logargs = {'classname': 'app_main()'}
-    logger = utils.setup_logger('applog', 'app.log')
-    
+    logger = utils.setup_logger('applog', 
+                                'app.log',
+                                extra={'currentfile': __file__})
+   
+    logargs = {'classname': 'main()'}
     logger.info('initializing curses library settings', extra=logargs)
     initialize()
     logger.info('done', extra=logargs)
