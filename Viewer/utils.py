@@ -19,10 +19,13 @@ class Event(list):
 
 EventArg = namedtuple('EventArg', 'sender msg')
 
+default_log = "[%(asctime)s]%(currentfile)s: %(message)s"
+
 def check_or_create_folder(foldername):
     full_path = os.path.join(os.path.abspath('.'), foldername)
     if not os.path.exists(full_path):
         os.makedirs(full_path)
+    return full_path
 
 def setup_logger(name,
                  logfile,
@@ -38,14 +41,14 @@ def setup_logger(name,
 
     # TODO: option for keeping old logs
     # makes sure logs folder exists
-    check_or_create_folder('logs')
-
+    path = check_or_create_folder('logs')
+    
     # if it exists clear it first for new messages only
-
-    with open(format_directory_path('./logs') + logfile, 'w'):
+    path = format_directory_path(path)
+    with open(path + logfile, 'w'):
         pass
 
-    handler = logging.FileHandler(logfile)
+    handler = logging.FileHandler(path + logfile)
     handler.setFormatter(formatter)
 
     logger = logging.getLogger(name)
