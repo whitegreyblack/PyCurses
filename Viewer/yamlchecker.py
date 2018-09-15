@@ -26,7 +26,7 @@ class YamlChecker:
         self.logger = logger
         if not self.logger:
             self.logger = utils.setup_logger(name='yamlcheckerlogger',
-                                            logfile='filechecks.log')
+                                             logfile='filechecks.log')
 
         self.log("Initializing yaml checker")
 
@@ -160,6 +160,7 @@ class YamlChecker:
 
     def yaml_prod(self, file, obj):
         """iterate through yaml object[prod]:{str:int,[...]}"""
+        self.log(f"Checking product and price syntax.")
         for product, price in obj.products.items():
             # TODO -- better if statements, early exit on condition match
             nonstring = not isinstance(product, str)
@@ -167,22 +168,22 @@ class YamlChecker:
             nonfloat = not isinstance(price, float)
             invalid_v_len = len(str(price)) > 6
             
-            self.log(f"Checking product and price '{product}': '{price}'")
+            self.log(f"\t'{product}': '{price}'")
 
             if not isinstance(product, str):
-                self.log(f"Product '{product}' is not a string object")
+                self.log(f"\tProduct '{product}' is not a string object")
                 return False
 
             if len(product) > 25:
-                self.log(f"Product '{product}' length is too long")
+                self.log(f"\tProduct '{product}' length is too long")
                 return False
 
             if not isinstance(price, float):
-                self.log(f"Price '{price}' for '{product}' is not float")
+                self.log(f"\tPrice '{price}' for '{product}' is not float")
                 return False
 
             if len(str(price)) > 6:
-                self.log(f"Price '{price}' is too long")
+                self.log(f"\tPrice '{price}' is too long")
                 return False
 
         self.log(f"Number of products passed: {len(obj.products.keys())}")
@@ -228,10 +229,9 @@ def main(f, p, l, d):
         print(usage()) 
         exit()
 
-    logargs = {'classname': YamlChecker.__name__ + 'main()'}
-    logger = utils.setup_logger('yamlchecker.main', 
+    logger = utils.setup_logger('yamlcheck', 
                                 'filechecks.log',
-                                extra=logargs)
+                                extra={'currentfile': __file__})
 
     filepath = utils.format_directory_path(f)
     if not utils.check_directory_path(filepath):
