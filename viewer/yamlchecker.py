@@ -20,13 +20,24 @@ import utils
 border = "-" * 80
 
 class YamlChecker:
+    """Processes yaml files in specified folder for both file integrity and
+    yaml safe syntax
+    """
+
+    logger_name = 'filechecker'
+    logger_file = 'filechecker.log'
+    logger_args = {'currentfile': __file__}
+
+    file_extensions = [".yaml",]
+
     def __init__(self, folder='reciepts', logger=None):
         self.logargs = {'classname': self.__class__.__name__}
 
         self.logger = logger
         if not self.logger:
-            self.logger = utils.setup_logger(name='yamlcheckerlogger',
-                                             logfile='filechecks.log')
+            self.logger = utils.setup_logger(YamlChecker.logger_name,
+                                             YamlChecker.logger_file,
+                                             extra=YamlChecker.logger_args)
 
         self.log("Initializing yaml checker")
 
@@ -50,6 +61,7 @@ class YamlChecker:
             files = sorted(files)
             for file_name in files:
                 filename, extension = utils.filename_and_extension(file_name)
+
                 if extension == ".yaml":
                     # passes the filename test
                     ret = (self.file_safe(file_name) 
@@ -58,6 +70,7 @@ class YamlChecker:
                         delete.append(file_name)
                     else:
                         commit.append(file_name)
+
         # TODO: self.files_delete(delete)
         self.log("Finished verification")
         self.log("Number of files to commit: {len(commit)}") 

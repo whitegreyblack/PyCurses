@@ -27,9 +27,9 @@ class Connection:
         
         self.logger = logger
         if not self.logger:
-            self.logger = setup_logger(logger_name,
-                                       logger_file, 
-                                       extra=logger_args)
+            self.logger = setup_logger(Connection.logger_name,
+                                       Connection.logger_file, 
+                                       extra=Connection.logger_args)
 
         self.log("creating database connection.")  
 
@@ -114,7 +114,7 @@ class Connection:
 
         self.conn.commit()
         self.log("completed inserting reciepts data.")
-    
+
     def select_reciepts(self):
         return self.conn.execute("SELECT * FROM reciepts;")
 

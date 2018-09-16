@@ -1,8 +1,8 @@
+"""utils.py : common utility functions used throughout the program. Includes
+              path splitting and checking using the os library, a custom 
+              curses border drawer, and variable formatting.
 """
-utils.py : common utility functions used throughout the program. Includes path
-           splitting and checking using the os library, a custom curses border
-           drawer, and variable formatting.
-"""
+
 __author__ = "Samuel Whang"
 
 from typing import Union, Tuple
@@ -21,7 +21,7 @@ class Event(list):
 
 EventArg = namedtuple('EventArg', 'sender msg')
 
-default_log = "[%(asctime)s]%(currentfile)s: %(message)s"
+default_log = "[%(asctime)s] %(currentfile)s: %(message)s"
 
 def check_or_create_folder(foldername):
     full_path = os.path.join(os.path.abspath('.'), foldername)

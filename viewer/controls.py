@@ -183,12 +183,17 @@ class RecieptForm(Form):
             title = self.title if self.title else "Reciept"
             screen.addstr(self.y + 1, self.x + 1, title)
            
-            screen.addstr(self.y + 3, self.x + 1, f"Store:    {self.model.model.store}")
+            screen.addstr(self.y + 3, self.x + 1, f"Store:    {self.model.model.store}" )
             screen.addstr(self.y + 4, self.x + 1, f"Date :    {self.model.model.date}")
             screen.addstr(self.y + 5, self.x + 1, f"Category: {self.model.model.category}")
 
             screen.addstr(self.y + 7, self.x + 1, f"Products:")
             product_index = 8
+            for product in self.model.model.products:
+                screen.addstr(self.y + product_index, 
+                              self.x + 1,
+                              f"\t{product}")
+                product_index += 1
 
             screen.addstr(self.y + 10, self.x + 1, f"Subtotal: {self.model.model.transaction.subtotal}")
             screen.addstr(self.y + 11, self.x + 1, f"Tax     : {self.model.model.transaction.tax}")

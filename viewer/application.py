@@ -21,18 +21,16 @@ terminal_width, terminal_height = 0, 0
 def initialize():
     """Sets Curses related settings"""
     curses.curs_set(0)
-    curses.init_pair(1, 
-                     curses.COLOR_BLACK, 
-                     curses.COLOR_WHITE)
-    curses.init_pair(2, 
-                     curses.COLOR_BLACK, 
+    curses.init_pair(1, curses.COLOR_BLACK, curses.COLOR_WHITE)
+    curses.init_pair(2, curses.COLOR_BLACK, 
                      curses.COLOR_BLUE | curses.COLOR_GREEN)
 
-def setup_database(yaml_objs, logger=None):
+def setup_database(yaml_objs, rebuild=True, logger=None):
     """Builds database connection and calls startup methods"""
     connection = Connection(logger=logger)
-    connection.drop_tables()
-    connection.build_tables()
+    if rebuild:
+        connection.drop_tables()
+        connection.build_tables()
     connection.insert_files(yaml_objs)
     return connection
 
@@ -40,15 +38,11 @@ def setup_cards(reciept_objs: dict):
     """Builds reciept cards from dictionary of reciept objects"""
     cards = []
     for reciept, products in reciept_objs.items():
-        transaction = Transaction(reciept.total, 
-                                  reciept.payment, 
-                                  reciept.subtotal, 
-                                  reciept.tax)
-        r = Reciept(reciept.store,
-                    reciept.date,
-                    reciept.category,
-                    products,
-                    transaction)
+        transaction = Transaction(reciept.total, reciept.payment, 
+                                  reciept.subtotal, reciept.tax)
+
+        r = Reciept(reciept.store, reciept.date, reciept.category,
+                    products, transaction)
 
         c = Card(r)
         cards.append(c)
@@ -111,24 +105,17 @@ def main(screen):
     global terminal_width, terminal_height
     terminal_width = curses.COLS
     terminal_height = curses.LINES
+    
+    fields = 'filename store date category subtotal tax total payment'
+    reciepttuple = namedtuple('Reciept', fields)
 
-    reciepttuple = namedtuple('Reciept', ['filename',
-                                          'store',
-                                          'date',
-                                          'category',
-                                          'subtotal',
-                                          'tax',
-                                          'total',
-                                          'payment'])
-
-    logger = utils.setup_logger('applog', 
+    logger = utils.setup_logger('applicationlogger', 
                                 'app.log',
                                 extra={'currentfile': __file__})
    
-    logargs = {'classname': 'main()'}
-    logger.info('initializing curses library settings', extra=logargs)
+    logger.info('main(): initializing curses library settings')
     initialize()
-    logger.info('done', extra=logargs)
+    logger.info('main(): done')
 
     checker = YamlChecker('../testdata/', logger)
     valid_files, _ = checker.files_safe()
@@ -138,17 +125,17 @@ def main(screen):
             for valid_file in valid_files
     }
     
-    connection = setup_database(yaml_objs, logger)
+    connection = setup_database(yaml_objs, logger=logger)
     reciepts = [reciepttuple(*r) for r in list(connection.select_reciepts())]
 
-    logger.info(f"{reciepts}", extra=logargs)
+    logger.info(f"main(): {reciepts}")
 
     reciept_objs = {
         reciept: connection.select_reciept_products(reciept.filename)
             for reciept in list(reciepts)
     }
-    logger.info(f"{len(reciept_objs)}", extra=logargs)
-    logger.info(f"{reciept_objs.keys()}", extra=logargs)
+    logger.info(f"main(): {len(reciept_objs)}")
+    logger.info(f"main(): {reciept_objs.keys()}")
 
     window = setup_windows(reciept_objs)
     window.draw(screen)
