@@ -8,7 +8,8 @@ __author__ = "Samuel Whang"
 import os
 import curses
 from controls import Window, ScrollList, Card, RecieptForm
-from models import Product, Reciept, Transaction
+from models.models import Reciept, Transaction
+from models.product import Product
 from database import Connection
 from yamlchecker import YamlChecker
 from collections import namedtuple
