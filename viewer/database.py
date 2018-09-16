@@ -18,14 +18,18 @@ class Connection:
     '''
     Database object
     '''
+    logger_name = 'database'
+    logger_file = 'database.log'
+    logger_args = {'currentfile':__file__}
+
     def __init__(self, logger=None):
-        # create connection to db
+        """Create connection to db"""
         
         self.logger = logger
         if not self.logger:
-            self.logger = setup_logger('dblog', 
-                                       'db.log', 
-                                       extra={'currentfile': __file__})
+            self.logger = setup_logger(logger_name,
+                                       logger_file, 
+                                       extra=logger_args)
 
         self.log("creating database connection.")  
 
@@ -42,6 +46,12 @@ class Connection:
 
     def log(self, message):
         self.logger.info(f"{self.__class__.__name__}: {message}")
+
+    def send(self, message):
+        results = self.conn.execute(message.request)
+        if message.requires_commit:
+            self.commit() 
+        return results
 
     def drop_tables(self):
         # delete tables in sqlite
