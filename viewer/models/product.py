@@ -2,7 +2,10 @@
 
 __author__ = "Samuel Whang"
 
-from shared import Currency
+import sys
+sys.path.append('..')
+
+from utils import Currency
 
 class Product:
     def __init__(self, name: str, price: Currency):

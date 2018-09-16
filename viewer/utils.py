@@ -12,6 +12,8 @@ import logging
 import datetime
 import os
 
+Currency = Union[int, float]
+
 class Event(list):
     def __call__(self, sender, event):
         for fn in self:
