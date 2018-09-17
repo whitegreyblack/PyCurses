@@ -7,15 +7,18 @@ yamlchecker.py: YamlChecker provides methods to iterate through and validate
 
 __author__ = "Samuel Whang"
 
+import sys
+sys.path.append('..')
+
 import re
 import yaml
 import click
 import logging
-import decorators as wrap
+import viewer.decorators as wrap
 from os import walk
 from datetime import date
-from YamlObjects import Reciept
-import utils
+from viewer.YamlObjects import Reciept
+import viewer.utils as utils
 
 border = "-" * 80
 

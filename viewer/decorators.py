@@ -4,12 +4,14 @@ decorators.py: Contains decorator utility functions
 
 __author__ = "Samuel Whang"
 
+import sys
+sys.path.append('..')
+
 import platform
 import functools
 import logging
-import sys
-import utils
-from strings import passfail, ORG, GRN, RED, END, pop
+import viewer.utils as utils
+from viewer.strings import passfail, ORG, GRN, RED, END, pop
 
 # used by printer to print number of files printed
 file_num = 1

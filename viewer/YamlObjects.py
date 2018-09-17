@@ -5,10 +5,11 @@ YamlObjects.py : holds all objects used during transporting data from yaml
 
 __Author__ = "Sam Whang"
 
-from datetime import date
-from utils import format_float as frmt_flt
-import yaml
 import sys
+sys.path.append('..')
+
+from datetime import date
+import yaml
 
 class Reciept(yaml.YAMLObject):
     __doc__ = """Python Reciept using Yaml Object Parent for DB insertions"""

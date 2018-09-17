@@ -117,7 +117,7 @@ def main(screen):
     initialize()
     logger.info('main(): done')
 
-    checker = YamlChecker('../testdata/', logger)
+    checker = YamlChecker('../data/', logger)
     valid_files, _ = checker.files_safe()
     
     yaml_objs = {
