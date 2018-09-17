@@ -1,6 +1,5 @@
 import background as bg
-import db_connection as db
-
+import viewer.database as db
 
 class Window:
     def __init__(self, name, parent, win):

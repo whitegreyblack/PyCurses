@@ -2,10 +2,10 @@
 
 __author__ = "Samuel Whang"
 
-import sys
-sys.path.append('..')
+# import sys
+# sys.path.append('..')
 
-from utils import Currency
+from viewer.utils import Currency
 
 class Product:
     def __init__(self, name: str, price: Currency):
