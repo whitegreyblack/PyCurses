@@ -125,6 +125,7 @@ class Prompt(UIControl):
             dy = self.height - self.y
             # screen.erase()
             self.window.erase()
+            self.window.bkgdset(' ', curses.color_pair(3))
             self.window.border()
             self.window.addstr(1, 1, 'Are you sure you want to quit?');
 

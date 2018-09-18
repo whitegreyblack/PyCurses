@@ -24,7 +24,7 @@ def initialize():
     curses.init_pair(1, curses.COLOR_BLACK, curses.COLOR_WHITE)
     curses.init_pair(2, curses.COLOR_BLACK, 
                      curses.COLOR_BLUE | curses.COLOR_GREEN)
-
+    curses.init_pair(3, 0, -1)
 def setup_database(yaml_objs, rebuild=True, logger=None):
     """Builds database connection and calls startup methods"""
     connection = Connection(logger=logger)
@@ -76,7 +76,7 @@ def setup_windows(reciept_objs, screen):
     subwin = screen.subwin(window.height // 3, 
                            window.width // 2, 
                            window.height // 3,
-                           window.width // 4)
+                               window.width // 4)
 
     exitprompt = Prompt(subwin, None, None)
 
