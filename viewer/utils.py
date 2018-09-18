@@ -19,6 +19,24 @@ class Event(list):
         for fn in self:
             fn(sender, event)
 
+class Enum:
+    pass
+
+class Permissions(Enum): 
+    flags = {
+        'READ': 1 << 0,
+        'WRITE': 1 << 1,
+        'DELETE': 1 << 2,
+    }
+
+    @classmethod
+    def check(cls, flags: int):
+        index = 1
+        while index <= flags:
+            if ((flags & index) != 0):
+                print([k for k, v in cls.flags.items() if v == index])
+            index = index << 1
+
 EventArg = namedtuple('EventArg', 'sender msg')
 
 default_log = "[%(asctime)s] %(currentfile)s: %(message)s"
