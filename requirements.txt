@@ -1,3 +1,4 @@
 PyYAML==3.12
 click=6.7
 curses=2.2
+sqlite3

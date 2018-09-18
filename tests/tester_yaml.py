@@ -1,3 +1,6 @@
+import sys
+sys.path.append('..')
+
 from os import walk
 import unittest
 from re import compile
