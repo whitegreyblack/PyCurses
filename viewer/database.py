@@ -10,7 +10,7 @@ sys.path.append('..')
 import sqlite3
 import logging
 # from strings import stmts
-import viewer.statements
+import viewer.statements as statements
 import datetime
 from viewer.utils import setup_logger
 from viewer.utils import filename_and_extension as fileonly

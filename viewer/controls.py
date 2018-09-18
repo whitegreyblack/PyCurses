@@ -7,7 +7,15 @@ User Interface Control Components
 __author__ = "Samuel Whang"
 
 import curses
-from utils import border
+from viewer.utils import border
+
+class UIControl:
+    def __init__(self, x, y, width, height, title):
+        self.x = x
+        self.y = y
+        self.width = width
+        self.height = height
+        self.title = title
 
 class Window:
     def __init__(self, title, x, y):
@@ -69,6 +77,36 @@ class Window:
         screen.addstr(0, self.term_width - len(dimensions) - 1, dimensions)
         for window in self.windows:
             window.draw(screen)
+
+# TODO Create a button class to pass into Prompt confirm/cancel parameters
+class Button(UIControl):
+    def __init__(self, x, y, width, height, label):
+        super().__init__(x, y, width, height, None)
+        self.label = label
+
+class Prompt(UIControl):
+    def __init__(self, x, y, width, height, title=None, confirm="Confirm", cancel="Cancel"):
+        super().__init__(x, y, width, height, title)
+        self.confirm = confirm
+        self.cancel = cancel
+
+        # TODO should be changeable through constructor
+        # class button: property isSelected/Selected
+
+    @property
+    def button(self):
+        # TODO: a better way to access buttons. What if we have multiple? Or a single one?
+        for button in [self.confirm, self.cancel]:
+            if button.selected:
+                return button
+
+    def get_signal(self, command, debug=False):
+        if command == curses.KEY_LEFT and self.button == self.cancel:
+            self.cancel.select = False
+            self.confirm.select = True
+        if command == curses.KEY_RIGHT and self.button == self.confirm:
+            self.confirm.select = False
+            self.cancel.select = True
 
 class ScrollList:
     def __init__(self, x, y, width, height, title=None, wid='ScrollList', selected=False):
