@@ -6,6 +6,9 @@ User Interface Control Components
 
 __author__ = "Samuel Whang"
 
+import sys
+sys.path.append('..')
+
 import curses
 from viewer.utils import border
 
@@ -68,6 +71,8 @@ class Window:
                 
                 self.window.selected = False
                 next_window.selected = True
+                if next_window.wid == 'Prompt':
+                    next_window.visible = True
         return True
 
     def draw(self, screen):
@@ -85,10 +90,16 @@ class Button(UIControl):
         self.label = label
 
 class Prompt(UIControl):
-    def __init__(self, x, y, width, height, title=None, confirm="Confirm", cancel="Cancel"):
-        super().__init__(x, y, width, height, title)
+    def __init__(self, window, title=None, confirm=None, cancel=None, wid='Prompt'):
+        self.window = window
+        y, x = window.getbegyx()
+        my, mx = window.getmaxyx()
+        super().__init__(x, y, mx - x, my - y, title)
+        self.wid = wid
         self.confirm = confirm
         self.cancel = cancel
+        self.selected = False
+        self.visible = False
 
         # TODO should be changeable through constructor
         # class button: property isSelected/Selected
@@ -107,6 +118,15 @@ class Prompt(UIControl):
         if command == curses.KEY_RIGHT and self.button == self.confirm:
             self.confirm.select = False
             self.cancel.select = True
+
+    def draw(self, screen):
+        if self.visible:
+            dx = self.width - self.x
+            dy = self.height - self.y
+            # screen.erase()
+            self.window.erase()
+            self.window.border()
+            self.window.addstr(1, 1, 'Are you sure you want to quit?');
 
 class ScrollList:
     def __init__(self, x, y, width, height, title=None, wid='ScrollList', selected=False):

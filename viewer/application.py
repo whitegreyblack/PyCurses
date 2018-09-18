@@ -7,7 +7,7 @@ __author__ = "Samuel Whang"
 
 import os
 import curses
-from controls import Window, ScrollList, Card, RecieptForm
+from controls import Window, ScrollList, Card, RecieptForm, Prompt, Button
 from models.models import Reciept, Transaction
 from models.product import Product
 from database import Connection
@@ -55,7 +55,7 @@ def setup_test_cards():
                 ['Apples', 'Oranges', 'Pears', 'Watermelons', 'Peaches'],
                 [3, 5, 888, 24, 55])]
 
-def setup_windows(reciept_objs):
+def setup_windows(reciept_objs, screen):
     """Create UI components and add to the screen"""
     window = Window('Viewer', terminal_width, terminal_height)
 
@@ -72,7 +72,15 @@ def setup_windows(reciept_objs):
                        window.width - (window.width // 4) - 1, 
                        window.height,
                        scroller.model)
-    window.add_windows([scroller, form])
+    
+    subwin = screen.subwin(window.height // 3, 
+                           window.width // 2, 
+                           window.height // 3,
+                           window.width // 4)
+
+    exitprompt = Prompt(subwin, None, None)
+
+    window.add_windows([scroller, form, exitprompt])
 
     keymap = dict()
     keymap[(curses.KEY_UP, scroller.wid)] = scroller.wid
@@ -84,7 +92,8 @@ def setup_windows(reciept_objs):
     # 10 : New Line Character
     keymap[(10, scroller.wid)] = form.wid
     # 27 : Escape Key Code
-    keymap[(27, scroller.wid)] = None
+    keymap[(27, scroller.wid)] =  exitprompt.wid
+    keymap[(27, exitprompt.wid)] = None
     keymap[(27, form.wid)] = scroller.wid
     keymap[(ord('q'), scroller.wid)] = None
     window.add_keymap(keymap)
@@ -137,7 +146,7 @@ def main(screen):
     logger.info(f"main(): {len(reciept_objs)}")
     logger.info(f"main(): {reciept_objs.keys()}")
 
-    window = setup_windows(reciept_objs)
+    window = setup_windows(reciept_objs, screen)
     window.draw(screen)
 
     while 1:
