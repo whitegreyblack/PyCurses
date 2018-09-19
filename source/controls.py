@@ -10,13 +10,37 @@ import curses
 from source.utils import border
 from source.utils import format_float as Money
 
+def intersect(this, other):
+    return False
+
+"""
+Parent (UIControl)?
+Bounding boxes?
+
+Window: vs Panel:?
+    + Panel vs Window?
+        - ScrollList
+        - Prompt
+        - Form
+"""
+
 class UIControl:
-    def __init__(self, x, y, width, height, title):
+    def __init__(self, x, y, width, height, title=None):
         self.x = x
         self.y = y
         self.width = width
         self.height = height
         self.title = title
+        
+        self.children = []
+        self.isSelected = False
+        self.isFocused = False
+
+    def check_bounds(self):
+        for child in self.children:
+            for other in self.children:
+                if child != other and intersect(child, other):
+                    raise ValueError(f"{child} and {other} intersect")
 
 class Window:
     def __init__(self, title, x, y):
