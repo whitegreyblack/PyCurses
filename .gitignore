@@ -15,3 +15,6 @@ __pycache__/
 
 # db files
 *.db
+
+# pyc files
+*.pyc

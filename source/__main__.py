@@ -7,14 +7,17 @@ __author__ = "Samuel Whang"
 
 import os
 import curses
-from controls import Window, ScrollList, Card, RecieptForm, Prompt, Button
-from models.models import Reciept, Transaction
-from models.product import Product
-from database import Connection
-from yamlchecker import YamlChecker
+
+from source.controls import (
+        Window, ScrollList, Card, RecieptForm, Prompt, Button
+        )
+
+from source.models.models import Reciept, Transaction
+from source.models.product import Product
+from source.database import Connection
+from source.yamlchecker import YamlChecker
 from collections import namedtuple
-import utils
-# from keymap import KeyMap
+import source.utils as utils
 
 terminal_width, terminal_height = 0, 0
 
@@ -24,7 +27,8 @@ def initialize():
     curses.init_pair(1, curses.COLOR_BLACK, curses.COLOR_WHITE)
     curses.init_pair(2, curses.COLOR_BLACK, 
                      curses.COLOR_BLUE | curses.COLOR_GREEN)
-    curses.init_pair(3, 0, -1)
+    # curses.init_pair(3, 0, -1)
+
 def setup_database(yaml_objs, rebuild=True, logger=None):
     """Builds database connection and calls startup methods"""
     connection = Connection(logger=logger)
@@ -126,7 +130,7 @@ def main(screen):
     initialize()
     logger.info('main(): done')
 
-    checker = YamlChecker('../data/', logger)
+    checker = YamlChecker('./data/', logger)
     valid_files, _ = checker.files_safe()
     
     yaml_objs = {

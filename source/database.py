@@ -4,18 +4,15 @@ database.py: Connection object to access sqlite3 database
 
 __author__ = "Samuel Whang"
 
-import sys
-sys.path.append('..')
-
 import sqlite3
 import logging
-# from strings import stmts
-import viewer.statements as statements
 import datetime
-from viewer.utils import setup_logger
-from viewer.utils import filename_and_extension as fileonly
-from viewer.utils import format_float as real
-from viewer.utils import format_date as date
+# from strings import stmts
+import source.statements as statements
+from source.utils import setup_logger
+from source.utils import filename_and_extension as fileonly
+from source.utils import format_float as real
+from source.utils import format_date as date
 
 class Connection:
     '''

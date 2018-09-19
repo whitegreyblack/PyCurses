@@ -6,11 +6,8 @@ User Interface Control Components
 
 __author__ = "Samuel Whang"
 
-import sys
-sys.path.append('..')
-
 import curses
-from viewer.utils import border
+from source.utils import border
 
 class UIControl:
     def __init__(self, x, y, width, height, title):
@@ -125,7 +122,7 @@ class Prompt(UIControl):
             dy = self.height - self.y
             # screen.erase()
             self.window.erase()
-            self.window.bkgdset(' ', curses.color_pair(3))
+            # self.window.bkgdset(' ', curses.color_pair(2))
             self.window.border()
             self.window.addstr(1, 1, 'Are you sure you want to quit?');
 

@@ -7,18 +7,15 @@ yamlchecker.py: YamlChecker provides methods to iterate through and validate
 
 __author__ = "Samuel Whang"
 
-import sys
-sys.path.append('..')
-
 import re
 import yaml
 import click
 import logging
-import viewer.decorators as wrap
+import source.decorators as wrap
 from os import walk
 from datetime import date
-from viewer.YamlObjects import Reciept
-import viewer.utils as utils
+from source.YamlObjects import Reciept
+import source.utils as utils
 
 border = "-" * 80
 
@@ -38,6 +35,7 @@ class YamlChecker:
 
         self.logger = logger
         if not self.logger:
+            logger.info("no logger")
             self.logger = utils.setup_logger(YamlChecker.logger_name,
                                              YamlChecker.logger_file,
                                              extra=YamlChecker.logger_args)
@@ -53,7 +51,7 @@ class YamlChecker:
         self.log("Deleting yaml checker object")
 
     def log(self, message):
-        self.logger.info(message, extra=self.logargs)
+        self.logger.info(f"{self.__class__.__name__}: {message}")
 
     def files_safe(self):
         """Iterate through each file in directory"""
@@ -76,7 +74,9 @@ class YamlChecker:
 
         # TODO: self.files_delete(delete)
         self.log("Finished verification")
-        self.log("Number of files to commit: {len(commit)}") 
+        self.log(f"Number of files to commit: {len(commit)}") 
+        for filename in commit:
+            self.log(f"\t+ {filename}")
         return commit, delete
 
     def files_delete(self, files):
