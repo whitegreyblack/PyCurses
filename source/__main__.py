@@ -25,9 +25,9 @@ def initialize():
     """Sets Curses related settings"""
     curses.curs_set(0)
     curses.init_pair(1, curses.COLOR_BLACK, curses.COLOR_WHITE)
+    # color enum num 6 - cyan
     curses.init_pair(2, curses.COLOR_BLACK, 
                      curses.COLOR_BLUE | curses.COLOR_GREEN)
-    # curses.init_pair(3, 0, -1)
 
 def setup_database(yaml_objs, rebuild=True, logger=None):
     """Builds database connection and calls startup methods"""
@@ -61,12 +61,13 @@ def setup_test_cards():
 
 def setup_windows(reciept_objs, screen):
     """Create UI components and add to the screen"""
-    window = Window('Viewer', terminal_width, terminal_height)
+    window = Window('Application', terminal_width, terminal_height)
+
 
     scroller = ScrollList(1, 1, 
                           window.width // 4, 
                           window.height, 
-                          'Products', 
+                          'Reciepts', 
                           selected=True)
 
     reciept_cards = setup_cards(reciept_objs)
@@ -80,9 +81,9 @@ def setup_windows(reciept_objs, screen):
     subwin = screen.subwin(window.height // 3, 
                            window.width // 2, 
                            window.height // 3,
-                               window.width // 4)
+                           window.width // 4)
 
-    exitprompt = Prompt(subwin, None, None)
+    exitprompt = Prompt(subwin, 'Exit Prompt', 'Confirm', None)
 
     window.add_windows([scroller, form, exitprompt])
 

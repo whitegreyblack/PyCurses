@@ -8,6 +8,7 @@ __author__ = "Samuel Whang"
 
 import curses
 from source.utils import border
+from source.utils import format_float as Money
 
 class UIControl:
     def __init__(self, x, y, width, height, title):
@@ -85,16 +86,27 @@ class Button(UIControl):
     def __init__(self, x, y, width, height, label):
         super().__init__(x, y, width, height, None)
         self.label = label
+        self.selected = False
 
+    def draw(self, screen):
+        boxstring = f"x:{self.x}, y:{self.y}, w:{self.width}, h:{self.height}"
+        
+        border(screen, self.x, self.y, self.width, self.height)
+        screen.addstr(self.height + 1, 0, boxstring)
+        if self.selected:
+            screen.addstr(self.height - y - 1, self.x + 1, self.label, curses.color_pair(2))
+        else:
+            screen.addstr(self.y + self.height - 1, self.x + 1, self.label)
+ 
 class Prompt(UIControl):
     def __init__(self, window, title=None, confirm=None, cancel=None, wid='Prompt'):
         self.window = window
-        y, x = window.getbegyx()
+        oy, ox = window.getbegyx() # offset from parent window
         my, mx = window.getmaxyx()
-        super().__init__(x, y, mx - x, my - y, title)
+        super().__init__(0, 0, mx, my, title)
         self.wid = wid
-        self.confirm = confirm
-        self.cancel = cancel
+        self.confirm = Button(self.x + 1, self.height - 4, len(confirm) + 2, 2, confirm)
+        # self.cancel = Button(x, y + mx, 5, 5, cancel)
         self.selected = False
         self.visible = False
 
@@ -124,7 +136,10 @@ class Prompt(UIControl):
             self.window.erase()
             # self.window.bkgdset(' ', curses.color_pair(2))
             self.window.border()
-            self.window.addstr(1, 1, 'Are you sure you want to quit?');
+            boxstring = f"x:{self.x}, y:{self.y}, w:{self.width}, h:{self.height}"
+            self.window.addstr(0, self.width - len(boxstring) - 1, boxstring)
+            self.window.addstr(1, 1, "Are you sure you want to quit?");
+            self.confirm.draw(self.window)
 
 class ScrollList:
     def __init__(self, x, y, width, height, title=None, wid='ScrollList', selected=False):
@@ -239,8 +254,8 @@ class RecieptForm(Form):
             title = self.title if self.title else "Reciept"
             screen.addstr(self.y + 1, self.x + 1, title)
            
-            screen.addstr(self.y + 3, self.x + 1, f"Store:    {self.model.model.store}" )
-            screen.addstr(self.y + 4, self.x + 1, f"Date :    {self.model.model.date}")
+            screen.addstr(self.y + 3, self.x + 1, f"Store...: {self.model.model.store}")
+            screen.addstr(self.y + 4, self.x + 1, f"Date....: {self.model.model.date}")
             screen.addstr(self.y + 5, self.x + 1, f"Category: {self.model.model.category}")
 
             screen.addstr(self.y + 7, self.x + 1, f"Products:")
@@ -251,10 +266,19 @@ class RecieptForm(Form):
                               f"\t{product}")
                 product_index += 1
 
-            screen.addstr(self.y + 10, self.x + 1, f"Subtotal: {self.model.model.transaction.subtotal}")
-            screen.addstr(self.y + 11, self.x + 1, f"Tax     : {self.model.model.transaction.tax}")
-            screen.addstr(self.y + 12, self.x + 1, f"Total   : {self.model.model.transaction.total}")
-            screen.addstr(self.y + 13, self.x + 1, f"Payment : {self.model.model.transaction.payment}")
+            screen.addstr(self.y + 10, 
+                          self.x + 1, 
+                          f"Subtotal: {Money(self.model.model.transaction.subtotal)}")
+
+            screen.addstr(self.y + 11, 
+                          self.x + 1, 
+                          f"Tax.....: {Money(self.model.model.transaction.tax)}")
+            screen.addstr(self.y + 12, 
+                          self.x + 1, 
+                          f"Total...: {Money(self.model.model.transaction.total)}")
+            screen.addstr(self.y + 13, 
+                          self.x + 1, 
+                          f"Payment.: {Money(self.model.model.transaction.payment)}")
         else:
             screen.addstr((self.y + self.height) // 2, 
                           ((self.x + self.width) // 2) - (len("No file selected") // 2), 
