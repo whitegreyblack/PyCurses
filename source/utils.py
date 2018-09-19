@@ -113,7 +113,7 @@ def border(screen: object, x: int, y: int, dx: int, dy: int) -> None:
     screen.addch(y + dy, x + dx, curses.ACS_SBBS)
 
 def format_float(number: Union[int, float]) -> float:
-    return f"{number:.2f}"
+    return f"{number:10.2f}"
 
 def format_date(date) -> str:
     return datetime.date(date[0], date[1], date[2]).isoformat()
