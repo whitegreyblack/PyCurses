@@ -1,24 +1,27 @@
 import sys
 import curses
-from populate import Populate, logging, log
-from db_connection import sqlite3, Connection
-from checker import YamlChecker
 from datetime import date
-from data import RecieptData
-from tabs import Tab
-import calendar
+import source.utils as utils
+from source.database import Connection
+from source.yamlchecker import YamlChecker
 
-hi, bd, li, key, limit = None, None, None, None, 30
-tabnames = ["RECIEPT",
-            ]
+# from data import RecieptData
+# from tabs import Tab
+# import calendar
 
+hi = None
+bd = None
+li = None
+key = None
+limit = 30
+
+tabnames = ["RECIEPT",]
 
 class WinCalendar:
     def __init__(self, parent, window):
         self.parent = parent
         self.window = window
         self.year = calendar.TextCalendar()
-
 
 class Window:
     def __init__(self, mainscr, window):
@@ -90,10 +93,13 @@ class Window:
 
     def refresh(self, i, j):
         s, d, _, _, _, _, t = self.datahead.data[i]
-        self.window.addstr(i + 2, 2, "{} {} {:2f}".format(s, d, t))
+        self.window.addstr(i + 2, 2, 
+                           f"{s} {d} {t:2f}")
+
         s, d, _, _, _, _, t = self.datahead.data[j]
-        self.window.addstr(
-            j + 2, 2, "{} {} {:2f}".format(s, d, t), curses.A_REVERSE)
+        self.window.addstr(j + 2, 2,
+                           f"{s} {d} {t:2f}", 
+                           curses.A_REVERSE)
 
     def border(self):
         self.window.border(bd, bd, bd, bd, bd, bd, bd, bd)
@@ -106,7 +112,6 @@ class Window:
         elif self.parent.title.lower() == "grocery":
             self.data = self.parent.parent.conn.loadByGroup(
                 "type", self.parent.title.lower())
-
 
 class TabsManager:
     def __init__(self, parent):
@@ -128,24 +133,54 @@ class TabsManager:
     def load(self, conn):
         [i.load() for i in self.tabs]
 
+def initialize_curses_settings():
+    global bd, li, keys
+    curses.init_pair(1,curses.COLOR_BLACK, curses.COLOR_WHITE)
+    curses.curs_set(0)
+    bd = curses.ACS_CKBOARD
+    li = curses.ACS_BOARD
+    keys = {
+        curses.KEY_LEFT: -1,
+        curses.KEY_RIGHT: 1,
+        ord('\t'): 1,
+        curses.KEY_BTAB: -1,
+        }
 
 def main(mainscreen):
-    # fill sqlite db
-    Populate(YamlChecker(sys.argv[1].replace("\\", '/')).fs_safe())
-    # Populate(YamlChecker(sys.argv[1].replace("\\",'/')).fs_safe())
+    """Sets up application settings and initializes windows objects"""
+    
+    if (len(sys.argv) < 2):
+        exit("No input folder specified")
+ 
+    logger = utils.setup_logger('simple', 
+                                'simple.log',
+                                extra={'filename': __file__})
+    
+    # check yaml files
+    checker = YamlChecker(utils.format_directory_path(sys.argv[1]))
+    commits, deletes = checker.files_safe()
+
+    initialize_curses_settings()
+
     # variables
-    curses.init_pair(1, curses.COLOR_BLACK, curses.COLOR_WHITE)
-    curses.curs_set(0)
     pos = newpos = 0
-    global bd, li, keys
-    bd, li, keys = curses.ACS_CKBOARD, curses.ACS_BOARD, {
-        curses.KEY_LEFT: -1, curses.KEY_RIGHT: 1, ord('\t'): 1, curses.KEY_BTAB: -1}
-    hkeys = dict([(49, 0), (50, 1), (51, 2)])
-    vkeys = [curses.KEY_UP, curses.KEY_DOWN]
+
+    hkeys = dict([
+        (49, 0), 
+        (50, 1), 
+        (51, 2)
+        ])
+
+    vkeys = [
+        curses.KEY_UP, 
+        curses.KEY_DOWN
+        ]
+
     # tabs and child windows
-    tm = TabsManager(mainscreen)
+    # tm = TabsManager(mainscreen)
 
     # user input
+    '''
     char = mainscreen.getch()
     while char != ord('q'):
         if char in keys.keys() or char in hkeys.keys():
@@ -169,12 +204,11 @@ def main(mainscreen):
                 #tm.active.child.refresh(tm.active.child.datapos, 1)
                 tm.active.child.toggle_on()
         char = mainscreen.getch()
-    curses.endwin()
-    print(chr(27) + "[2J")
-    sys.stderr.write("\x1b2J\x1b[H")
+    '''
 
+    char = mainscreen.getch()
+    # print(chr(27) + "[2J")
+    # sys.stderr.write("\x1b2J\x1b[H")
 
 if __name__ == "__main__":
-    logging.basicConfig(filename='debug.log',
-                        format='%(message)s', level=logging.DEBUG)
     curses.wrapper(main)

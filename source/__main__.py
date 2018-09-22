@@ -101,6 +101,7 @@ def setup_windows(reciept_objs, screen):
     keymap[(27, exitprompt.wid)] = None
     keymap[(27, form.wid)] = scroller.wid
     keymap[(ord('q'), scroller.wid)] = None
+    keymap[(curses.KEY_ENTER, exitprompt.wid)] = None
     window.add_keymap(keymap)
     return window
 

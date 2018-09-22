@@ -2,8 +2,8 @@ import sys
 import curses
 import sqlite3
 import logging
-from yamlchecker import YamlChecker
-from database import Connection 
+from source.yamlchecker import YamlChecker
+from source.database import Connection 
 
 hi, bd, li, key, limit = None, None, None, None, 30
 tabnames = ["RECIEPT",

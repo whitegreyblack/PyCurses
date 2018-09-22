@@ -35,10 +35,10 @@ class YamlChecker:
 
         self.logger = logger
         if not self.logger:
-            logger.info("no logger")
             self.logger = utils.setup_logger(YamlChecker.logger_name,
                                              YamlChecker.logger_file,
                                              extra=YamlChecker.logger_args)
+            self.log("No logger passed into constructor. Creating new logger.")
 
         self.log("Initializing yaml checker")
 
