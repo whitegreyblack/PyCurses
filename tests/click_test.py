@@ -53,6 +53,7 @@ class Screen:
         self.screen.addch(1,1,'+')
         self.screen.addch(1,2,'-')
         self.toggle = False
+
     def translate(self, y, x):
         wy,wx = self.screen.getbegyx()
         self.active()
@@ -82,15 +83,28 @@ class Screen:
         self.screen.border()
         self.screen.addch(1,1,"+")
         self.screen.refresh()
-        
-def main(scr):
+
+def initialize_curses_settings():
     curses.mousemask(curses.ALL_MOUSE_EVENTS)
     curses.init_pair(1, curses.COLOR_CYAN, curses.COLOR_BLACK)
     curses.init_pair(2, curses.COLOR_WHITE, curses.COLOR_BLACK)
+
+def main(scr):
+    initialize_curses_settings()
+
     mc = MainScreen(scr)
-    mc.subwins(
-        [Screen(scr.subwin(10,10,10,10)),Screen(scr.subwin(6, 20,12, 6))])
+    
+    subwindow1 = Screen(scr.subwin(10, 10, 10, 10))
+    subwindow2 = Screen(scr.subwin(6, 20, 12, 6))
+    
+    mc.subwins([
+        subwindow1,
+        subwindow2,
+        ])
+
     mc.active_child()
+
+
     mc.screen.addch(30,1,u'\u2580')
     mc.screen.addch(30,2,u'\u2800')
     mc.screen.addch(30,3,u'\u2801')
@@ -103,11 +117,14 @@ def main(scr):
     mc.screen.addch(30,10,u'\u28FF')
     mc.screen.addch(30,11,u'\u282A')
     mc.screen.addch(30,12,u'\u2815')
+    
+    '''
     ch = u'\u28FF'
     for i in range(15):
-        mc.screen.addch(30,i+1,ch)
-    
-    mc.screen.addstr(29,1,"a"*15)
+        mc.screen.addch(30, i + 1, ch)
+    '''
+
+    mc.screen.addstr(29, 1, "a" * 15)
 
     c = ''
     while c != ord('q'):

@@ -7,16 +7,7 @@ class Data:
         self.pos = 0
 
     def __repr__(self):
-        return "{}".format(self.__class__.__name__)
-
-class Body:
-    def __init__(self, data):
-        self.data = data
-        self.size = len(data)
-        self.pos = 0
-
-    def __repr__(self):
-        return "{}".format(self.__class__.__name__)
+        return self.__class__.__name__
 
 class RecieptData(Data):
     def __init__(self, data, body=None):
@@ -52,4 +43,4 @@ class RecieptData(Data):
         return [[month, months[month]] for month in months.keys()]
 
     def getTot(self):
-        return int(sum([t for _, _, _, _, _, _, t in self.data])*100)/100
+        return int(sum([t for _, _, _, _, _, _, t in self.data]) * 100) / 100
