@@ -53,7 +53,30 @@ def iter_months_years(startDate: object, endDate: object) -> tuple:
         # dates are in the same year. grab the months between the dates
         months.append([i for i in range(startDate.Month, endDate.Month + 1)])
 
-    return [(year, m) for year, month in zip(years, months) for m in month]
+    # return [(year, m) for year, month in zip(years, months) for m in month]
+    for year, month in zip(years, months):
+        for m in month:
+            yield (year, m)
+
+def days_in_month_year(startDate, endDate):
+    """Returns the day/date tuple combination for each month/year input passed
+    into the calendar.TextCalendar class method months2calendar(year, month).
+    
+    Differences in TextCalendar methods (W => number of weeks in the month):
+        monthdatescalendar -> returns Wx7 matrix of datetime objects
+        monthdays2calendar -> returns Wx7 matrix of tuple objects (date, day)
+        monthdayscalendar -> returns Wx7 matrix of ints representing the date
+    """
+
+    # setup calendar settings to retrieve dates based on year/month pairs
+    tc = calendar.TextCalendar()
+    tc.setfirstweekday(6) # set to sunday as first day
+
+    days_per_monthyear = dict()
+    for year, month in iter_months_years(startDate, endDate):
+        days_per_monthyear[(year, month)] = tc.monthdays2calendar(year, month)
+
+    return days_per_monthyear
 
 def parse_date(datestring: str) -> object:
     """Takes in a string object representing a formatted date. If not
@@ -66,36 +89,8 @@ def parse_date(datestring: str) -> object:
 
     return date(*[int(i) for i in datestring.split('-')])
 
-def dateFold(m):
-    def parse(l):
-        return modify(list(filter(lambda x: x != '', l.split(" "))))
-
-    def modify(l):
-        return [' ' + x if int(x) < 9 else x for x in l]
-
-    while len(m) > 1:
-        m1 = list(filter(lambda l: len(l) > 1, m.pop(-2)))
-
-        if len(m1[-1].split(" ")) == 7:
-            m1.extend(m.pop(-1))
-        else:
-            m2 = m.pop()
-            m1[-1] = " ".join((m1[-1].split(" ") + parse(m2[0])))
-            m1.extend(m2[1::])
-
-        if not len(m1[-1]):
-            m1.pop(-1)
-
-        m.append(m1)
-    
-    return m[0]
-
-def tablize(m):
-    for i in range(len(m)):
-        m[i] = list(filter(lambda x:x!="",m[i].split(" ")))
-    return m
-
 def initialize_curses_settings():
+    """Curses settings that need to be called before the rest of program"""
     curses.curs_set(0)
 
 def main(window):
@@ -106,47 +101,35 @@ def main(window):
 
     loc = 0
     # dateParser(db.getMinDate, db.getMaxDate)
-    start = parse_date("2018-5-28")
-    end = parse_date("2018-6-28")
+    start = parse_date("2017-12-1")
+    end = parse_date("2018-2-1")
 
-    tc = calendar.TextCalendar()
-    # called to set the start day when formatmonth returns
-    tc.setfirstweekday(calendar.SUNDAY)
+    # we should now have a list of lists matrix holding weeks per month/year
+    monthtable = days_in_month_year(start, end) 
     
-    # monthdatescalendar -> returns Wx7 matrix of datetime objects
-    # monthdays2calendar -> returns Wx7 matrix of tuple objects (day number, day enum val)
-    # monthdayscalendar -> returns Wx7 matrix of ints representing the date
-
-    for year, month in iter_months_years(start, end):
-        pass
-
-    '''
-    months=[]
-    for i in range(len(y)):
-        for j in range(len(m[i])):
-            months.append(tc.formatmonth(y[i], m[i][j]).split("\n")[2::])
-    '''
     window.border()
     y, x = window.getmaxyx()
     window.vline(1, 8, curses.ACS_VLINE, y - 2)
+ 
+    verticaloffset = 2
+    horizontaloffset = 1   
     
-    line = 2
     window.addstr(1, 1, "SMTWTFS")
-
-    '''
-    for i in tablize(dateFold(months)):
-        for j in range(len(i)):
-            window.addstr(line, j + 1, "X")
-        line += 1
-        if (line % 5) == 0:
-            line += 1
-    ''' 
     
-    #sub=curses.newpad(y//2, x//2)
-    #sub.addstr(1,1,'asdfasdfasd')
-    #sub.refresh(3, 3, 10, 10,8, 1)
-
+    for month in monthtable.values():
+        for week in month:
+            window.addstr(verticaloffset, horizontaloffset + 9, str(week))
+            weekdayindex = 0
+            for date, dayofweek in week:
+                if (date) != 0:
+                    window.addstr(verticaloffset, 
+                                  horizontaloffset + weekdayindex, 
+                                  'o')
+                weekdayindex += 1
+            verticaloffset += 1
+    
     window.getch()
+    # TODO: implement program loop involving vertical/horiontal scrolling
 
 if __name__ == "__main__":
     curses.wrapper(main)

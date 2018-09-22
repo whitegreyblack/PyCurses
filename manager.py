@@ -1,7 +1,7 @@
 import background as bg
 import tabmanager as tm
 import winmanager as wm
-import viewer.database as db
+import source.database as db
 
 class Manager:
     def __init__(self, window):
