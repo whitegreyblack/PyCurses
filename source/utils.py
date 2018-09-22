@@ -40,6 +40,12 @@ class Permissions(Enum):
 EventArg = namedtuple('EventArg', 'sender msg')
 
 default_log = "[%(asctime)s] %(currentfile)s: %(message)s"
+class LogColor:
+    GREEN='\x1b[1;32;40m'
+    RED='\x1b[1;31;40m'
+    BLUE='\x1b[0;34;40m'
+    YELLOW='\x1b[0;33;40m'
+    END='\x1b[0m'
 
 def check_or_create_folder(foldername):
     full_path = os.path.join(os.path.abspath('.'), foldername)
