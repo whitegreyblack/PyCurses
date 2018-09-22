@@ -1,9 +1,8 @@
 import sys
 import curses
-import background as bg
-from checker import YamlChecker
-from populate import Populate
-from database import Connection
+# import background as bg
+from source.yamlchecker import YamlChecker
+from source.database import Connection
 import logging
 
 
@@ -26,6 +25,7 @@ class Tab:
         self.x, self.y = window.getmaxyx()
 
     def toggle_on(self):
+        return
         self.window.border(bd, bd, bd, bd, bd, bd, bd, bd)
         self.toggle_name()
         self.window.refresh()
@@ -42,6 +42,7 @@ class Tab:
         pass
 
     def load(self):
+        pass
         self.child.load()
 
 
@@ -108,6 +109,7 @@ class Window:
         self.window.border(bd, bd, bd, bd, bd, bd, bd, bd)
 
     def load(self):
+        return
         if self.parent.title.lower() == "reciept":
             self.datahead = Data(
                     [row for row in self.parent.parent.conn.load()])
@@ -163,8 +165,8 @@ def setup():
     curses.init_pair(1, curses.COLOR_BLACK, curses.COLOR_WHITE)
     curses.curs_set(0)
 
-    bd = bg.bd
-    li = bg.li
+    bd = curses.ACS_BOARD
+    li = curses.ACS_CKBOARD
 
     LEFT = curses.KEY_LEFT
     RIGHT = curses.KEY_RIGHT
@@ -214,9 +216,7 @@ def main(mainscreen):
                 # tm.active.child.refresh(tm.active.child.datapos, 1)
             tm.active.child.toggle_on()
         char = mainscreen.getch()
-    curses.endwin()
-    print(chr(27)+"[2J")
-    #sys.stderr.write("\x1b2J\x1b[H")
+    print(chr(27) + "[2J")
 
 
 if __name__ == "__main__":
@@ -225,7 +225,6 @@ if __name__ == "__main__":
 
     # fill sqlite db
     folder = sys.argv[1].replace("\\", "/")
-    commit, modify = YamlChecker(folder).files_safe()
-    Populate(folder, commit)
-
+    # checker = YamlChecker(folder)
+    
     curses.wrapper(main)

@@ -1,4 +1,6 @@
-dot = {
+"""Initializes a dictionary of ascii braille dots"""
+
+braille = {
     'to': {
         0: u'\u2800', 1: u'\u2880', 2: u'\u28C0',
         3: u'\u28E0', 4: u'\u28E4', 5: u'\u28F4',

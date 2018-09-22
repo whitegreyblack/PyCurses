@@ -20,14 +20,14 @@ def main(scr):
     tc = calendar.TextCalendar()
 
     scr.addstr(10,10, "{}".format(curses.COLORS))
-    sub = scr.subwin(15,15,15,15)
+    sub = scr.subwin(15, 15, 15, 15)
     scr.border()
-    scr.bkgd(" ", curses.color_pair(7))
+    scr.bkgd(" ", curses.color_pair(1))
     #scr.bkgd(curses.ACS_BOARD,curses.color_pair(3))
 
-    lines = tc.formatmonth(2017,3).split("\n")
-    mores = tc.formatmonth(2017,4).split("\n")
-    x,y=0,0
+    lines = tc.formatmonth(2017, 3).split("\n")
+    mores = tc.formatmonth(2017, 4).split("\n")
+    x, y = 0, 0
     # month
     # days
     # 2-6 weeks
@@ -37,23 +37,25 @@ def main(scr):
                 #if j+1 <= len(lines[i])-1 and lines[i][j+1].isdigit():
                 #    scr.addch(i, j, braille.dot['to'][int(lines[i][j])])
                 #else:
-                scr.addch(i+1,j+1,board)
+                scr.addch(i + 1,j + 1, board)
             else:
-                scr.addch(i+1,j+1,lines[i][j])
+                scr.addch(i + 1,j + 1, lines[i][j])
         y+=1
+
     for i in range(len(mores)):
         for j in range(len(mores[i])):
             if mores[i][j].isdigit():
-                scr.addch(i+1, j+22, board)
+                scr.addch(i + 1, j + 22, board)
             else:
-                scr.addch(i+1, j+22, mores[i][j])
+                scr.addch(i + 1, j + 22, mores[i][j])
+
     evens=tc.formatmonth(2017,5).split("\n")
     for i in range(len(evens)):
         for j in range(len(evens[i])):
             if evens[i][j].isdigit():
-                scr.addch(i+1, j+44, board)
+                scr.addch(i + 1, j + 44, board)
             else:
-                scr.addch(i+1, j+44, evens[i][j])
+                scr.addch(i + 1, j + 44, evens[i][j])
     #for i in range(7):
     #    for j in range(10):
     #        scr.addch(i,j,curses.ACS_BOARD)
@@ -70,7 +72,7 @@ def main(scr):
     #sub.bkgd('/',curses.color_pair(2))
     sub.clear()
     sub.addstr(0,0,"{}".format("second win"))
-    sub.bkgd(" ",curses.color_pair(5))
+    sub.bkgd(" ",curses.color_pair(1))
     sub.border()
     #sub.refresh()
     #sub.border()
@@ -79,5 +81,6 @@ def main(scr):
         if c == curses.KEY_MOUSE:
             sub.addstr(1,0,"mouseclicked")
         c = scr.getch()
+
 if __name__ == "__main__":
     curses.wrapper(main)

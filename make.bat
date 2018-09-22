@@ -1,3 +1,9 @@
+rem --------------------------------------------------------------------------
+rem Sam Whang
+rem make.bat
+rem File to imitate makefile for windows.
+rem --------------------------------------------------------------------------
+
 @echo off
 title MAKE
 set args=0
@@ -47,6 +53,7 @@ echo sub: >> %file%
 echo tax: >> %file%
 echo tot: >> %file%
 goto eof
+
 :check
 if "%2"=="parser" (
 	:parse
@@ -67,14 +74,18 @@ if "%2"=="gui" (
 	if "%~2"=="" goto pop
 	goto eof)
 goto eof
+
 :checkall
 echo linting all files
 goto parse
+
 :badarg
 echo incorrect args
 echo USAGE: make [check]
 echo             [clean]
 echo             [reciept] [real/test] [filename]
 echo        make [test]
+
+rem Done. Program exit.
 :eof
 echo done

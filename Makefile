@@ -1,8 +1,9 @@
 clean:
-	find . -name '*.pyc' -exec rm --force {} +
-	find . -name '*.pyo' -exec rm --force {} +
-	find . -name '*.log' -exec rm --force {} +
-	find . -name '*.db' -exec rm --force {} +
+	@find . -name '*.pyc' -exec rm --force {} +
+	@find . -name '*.pyo' -exec rm --force {} +
+	@find . -name '*.log' -exec rm --force {} +
+	@find . -name '*.db' -exec rm --force {} +
+	@find . | grep -E "(__pycache__)" | xargs rm -rf
 
 lint: clean
 	flake8 --exclude=.log .
