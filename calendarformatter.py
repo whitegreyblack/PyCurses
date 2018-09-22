@@ -28,28 +28,32 @@ class CalendarGrid:
     """
     pass
 
-def YearsAndMonths(startDate, endDate):
+def iter_months_years(startDate: object, endDate: object) -> tuple:
     """Returns years and months based on given start and end dates. Expected
     date format is YYYY-MM-DD. Ex. 2012-07-15
     """
-    years = [i for i in range(startDate.Year, startDate.Year + 1)]
+    
+    # TODO: Make the function an iterable
 
-    months=[]
+    months = []
+    # begin with all years between start and end date
+    years = [year for year in range(startDate.Year, endDate.Year + 1)]
+
     if len(years) > 1:
+        # covering more than a single year, find the months being used
         for year in range(len(years)):
-            if not year:
-                months.append([i for i in range(startDate.Month, 13)])
-            elif i == len(years)-1:
-                months.append([i for i in range(1, startDate.Month + 1)])
-            else:
-                months.append([i for i in range(1, 13)])
-    else:
-        months.append([i for i in range(startDate.Month, endDate.Month + 1)])
-    return years, months
+            monthsRange = (1, 13) # normal year covers between months 1-12
+            if year == 0:
+                monthsRange = (startDate.Month, 13)  # first year in list
+            elif year == len(years) - 1:
+                monthsRange = (1, endDate.Month + 1) # last year in list
 
-def build_all_possible_dates(startDate, endDate):
-    """Returns set of all possible dates between start and end dates"""
-    return []
+            months.append([month for month in range(*monthsRange)])
+    else:
+        # dates are in the same year. grab the months between the dates
+        months.append([i for i in range(startDate.Month, endDate.Month + 1)])
+
+    return [(year, m) for year, month in zip(years, months) for m in month]
 
 def parse_date(datestring: str) -> object:
     """Takes in a string object representing a formatted date. If not
@@ -70,16 +74,20 @@ def dateFold(m):
         return [' ' + x if int(x) < 9 else x for x in l]
 
     while len(m) > 1:
-        m1 = list(filter(lambda l:len(l)>1, m.pop(-2)))
+        m1 = list(filter(lambda l: len(l) > 1, m.pop(-2)))
+
         if len(m1[-1].split(" ")) == 7:
             m1.extend(m.pop(-1))
         else:
             m2 = m.pop()
             m1[-1] = " ".join((m1[-1].split(" ") + parse(m2[0])))
             m1.extend(m2[1::])
+
         if not len(m1[-1]):
             m1.pop(-1)
+
         m.append(m1)
+    
     return m[0]
 
 def tablize(m):
@@ -91,6 +99,9 @@ def initialize_curses_settings():
     curses.curs_set(0)
 
 def main(window):
+    """Creates a navigatable calendar widget for the dates passed in. Later on
+    should use min/max dates from the database holding the date infos.
+    """
     initialize_curses_settings()
 
     loc = 0
@@ -98,7 +109,6 @@ def main(window):
     start = parse_date("2018-5-28")
     end = parse_date("2018-6-28")
 
-    y, m = YearsAndMonths(start, end)
     tc = calendar.TextCalendar()
     # called to set the start day when formatmonth returns
     tc.setfirstweekday(calendar.SUNDAY)
@@ -107,13 +117,19 @@ def main(window):
     # monthdays2calendar -> returns Wx7 matrix of tuple objects (day number, day enum val)
     # monthdayscalendar -> returns Wx7 matrix of ints representing the date
 
+    for year, month in iter_months_years(start, end):
+        pass
+
+    '''
     months=[]
     for i in range(len(y)):
         for j in range(len(m[i])):
             months.append(tc.formatmonth(y[i], m[i][j]).split("\n")[2::])
-
+    '''
     window.border()
-
+    y, x = window.getmaxyx()
+    window.vline(1, 8, curses.ACS_VLINE, y - 2)
+    
     line = 2
     window.addstr(1, 1, "SMTWTFS")
 
@@ -125,13 +141,11 @@ def main(window):
         if (line % 5) == 0:
             line += 1
     ''' 
-    y, x=window.getmaxyx()
     
     #sub=curses.newpad(y//2, x//2)
     #sub.addstr(1,1,'asdfasdfasd')
     #sub.refresh(3, 3, 10, 10,8, 1)
 
-    window.vline(1, 8, curses.ACS_VLINE, y - 2)
     window.getch()
 
 if __name__ == "__main__":
