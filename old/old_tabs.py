@@ -11,8 +11,7 @@ class Tab:
         self.toggle_border = False
 
     def toggle_border_switch(self, cl):
-        """
-        Changes border color to input color
+        """Changes border color to input color
         Args:
             cl: color of tab border
         """
