@@ -44,6 +44,9 @@ EventArg = namedtuple('EventArg', 'sender msg')
 default_log_format = "[%(asctime)s] %(currentfile)s: %(message)s"
 default_log_noargs = "[%(asctime)s] %(message)s"
 
+def parse_args(argv):
+    pass
+
 class LogColor:
     GREEN='\x1b[1;32;40m'
     RED='\x1b[1;31;40m'
@@ -119,6 +122,8 @@ def format_directory_path(path: str) -> str:
     Replaces windows style path seperators to forward-slashes and adds
     another slash to the end of the string
     """
+    if path == ".":
+        return path
     formatted_path = path.replace('\\', '/')
     if formatted_path[-1] is not '/':
         formatted_path += '/'

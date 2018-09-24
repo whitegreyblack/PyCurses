@@ -11,10 +11,10 @@ import re
 import yaml
 import click
 import logging
+import datetime
 import source.config as config
 import source.decorators as wrap
 from os import walk
-from datetime import date
 from source.YamlObjects import Reciept
 import source.utils as utils
 from collections import namedtuple
@@ -219,6 +219,7 @@ class YamlChecker:
         self.log(f"Number of files to commit: {len(commit)}") 
         for filename in commit:
             self.log(f"\t+ {filename}")
+        self.log(f"Number of files uncommmitted: {len(delete)}")
         return commit, delete
 
     def files_delete(self, files):
@@ -296,7 +297,8 @@ class YamlChecker:
             except AttributeError as e:
                 self.log(e)
                 return False
-
+        
+        self.startdate = None
         return (self.yaml_store(filepath, obj)
                 and self.yaml_date(filepath, obj)
                 and self.yaml_prod(filepath, obj)
@@ -311,22 +313,25 @@ class YamlChecker:
         self.log('{} in {}: {}'.format(fname, store, (fname in store)))
         return fname in store
 
-    @wrap.tryexcept
     def yaml_date(self, file, obj):
         """Check yaml date with file date"""
-        y, m, d = obj.date
+        try: 
+            y, m, d = obj.date
 
-        if not self.startdate:
-            self.startdate = date(y, m, d)
+            if not self.startdate:
+                self.startdate = datetime.date(y, m, d)
 
-        end = date.today()
-        filedate = date(y, m, d)
+            end = datetime.date.today()
+            filedate = datetime.date(y, m, d)
 
-        self.log(f"\tStart Date: {self.startdate.isoformat()}")
-        self.log(f"\tFile Date: {filedate.isoformat()}")
-        self.log(f"\tEnd Date: {end.isoformat()}")
+            self.log(f"\tStart Date: {self.startdate.isoformat()}")
+            self.log(f"\tFile Date: {filedate.isoformat()}")
+            self.log(f"\tEnd Date: {end.isoformat()}")
 
-        return self.startdate <= filedate < end
+            return self.startdate <= filedate < end
+        except Exception as e:
+            self.log(e)
+            return False
 
     def yaml_prod(self, file, obj):
         """iterate through yaml object[prod]:{str:int,[...]}"""

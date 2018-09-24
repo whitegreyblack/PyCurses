@@ -6,8 +6,9 @@ Handles application functionality between Views/Models/Controller
 __author__ = "Samuel Whang"
 
 import os
+import sys
+import click
 import curses
-
 from source.controls import (
         Window, ScrollList, Card, RecieptForm, Prompt, Button
         )
@@ -118,22 +119,23 @@ def main(screen):
     screen
     """
     global terminal_width, terminal_height
+
     terminal_width = curses.COLS
     terminal_height = curses.LINES
-    
+
     fields = 'filename store date category subtotal tax total payment'
     reciepttuple = namedtuple('Reciept', fields)
 
-    logger = utils.setup_logger('applicationlogger', 
+    logger = utils.setup_logger('applicationlogger',
                                 'app.log',
                                 extra={'currentfile': __file__})
-   
+
     logger.info('main(): initializing curses library settings')
     initialize()
     logger.info('main(): done')
 
-    checker = YamlChecker('./data/', logger)
-    valid_files, _ = checker.files_safe()
+    checker = YamlChecker(sys.argv[2], logger)
+    valid_files, other_files = checker.files_safe()
     
     yaml_objs = {
         valid_file: checker.yaml_read(valid_file)
@@ -143,14 +145,14 @@ def main(screen):
     connection = setup_database(yaml_objs, logger=logger)
     reciepts = [reciepttuple(*r) for r in list(connection.select_reciepts())]
 
-    logger.info(f"main(): {reciepts}")
+    logger.info(f"main(): Reciepts: {reciepts}")
 
     reciept_objs = {
         reciept: connection.select_reciept_products(reciept.filename)
             for reciept in list(reciepts)
     }
-    logger.info(f"main(): {len(reciept_objs)}")
-    logger.info(f"main(): {reciept_objs.keys()}")
+    logger.info(f"main(): Number of reciepts: {len(reciept_objs)}")
+    logger.info(f"main(): Reciept object keys: {reciept_objs.keys()}")
 
     window = setup_windows(reciept_objs, screen)
     window.draw(screen)
@@ -163,6 +165,22 @@ def main(screen):
         screen.erase()
         window.draw(screen)
 
+def usage():
+    return("Usage: python -m source -f [args]")
+
 if __name__ == "__main__":
-    os.environ.setdefault('ESCDELAY', '25')
-    curses.wrapper(main)
+    arguments = sys.argv[1:]
+    if len(arguments) < 2:
+        print("No data folder specified")
+        print(usage())
+    else:
+        # we have an argument for the folder arg. But is it usable?
+        if arguments[1] == '.':
+            exit('Invalid folder specified: cannot use dot')
+        filepath = utils.format_directory_path(arguments[1])
+        if not utils.check_directory_path(filepath):
+            print("Folder argument is not a directory")
+        else: 
+            sys.argv[2] = filepath
+            os.environ.setdefault('ESCDELAY', '25')
+            curses.wrapper(main)
