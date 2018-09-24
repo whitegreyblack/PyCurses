@@ -269,6 +269,8 @@ class RecieptForm(Form):
     #    super().__init__(wid, x, y, width, height, model, title)
 
     def draw(self, screen):
+        def pad(word):
+            return '.' * max(0, 32 - len(word))
         border(screen, self.x, self.y, self.width, self.height - self.y)
         screen.addstr(self.y, 
                 self.width + self.x - len(f"x:{self.x}, y:{self.y}, w:{self.width}, z:{self.height}"), 
@@ -278,31 +280,41 @@ class RecieptForm(Form):
             title = self.title if self.title else "Reciept"
             screen.addstr(self.y + 1, self.x + 1, title)
            
-            screen.addstr(self.y + 3, self.x + 1, f"Store...: {self.model.model.store}")
-            screen.addstr(self.y + 4, self.x + 1, f"Date....: {self.model.model.date}")
-            screen.addstr(self.y + 5, self.x + 1, f"Category: {self.model.model.category}")
+            screen.addstr(self.y + 3,
+                          self.x + 1,
+                          f"Store{pad('store')}: {self.model.model.store:>20}")
+            screen.addstr(self.y + 4,
+                          self.x + 1,
+                          f"Date{pad('date')}: {self.model.model.date:>20}")
+            screen.addstr(self.y + 5,
+                          self.x + 1, 
+                          f"Category{pad('category')}: {self.model.model.category:>20}")
 
             screen.addstr(self.y + 7, self.x + 1, f"Products:")
+            
             product_index = 8
             for product in self.model.model.products:
                 screen.addstr(self.y + product_index, 
                               self.x + 1,
-                              f"\t{product}")
+                              f"- {product.name:.<30}: {Money(product.price):>20}")
+                
                 product_index += 1
+            product_index += 1
 
-            screen.addstr(self.y + 10, 
-                          self.x + 1, 
-                          f"Subtotal: {Money(self.model.model.transaction.subtotal)}")
+            # TODO: make into a for loop. Don't need this long addstr for every property. be better.
 
-            screen.addstr(self.y + 11, 
+            screen.addstr(self.y + product_index, 
                           self.x + 1, 
-                          f"Tax.....: {Money(self.model.model.transaction.tax)}")
-            screen.addstr(self.y + 12, 
+                          f"Subtotal{pad('subtotal')}: {Money(self.model.model.transaction.subtotal)}")
+            screen.addstr(self.y + product_index + 1, 
                           self.x + 1, 
-                          f"Total...: {Money(self.model.model.transaction.total)}")
-            screen.addstr(self.y + 13, 
+                          f"Tax{pad('tax')}: {Money(self.model.model.transaction.tax)}")
+            screen.addstr(self.y + product_index + 2, 
                           self.x + 1, 
-                          f"Payment.: {Money(self.model.model.transaction.payment)}")
+                          f"Total{pad('total')}: {Money(self.model.model.transaction.total)}")
+            screen.addstr(self.y + product_index + 3, 
+                          self.x + 1, 
+                          f"Payment{pad('payment')}: {Money(self.model.model.transaction.payment)}")
         else:
             screen.addstr((self.y + self.height) // 2, 
                           ((self.x + self.width) // 2) - (len("No file selected") // 2), 

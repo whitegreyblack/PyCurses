@@ -19,6 +19,9 @@ from source.YamlObjects import Reciept
 import source.utils as utils
 from collections import namedtuple
 
+# TODO: change verbiage from '(UN)COMMIT' -> '(UN)VERIFIED' 
+#       commit should only be used in relation to db loads
+
 class YamlChecker:
     """Processes yaml files in specified folder for both file integrity and
     yaml safe syntax
@@ -42,6 +45,10 @@ class YamlChecker:
         if not self.folder:
             raise ValueError("Folder parameter cannot be none")
 
+        self.verified = []
+        self.unverified = []
+        self.skipped = []
+
         # since this class parses yaml files to verify if they are database safe,
         # there should be a parameter to pass in files which have already been
         # added to the database
@@ -55,6 +62,10 @@ class YamlChecker:
     def __exit__(self):
         self.log("Deleting yaml checker object")
 
+    @property
+    def verified_files(self):
+        return {vf: self.yaml_read(vf) for vf in self.verified}
+
     def log(self, message, level=logging.INFO):
         """Prints the message to the logger instead of to the terminal as with 
         logging level of INFO.
@@ -66,7 +77,7 @@ class YamlChecker:
             self.logger.warning(formatted_message)
         else:
             raise ValueError("Parameter level does not match logging levels")
-    
+
     def verify_file_states(self, loaded_files=None):
         """Iterate through each file in directory to verify if the file is
         safe to load into the database.
@@ -82,6 +93,7 @@ class YamlChecker:
 
         for _, _, files in walk(self.folder):
             sortedfiles = sorted(files)
+            self.log(f"Verifying {len(sortedfiles)} files")
             for file_name in files: 
                 filename, extension = utils.filename_and_extension(file_name)
 
@@ -182,7 +194,10 @@ class YamlChecker:
                     continue
 
                 # all properties came back with a value. now check that value
+                self.log(f"  + Verfied {filename}")
                 commit.append(filename)
+
+            self.verified = [c + '.yaml' for c in commit]
 
             return {
                 "COMMITTED": commit,

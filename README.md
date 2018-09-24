@@ -10,14 +10,14 @@
 - pyyaml : file parsing and extension
 - Curses : front end of application
 - sqlite : back end of application
-- logging : for all debug and normal output stmts created at runtime
-- functools : used in wrappers class for wrapping functionality
-- datetime: used in creating date objects for verification of object dates
+- logging : for all debug and normal output statements created at runtime
+- functools : used in wrappers class for decorators functionality
+- datetime: used in creating date objects for verification of variable dates
 - click: used in some files for standalone functionality and argsparsing
 
 ## Folder structure:
 - source: app folder
-  - __main__.py: application file that runs the main llop
+  - __main__.py: application file that runs the main loop
   - yamlchecker.py: yaml file loader and validation tool
   - database.py: sqlite3 connection object to execute sql queries during runtime
   - controls.py: holds view model data classes

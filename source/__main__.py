@@ -9,126 +9,28 @@ import os
 import sys
 import click
 import curses
-from source.controls import (
-        Window, ScrollList, Card, RecieptForm, Prompt, Button
-        )
-from source.models.models import Reciept, Transaction
-from source.models.product import Product
-from source.database import Connection, unpack
-from source.yamlchecker import YamlChecker
-from collections import namedtuple
 import source.utils as utils
-
-terminal_width, terminal_height = 0, 0
+from source.application import Application
 
 def initialize_curses_settings():
     """Sets Curses related settings"""
     curses.curs_set(0)
     curses.init_pair(1, curses.COLOR_BLACK, curses.COLOR_WHITE)
-    # color enum num 6 - cyan
-    curses.init_pair(2, curses.COLOR_BLACK, 
-                     curses.COLOR_BLUE | curses.COLOR_GREEN)
-
-def setup_database(connection, yaml_objs, rebuild=True, logger=None):
-    """Builds database connection and calls startup methods"""
-    if rebuild:
-        connection.drop_tables()
-        connection.build_tables()
-    connection.insert_files(yaml_objs)
-
-def setup_cards(reciept_objs: dict):
-    """Builds reciept cards from dictionary of reciept objects"""
-    cards = []
-    for reciept, products in reciept_objs.items():
-        transaction = Transaction(reciept.total, reciept.payment, 
-                                  reciept.subtotal, reciept.tax)
-
-        r = Reciept(reciept.store, reciept.date, reciept.category,
-                    products, transaction)
-
-        c = Card(r)
-        cards.append(c)
-    return cards
-
-def setup_test_cards():
-    """List of example product cards used in testing"""
-    return [Card(Product(fruit, price))
-            for fruit, price in zip(
-                ['Apples', 'Oranges', 'Pears', 'Watermelons', 'Peaches'],
-                [3, 5, 888, 24, 55])]
-
-def setup_windows(reciept_objs, screen):
-    """Create UI components and add to the screen"""
-    window = Window('Application', terminal_width, terminal_height)
-
-
-    scroller = ScrollList(1, 1, 
-                          window.width // 4, 
-                          window.height, 
-                          'Reciepts', 
-                          selected=True)
-
-    reciept_cards = setup_cards(reciept_objs)
-    scroller.add_items(setup_cards(reciept_objs))
-    form = RecieptForm((window.width // 4) + 1, # add 1 for offset
-                       1,
-                       window.width - (window.width // 4) - 1, 
-                       window.height,
-                       scroller.model)
-    
-    subwin = screen.subwin(window.height // 3, 
-                           window.width // 2, 
-                           window.height // 3,
-                           window.width // 4)
-
-    exitprompt = Prompt(subwin, 'Exit Prompt', 'Confirm', None)
-
-    window.add_windows([scroller, form, exitprompt])
-
-    keymap = dict()
-    keymap[(curses.KEY_UP, scroller.wid)] = scroller.wid
-    keymap[(curses.KEY_DOWN, scroller.wid)] = scroller.wid
-    keymap[(curses.KEY_ENTER, scroller.wid)] = form.wid
-    keymap[(curses.KEY_RIGHT, scroller.wid)] = form.wid
-    keymap[(curses.KEY_LEFT, form.wid)] = scroller.wid
-    keymap[(curses.KEY_F1,)] = 'Reciepts'
-    # 10 : New Line Character
-    keymap[(10, scroller.wid)] = form.wid
-    # 27 : Escape Key Code
-    keymap[(27, scroller.wid)] =  exitprompt.wid
-    keymap[(27, exitprompt.wid)] = None
-    keymap[(27, form.wid)] = scroller.wid
-    keymap[(ord('q'), scroller.wid)] = None
-    keymap[(curses.KEY_ENTER, exitprompt.wid)] = None
-    window.add_keymap(keymap)
-    return window
-
-def setup_data(checker, database, logger):
-    # Call rebuild. Let db decide to rebuild based on internal variables.
-    database.rebuild_tables()
-    inserted = list(database.inserted_files())
-    
+    curses.init_pair(2, curses.COLOR_BLACK, curses.COLOR_CYAN) 
 
 def application(screen, folderpath):
+    """Overview:
+    Buids the database and yamlchecker objects. (They are tightly coupled. May
+    need to change in the future.) The data from the yaml files found in using
+    the folder path paramter are first checked by the yamlchecker before
+    loading into the database.
+
+    With loading finished, the front end is created and views are initialized,
+    using data from the database.
+
+    Then the application is looped to draw the views onto the screen using 
+    curses framework.
     """
-    Overview:
-
-    Take files from Yaml folder 'Reciepts' and pass it into the yaml
-    parser and then the database.
-
-    Then we build the main screen using the curses views files.
-
-    Finally we bring in the data from db into the models to view onto the
-    screen
-    """
-    global terminal_width, terminal_height
-
-    terminal_width = curses.COLS
-    terminal_height = curses.LINES
-
-    fields = 'filename store date category subtotal tax total payment'
-    reciepttuple = namedtuple('Reciept', fields)
-
     logger = utils.setup_logger('applicationlogger',
                                 'app.log',
                                 extra={'currentfile': __file__})
@@ -136,43 +38,22 @@ def application(screen, folderpath):
     logger.info('main(): initializing curses library settings')
     initialize_curses_settings()
     logger.info('main(): done')
-
-    # checker = YamlChecker(folderpath, logger=logger)
-    # database = Connection(logger=logger)
-    # window = Window('Application', terminal_width, terminal_height)
-    # setup_files(window, logger)
-
-    '''
-    # valid_files, other_files = checker.files_safe()
-    fileresults = checker.check_file_states()
-
-    yaml_objs = {
-        valid_file: checker.yaml_read(valid_file)
-            for valid_file in valid_files
-    }
     
-    setup_database(yaml_objs, logger=logger)
-    reciepts = [reciepttuple(*r) for r in list(connection.select_reciepts())]
+    app = Application(folderpath, logger=logger)
+    app.setup()
+    app.build_windows(screen)
+    app.draw(screen)
 
-    logger.info(f"main(): Reciepts: {reciepts}")
-
-    reciept_objs = {
-        reciept: connection.select_reciept_products(reciept.filename)
-            for reciept in list(reciepts)
-    }
-    logger.info(f"main(): Number of reciepts: {len(reciept_objs)}")
-    logger.info(f"main(): Reciept object keys: {reciept_objs.keys()}")
-    window = setup_windows(reciept_objs, screen)
-    window.draw(screen)
-
-    while 1:
+    while True:
         key = screen.getch()
-        retval = window.send_signal(key)
+        retval = app.send_signal(key)
         if not retval:
             break
         screen.erase()
-        window.draw(screen)
-    '''
+        app.draw(screen)
+
+def usage():
+    return("Usage: python -m source -f [args]")
 
 @click.command()
 @click.option('-f', help="Folder containing yaml data files")
@@ -193,9 +74,6 @@ def main(f):
 
     os.environ.setdefault('ESCDELAY', '25')
     curses.wrapper(application, f)
-
-def usage():
-    return("Usage: python -m source -f [args]")
 
 if __name__ == "__main__":
     main()
