@@ -28,8 +28,6 @@ class YamlChecker:
     logger_file = 'filechecker.log'
     logger_args = {'currentfile': __file__}
 
-    file_extensions = [".yaml",]
-
     def __init__(self, folder='reciepts', logger=None):
         self.logargs = {'classname': self.__class__.__name__}
 
@@ -102,6 +100,7 @@ class YamlChecker:
                 # verify file extension is yaml
                 if extension != config.YAML_FILE_EXTENSION:
                     error = f"{filename}: is not a yaml file."
+                    self.log(error, level=logging.WARNING)
                     change.append(error)
                     continue
                 
@@ -109,6 +108,7 @@ class YamlChecker:
                 regex = re.compile(config.YAML_FILE_NAME_REGEX)
                 if not regex.match(filename):
                     error = f"{filename} does not match the config file regex"
+                    self.log(error, level=logging.WARNING)
                     change.append(error)
                     continue
 
@@ -123,12 +123,14 @@ class YamlChecker:
                 # try loading the lines if not an empty file
                 if not lines:
                     error = f"{filename} is an empty file. Nothing to read"
+                    self.log(error, level=logging.WARNING)
                     change.append(e)
                     continue
 
                 try:
                     yamlobj = yaml.load(lines)
                 except Exception as e:
+                    self.log(e, level=Logging.WARNING)
                     change.append(e)
                     continue
 
@@ -149,13 +151,13 @@ class YamlChecker:
 
                     if validator:
                         if not validator(filename, p):
-                            print(f"val err {prop}")
                             validationError = True
                             break
 
                 # some reason the property got an attribute error
                 if attributeError:
                     error = f"{filename}: missing reciept property '{prop}'"
+                    self.log(error, level=logging.WARNING)
                     change.append(error)
                     continue
 
@@ -166,12 +168,14 @@ class YamlChecker:
                     else:
                         types = ptype
                     error = f"{filename}: {prop} is not of type(s) {types}"
+                    self.log(error, level=logging.WARNING)
                     change.append(error)
                     continue
 
                 # some reason property failed validation
                 if validationError:
                     error = f"{filename}: {prop} failed validation. Check property"
+                    self.log(error, level=logging.WARNING)
                     change.append(error)
                     continue
 
@@ -380,11 +384,10 @@ class YamlChecker:
 
 def usage():
     return """
-USAGE: -f [arg] -[ p | l | d ]
-    -f -> folder containing yaml files
-    -p -> print mode flag
-    -l -> logger mode flag
-    -d -> debug mode flag
+USAGE: -f [ arg ] [ -p ]
+    -f  => folder flag with expecting argument
+    arg => folder name containing yaml files
+    -p  => print mode flag
 """[1:]
 
 def log(logger, message, consoleprint):

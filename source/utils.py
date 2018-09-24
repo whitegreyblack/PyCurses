@@ -128,7 +128,8 @@ def check_directory_path(path: str) -> bool:
     return os.path.isdir(path)
 
 def parse_file_from_path(path: str) -> str:
-    return path.split('/')[-1]
+    formattedpath = format_directory_path(path)
+    return formattedpath.split('/')[-2]
 
 def filename_and_extension(path: str) -> Tuple[str, str]:
     return os.path.splitext(path)
