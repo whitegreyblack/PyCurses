@@ -106,7 +106,7 @@ def setup_windows(reciept_objs, screen):
     window.add_keymap(keymap)
     return window
 
-def main(screen):
+def application(screen, folderpath):
     """
     Overview:
 
@@ -134,7 +134,7 @@ def main(screen):
     initialize()
     logger.info('main(): done')
 
-    checker = YamlChecker(sys.argv[2], logger)
+    checker = YamlChecker(folderpath, logger)
     valid_files, other_files = checker.files_safe()
     
     yaml_objs = {
@@ -165,22 +165,27 @@ def main(screen):
         screen.erase()
         window.draw(screen)
 
+@click.command()
+@click.option('-f', help="Folder containing yaml data files")
+def main(f):
+    if not f:
+        print("no data folder specified")
+        print(usage())
+        return
+
+    if f == '.':
+        print("Invalid folder specified: cannot use dot")
+        return
+
+    filepath = utils.format_directory_path(f)
+    if not utils.check_directory_path(filepath):
+        print("Folder argument is not a directory")
+
+    os.environ.setdefault('ESCDELAY', '25')
+    curses.wrapper(application, f)
+
 def usage():
     return("Usage: python -m source -f [args]")
 
 if __name__ == "__main__":
-    arguments = sys.argv[1:]
-    if len(arguments) < 2:
-        print("No data folder specified")
-        print(usage())
-    else:
-        # we have an argument for the folder arg. But is it usable?
-        if arguments[1] == '.':
-            exit('Invalid folder specified: cannot use dot')
-        filepath = utils.format_directory_path(arguments[1])
-        if not utils.check_directory_path(filepath):
-            print("Folder argument is not a directory")
-        else: 
-            sys.argv[2] = filepath
-            os.environ.setdefault('ESCDELAY', '25')
-            curses.wrapper(main)
+    main()
