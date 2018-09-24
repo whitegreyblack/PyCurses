@@ -1,6 +1,6 @@
-"""
-YamlObjects.py : holds all objects used during transporting data from yaml
-                 to database
+"""YamlObjects.py
+
+holds all objects used during transporting data from yaml to database
 """
 
 __Author__ = "Sam Whang"
@@ -18,7 +18,6 @@ class Reciept(yaml.YAMLObject):
         'tax', 'total']
 
     def __init__(self, *args, **kwargs):
-        print(args, *kwargs)
         self.store = args[0]
         self.date = args[1]
         self.category = args[2]
