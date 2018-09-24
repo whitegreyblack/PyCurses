@@ -1,8 +1,8 @@
 --- !Reciept
 store: Leevers
 date: [2017,4,15]
-type: grocery
-prod:
+category: grocery
+products:
   {
     celery: 1.19,
     green onions: 1.00,
@@ -18,6 +18,6 @@ prod:
     bottom round roast: 9.97,
     large eggs: 0.79,
   }
-sub: 30.33
+subtotal: 30.33
 tax: 0.30
-tot: 30.63
+total: 30.63

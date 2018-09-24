@@ -1,6 +1,7 @@
 --- !Reciept
-store: Missing Property
-date: [2017, 5, 3]
+store: Property Validation Fail
+date: [2019,5,3]
+category: 1234
 prod:
   {
     whopper (2): asdf,

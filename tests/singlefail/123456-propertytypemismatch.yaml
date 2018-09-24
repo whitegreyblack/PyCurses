@@ -1,6 +1,7 @@
 --- !Reciept
-store: Missing Property
+store: Property Type Mismatch
 date: [2017, 5, 3]
+category: 1234
 prod:
   {
     whopper (2): asdf,

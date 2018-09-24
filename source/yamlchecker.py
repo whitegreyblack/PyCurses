@@ -1,8 +1,8 @@
-"""
-yamlchecker.py: YamlChecker provides methods to iterate through and validate
-                yaml files. It can be used as a stand alone script to check
-                the files as they are written for any errors. Used before
-                inserting data into the database.
+"""yamlchecker.py 
+YamlChecker provides methods to iterate through and validate
+yaml files. It can be used as a stand alone script to check
+the files as they are written for any errors. Used before
+inserting data into the database.
 """
 
 __author__ = "Samuel Whang"
@@ -41,7 +41,7 @@ class YamlChecker:
             self.log("No logger passed into constructor. Creating new logger.")
 
         self.folder = folder
-        
+
         # since this class parses yaml files to verify if they are database safe,
         # there should be a parameter to pass in files which have already been
         # added to the database
@@ -85,6 +85,13 @@ class YamlChecker:
             for file_name in files: 
                 filename, extension = utils.filename_and_extension(file_name)
 
+                # check for dot files in the verify beginning
+                if file_name[0] == ".":
+                    error = f"{file_name} begins with a dot. Skipping."
+                    self.log(error)
+                    skipped.append(error)
+                    continue
+
                 # verify file not already loaded in db. 
                 # if true then skip over to next file
                 if loaded_files and filename in loaded_files:
@@ -95,7 +102,6 @@ class YamlChecker:
                 # verify file extension is yaml
                 if extension != config.YAML_FILE_EXTENSION:
                     error = f"{filename}: is not a yaml file."
-                    # self.log.warning(error)
                     change.append(error)
                     continue
                 
@@ -103,7 +109,6 @@ class YamlChecker:
                 regex = re.compile(config.YAML_FILE_NAME_REGEX)
                 if not regex.match(filename):
                     error = f"{filename} does not match the config file regex"
-                    # self.log(error, level=logging.WARNING)
                     change.append(error)
                     continue
 
@@ -112,44 +117,72 @@ class YamlChecker:
                     with open (self.folder + file_name) as f:
                         lines = f.read()
                 except Exception as e:
-                    # self.log(e, level=logging.WARNING)
                     change.append(e)
                     continue
 
                 # try loading the lines if not an empty file
                 if not lines:
                     error = f"{filename} is an empty file. Nothing to read"
-                    # self.log(error, level=logging.WARNING)
                     change.append(e)
                     continue
 
                 try:
                     yamlobj = yaml.load(lines)
                 except Exception as e:
-                    # self.log(error, level=logging.WARNING)
                     change.append(e)
                     continue
 
                 # check all properties in the object for non null existance
-                attributeError = None
-                for prop in yamlobj.properties:
+                attributeError = False
+                propertyTypeError = False
+                validationError = False
+                for prop, (ptype, validator) in yamlobj.properties.items():
                     try:
-                        getattr(yamlobj, prop)
-                    except AttributeError as ae:
-                        attributeError = ae
+                        p = getattr(yamlobj, prop)
+                    except AttributeError:
+                        attributeError = True
                         break
                     
+                    if not isinstance(p, ptype):
+                        propertyTypeError = True
+                        break
+
+                    if validator:
+                        if not validator(filename, p):
+                            print(f"val err {prop}")
+                            validationError = True
+                            break
+
                 # some reason the property got an attribute error
                 if attributeError:
-                    error = f"{filename}: {attributeError}"
-                    # self.log(error, level=logging.WARNING)
+                    error = f"{filename}: missing reciept property '{prop}'"
                     change.append(error)
                     continue
-                    
-                commit.append(file_name)
 
-            return commit, change, skipped
-                
+                # some reason the property type failed
+                if propertyTypeError:
+                    if isinstance(ptype, (list, tuple)):
+                        types = ", ".join(str(t) for t in ptype)
+                    else:
+                        types = ptype
+                    error = f"{filename}: {prop} is not of type(s) {types}"
+                    change.append(error)
+                    continue
+
+                # some reason property failed validation
+                if validationError:
+                    error = f"{filename}: {prop} failed validation. Check property"
+                    change.append(error)
+                    continue
+
+                # all properties came back with a value. now check that value
+                commit.append(filename)
+
+            return {
+                "COMMITTED": commit,
+                "SKIPPED": skipped,
+                "UNCOMMITTED": change,
+                }
 
     def files_safe(self, loaded_files=None):
         """Iterate through each file in directory to verify if the file is
@@ -354,12 +387,39 @@ USAGE: -f [arg] -[ p | l | d ]
     -d -> debug mode flag
 """[1:]
 
+def log(logger, message, consoleprint):
+    """Prints messages in info mode. If consoleprint is true then also prints
+    to terminal as well.
+    """
+    logger.info(message)
+    if consoleprint:
+        print(message)
+
+def log_file_results(logger, batches, toconsole):
+    totalfiles = sum(len(batch) for batch in batches.values())
+    totalmessage = f"Total number of files checked: {totalfiles}"
+    log(logger, totalmessage, toconsole)
+
+    for batchtype, batch in batches.items():
+        if batch:
+            batchmessage = config.YAML_CHECKER_BATCH_MSG.format(batchtype,
+                                                                len(batch))
+            log(logger, batchmessage, toconsole)
+            for index, b in enumerate(batch):
+                symbol = config.YAML_CHECKER_BATCH_SYMBOL[batchtype]
+                message = config.YAML_CHECKER_FILE_MSG.format(symbol,
+                                                              index + 1,
+                                                              len(batch),
+                                                              b)
+                log(logger, message, toconsole)
+        else:
+            batchmessage = config.YAML_CHECKER_NO_BATCH.format(batchtype)
+            log(logger, batchmessage, toconsole)
+
 @click.command()
 @click.option('-f', help='Folder Containing Yaml Files')
 @click.option('-p', is_flag=True, help='MODE: Print')
-@click.option('-l', is_flag=False, help='MODE: Logger')
-@click.option('-d', is_flag=False, help='MODE: Debug')
-def main(f, p, l, d):
+def main(f, p):
     # check required input args -- exit if incorrect
     if not f:
         print('ERROR: incorrect arg - no input folder flag and arg specified')
@@ -377,20 +437,9 @@ def main(f, p, l, d):
         exit()
 
     checker = YamlChecker(filepath, logger)
-    commits, changes, skipped = checker.verify_file_states()
-    # .files_safe()
-    
-    if changes:
-        logger.info("files needing changes:")
-        for changefile in changes:
-            logger.info(f"?\t{changefile}")
+    fileresults = checker.verify_file_states()
 
-    if commits:
-        logger.info("files to commit:")
-        for commit in commits:
-            logger.info(f"+\t{commit}")
-
-    logger.info("completed checking files")
+    log_file_results(logger, fileresults, p)
 
 if __name__ == "__main__":
     main()
