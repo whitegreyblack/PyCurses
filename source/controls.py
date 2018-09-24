@@ -270,7 +270,7 @@ class RecieptForm(Form):
 
     def draw(self, screen):
         def pad(word):
-            return '.' * max(0, 32 - len(word))
+            return '.' * max(0, 34 - len(word))
         border(screen, self.x, self.y, self.width, self.height - self.y)
         screen.addstr(self.y, 
                 self.width + self.x - len(f"x:{self.x}, y:{self.y}, w:{self.width}, z:{self.height}"), 
@@ -296,25 +296,18 @@ class RecieptForm(Form):
             for product in self.model.model.products:
                 screen.addstr(self.y + product_index, 
                               self.x + 1,
-                              f"- {product.name:.<30}: {Money(product.price):>20}")
+                              f"- {product.name:.<32}: {Money(product.price):>20}")
                 
                 product_index += 1
             product_index += 1
 
             # TODO: make into a for loop. Don't need this long addstr for every property. be better.
-
-            screen.addstr(self.y + product_index, 
-                          self.x + 1, 
-                          f"Subtotal{pad('subtotal')}: {Money(self.model.model.transaction.subtotal)}")
-            screen.addstr(self.y + product_index + 1, 
-                          self.x + 1, 
-                          f"Tax{pad('tax')}: {Money(self.model.model.transaction.tax)}")
-            screen.addstr(self.y + product_index + 2, 
-                          self.x + 1, 
-                          f"Total{pad('total')}: {Money(self.model.model.transaction.total)}")
-            screen.addstr(self.y + product_index + 3, 
-                          self.x + 1, 
-                          f"Payment{pad('payment')}: {Money(self.model.model.transaction.payment)}")
+            for prop in ['Subtotal', 'Tax', 'Total', 'Payment']:
+                value = getattr(self.model.model.transaction, prop.lower())
+                screen.addstr(self.y + product_index,
+                              self.x + 1,
+                              f"{prop}{pad(prop)}: {Money(value):>20}")
+                product_index += 1
         else:
             screen.addstr((self.y + self.height) // 2, 
                           ((self.x + self.width) // 2) - (len("No file selected") // 2), 
