@@ -39,6 +39,8 @@ class YamlChecker:
             self.log("No logger passed into constructor. Creating new logger.")
 
         self.folder = folder
+        if not self.folder:
+            raise ValueError("Folder parameter cannot be none")
 
         # since this class parses yaml files to verify if they are database safe,
         # there should be a parameter to pass in files which have already been

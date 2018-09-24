@@ -1,63 +1,50 @@
-"# PyCurses" 
-A Python Curses based Project
+# PyCurses
 
-# PYCURSES
+## Description
+  Builds a curses application using yaml python files.
 
-# SETUP
-- python3 -m pip install yaml
+## How to run (Python 3)
+  `python -m source -f ./data/`
 
-# Folder Structure
-Reciepts:
-    Yaml Files
-
-Src -> Source:
-    Python Files
-
-DB:
-    Sqlite3 Databases
-
-This program will be a multi step development on the Windows platform. Currently on Step 1 backtesting and Step 2 development
-
-The aim of this project is to create a program that allows for the ETL of yaml objects using several technologies.
-The project will be broken down into several portions which may be revisited if need be
- 
-- Step 1 will be getting basic front end, file handling, and back end connection classes created
-    - Tab and Window Objects
-    - Yaml Objects to process yaml files
-    - SQLite3 Connection Object
-- Step 2 will be connecting back end to front end and string output
-    - Layering of user created objects
-    - Database querying methods 
-    - String formatting for output 
-- [UPDATE|CURRENT STEP]: Step 2A will be cleaning up backend functionality and code
-    - Refactoring and Restyling of currently existing files
-    - Adding a larger number of yaml files to be used in the database
-    - Adding statistics output to logging files
-    - Transitioning all print outputs to logging
-- Step 3 will be diversification of front end window objects
-    - I would like several differnt windows for a layered application
-    - These will include Finance Tab, Grocery/Recipe Tab and Schedule Tab
-
-Dependancies
+## Dependancies
 - pyyaml : file parsing and extension
 - Curses : front end of application
 - sqlite : back end of application
-- [UPDATE]:
-	- logging : for all debug and normal output stmts created at runtime
-	- functools : used in wrappers class for wrapping functionality
-	- datetime: used in creating date objects for verification of object dates
-	- click: used in some files for standalone functionality and argsparsing
-Files:
-- [UPDATE]: merged strings_sql and strings_log into one strings.py file
-	- strings_sql.py - holds py strings containing common sql queries
-	- strings_log.py - holds py strings containing common logger output
-- [UPDATE]: merged reciept_yaml and reciept_py into one file containing a single flexible object
-	- reciept_yaml.py - holds yaml object that parses yaml reciepts
-	- reciept_py.py - holds object that might be used to interact between front and backend
-- [UPDATE]: renamed db_connection into database.py file holding a connection object
-	- db_connection.py - sqlite3 connection class that holds cursor object for db
-- simple_menu - main front end driver, handles user input and visuals
-- [UPDATE]: refactored populate and checker to create a wrappers file holding decorator functions
-	- populate - back end driver, called once to populate the database if not already populated
-	- checker - back end yaml file that verifies yaml files found in files folder
-Additional TODOS: exception handling for delicate interacting functions
+- logging : for all debug and normal output stmts created at runtime
+- functools : used in wrappers class for wrapping functionality
+- datetime: used in creating date objects for verification of object dates
+- click: used in some files for standalone functionality and argsparsing
+
+## Folder structure:
+- source: app folder
+  - __main__.py: application file that runs the main llop
+  - yamlchecker.py: yaml file loader and validation tool
+  - database.py: sqlite3 connection object to execute sql queries during runtime
+  - controls.py: holds view model data classes
+  - models.py: holds model data classes
+  - YamlObjects: holds yaml model data classes for yaml file loading
+  - utils.py: various shared methods used in all files within the source folder
+
+- reciepts: currently depracted yaml files. Ongoing task to convert them.
+- data: holds current yaml files which pass yamlchecking. Used for testing yamlchecker
+        and running the main app
+- tests: holds test data to run failure tests.
+  - singlefail: holds test which fail in yamlchecker
+
+- old: holds depracated widget classes. May be used later on so not yet deleted.
+
+- example: Old applications based on old code. Holds examples like tabs, color, and mouse clicking
+
+# Overview
+The project will be broken down into several portions which may be revisited if need be:
+- Loading yamlfiles into database:
+  - The yamlchecker and database files are currently psuedo-tightly coupled in that the
+    yamlchecker uses the database to check for previously inserted files and the database 
+    uses files from yamlchecker to check for new files to insert. The functions for each
+    files differed enough to need two separate classes.
+  - The YamlObjects file holds the data model the data files use when loading the files
+    in the yaml loader.
+
+- Building the screen:
+  - Models are used to hold the data retrieved from the database during data retrieval.
+  - Controls hold the screen and models to be able to draw the screen with the correct data.

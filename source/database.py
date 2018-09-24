@@ -14,6 +14,10 @@ from source.utils import filename_and_extension as fileonly
 from source.utils import format_float as real
 from source.utils import format_date as date
 
+def unpack(cursor):
+    """Returns data in a database cursor object as list"""
+    return [data for data in cursor]
+
 class Connection:
     '''
     Database object
@@ -21,8 +25,10 @@ class Connection:
     logger_name = 'database'
     logger_file = 'database.log'
     logger_args = {'currentfile':__file__}
+    
+    rebuild = False
 
-    def __init__(self, logger=None):
+    def __init__(self, logger=None, rebuild=False):
         """Create connection to db"""
         
         self.logger = logger
@@ -34,6 +40,7 @@ class Connection:
         self.log("creating database connection.")  
 
         self.conn = sqlite3.connect('reciepts.db')
+        self.rebuild = rebuild
 
         self.log("created database connection.")
 
@@ -52,6 +59,11 @@ class Connection:
         if message.requires_commit:
             self.commit() 
         return results
+
+    def rebuild_tables(self):
+        if self.rebuild:
+            self.drop_tables()
+            self.build_tables()
 
     def drop_tables(self):
         # delete tables in sqlite
@@ -74,7 +86,9 @@ class Connection:
         self.log("built tables in database.")
 
     def inserted_files(self, fields=None):
-        return self.conn.execute("SELECT FILENAME FROM reciepts")
+        cursor = self.conn.execute("SELECT FILENAME FROM reciepts")
+        for data in unpack(cursor):
+            yield data
 
     def insert_files(self, yaml_objs: dict):
         if not yaml_objs:

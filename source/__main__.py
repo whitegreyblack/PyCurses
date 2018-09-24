@@ -12,17 +12,16 @@ import curses
 from source.controls import (
         Window, ScrollList, Card, RecieptForm, Prompt, Button
         )
-
 from source.models.models import Reciept, Transaction
 from source.models.product import Product
-from source.database import Connection
+from source.database import Connection, unpack
 from source.yamlchecker import YamlChecker
 from collections import namedtuple
 import source.utils as utils
 
 terminal_width, terminal_height = 0, 0
 
-def initialize():
+def initialize_curses_settings():
     """Sets Curses related settings"""
     curses.curs_set(0)
     curses.init_pair(1, curses.COLOR_BLACK, curses.COLOR_WHITE)
@@ -30,14 +29,12 @@ def initialize():
     curses.init_pair(2, curses.COLOR_BLACK, 
                      curses.COLOR_BLUE | curses.COLOR_GREEN)
 
-def setup_database(yaml_objs, rebuild=True, logger=None):
+def setup_database(connection, yaml_objs, rebuild=True, logger=None):
     """Builds database connection and calls startup methods"""
-    connection = Connection(logger=logger)
     if rebuild:
         connection.drop_tables()
         connection.build_tables()
     connection.insert_files(yaml_objs)
-    return connection
 
 def setup_cards(reciept_objs: dict):
     """Builds reciept cards from dictionary of reciept objects"""
@@ -106,6 +103,12 @@ def setup_windows(reciept_objs, screen):
     window.add_keymap(keymap)
     return window
 
+def setup_data(checker, database, logger):
+    # Call rebuild. Let db decide to rebuild based on internal variables.
+    database.rebuild_tables()
+    inserted = list(database.inserted_files())
+    
+
 def application(screen, folderpath):
     """
     Overview:
@@ -131,18 +134,24 @@ def application(screen, folderpath):
                                 extra={'currentfile': __file__})
 
     logger.info('main(): initializing curses library settings')
-    initialize()
+    initialize_curses_settings()
     logger.info('main(): done')
 
-    checker = YamlChecker(folderpath, logger)
-    valid_files, other_files = checker.files_safe()
-    
+    # checker = YamlChecker(folderpath, logger=logger)
+    # database = Connection(logger=logger)
+    # window = Window('Application', terminal_width, terminal_height)
+    # setup_files(window, logger)
+
+    '''
+    # valid_files, other_files = checker.files_safe()
+    fileresults = checker.check_file_states()
+
     yaml_objs = {
         valid_file: checker.yaml_read(valid_file)
             for valid_file in valid_files
     }
     
-    connection = setup_database(yaml_objs, logger=logger)
+    setup_database(yaml_objs, logger=logger)
     reciepts = [reciepttuple(*r) for r in list(connection.select_reciepts())]
 
     logger.info(f"main(): Reciepts: {reciepts}")
@@ -153,7 +162,6 @@ def application(screen, folderpath):
     }
     logger.info(f"main(): Number of reciepts: {len(reciept_objs)}")
     logger.info(f"main(): Reciept object keys: {reciept_objs.keys()}")
-
     window = setup_windows(reciept_objs, screen)
     window.draw(screen)
 
@@ -164,6 +172,7 @@ def application(screen, folderpath):
             break
         screen.erase()
         window.draw(screen)
+    '''
 
 @click.command()
 @click.option('-f', help="Folder containing yaml data files")
@@ -180,6 +189,7 @@ def main(f):
     filepath = utils.format_directory_path(f)
     if not utils.check_directory_path(filepath):
         print("Folder argument is not a directory")
+        return 
 
     os.environ.setdefault('ESCDELAY', '25')
     curses.wrapper(application, f)
