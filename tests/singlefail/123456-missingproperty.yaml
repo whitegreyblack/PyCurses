@@ -1,0 +1,10 @@
+--- !Reciept
+store: Prod Type Fail
+date: [2017,5,3]
+prod:
+  {
+    whopper (2): asdf,
+    bacon and cheese (2): 2.70,
+  }
+sub: 7.19
+tot: 7.80

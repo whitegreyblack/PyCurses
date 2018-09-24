@@ -1,8 +1,8 @@
 --- !Reciept
 store: Bek Internet
 date: [2017,4,1]
-type: internet
-prod:
+category: internet
+products:
   {
     wireless service: 7.99,
     router lease: 6.66,
@@ -11,6 +11,6 @@ prod:
     valley city city tax: 3.35,
     broadband usage: 0.00,
   }
-sub: 78.86
+subtotal: 78.86
 tax: 0.00
-tot: 78.86
+total: 78.86

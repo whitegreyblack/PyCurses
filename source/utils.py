@@ -1,6 +1,8 @@
-"""utils.py : common utility functions used throughout the program. Includes
-              path splitting and checking using the os library, a custom 
-              curses border drawer, and variable formatting.
+"""utils.py 
+
+Common utility functions used throughout the program. Includes path 
+manipulation and checking using the os library, a custom curses border
+drawer, and variable formatting.
 """
 
 __author__ = "Samuel Whang"
@@ -39,7 +41,9 @@ class Permissions(Enum):
 
 EventArg = namedtuple('EventArg', 'sender msg')
 
-default_log = "[%(asctime)s] %(currentfile)s: %(message)s"
+default_log_format = "[%(asctime)s] %(currentfile)s: %(message)s"
+default_log_noargs = "[%(asctime)s] %(message)s"
+
 class LogColor:
     GREEN='\x1b[1;32;40m'
     RED='\x1b[1;31;40m'
@@ -53,16 +57,35 @@ def check_or_create_folder(foldername):
         os.makedirs(full_path)
     return full_path
 
-def setup_logger(name,
+def setup_logger(logname,
                  logfile,
                  logfolder='./logs',
                  extra=None, 
                  level=logging.INFO, 
                  logformat=None):
 
-    """Handles creation of multiple loggers"""
-    if logformat is None:
-        logformat = default_log
+    """Handles creation of multiple loggers
+    logname   => name of the logger
+
+    logfile   => name of file the logger will log to
+
+    logfolder => name of the folder the logfile will be created in
+
+    extra     => dictionary of provided arguments to a formatted log message
+
+    level     => the filter level of the log
+
+    logformat => if logformat is not provided, then function expects user to
+                 want the default log formats provided by utils. Extra is then
+                 checked to verify which of the default messages user was 
+                 expecting.
+    """
+    if not logformat:
+        if extra:
+            logformat = default_log_format
+        else:
+            logformat = default_log_noargs
+
     formatter = logging.Formatter(logformat, "%H:%M:%S")
 
     # TODO: option for keeping old logs
@@ -77,11 +100,13 @@ def setup_logger(name,
     handler = logging.FileHandler(path + logfile)
     handler.setFormatter(formatter)
 
-    logger = logging.getLogger(name)
+    logger = logging.getLogger(logname)
     logger.setLevel(level)
     logger.addHandler(handler)
 
+    # extra is checked to see whether the logger or loggerAdapter is returned
     if extra:
+        extra['currentfile'] = parse_file_from_path(extra['currentfile'])
         logger = logging.LoggerAdapter(logger, extra)
 
     return logger
@@ -101,6 +126,9 @@ def format_directory_path(path: str) -> str:
 
 def check_directory_path(path: str) -> bool:
     return os.path.isdir(path)
+
+def parse_file_from_path(path: str) -> str:
+    return path.split('/')[-1]
 
 def filename_and_extension(path: str) -> Tuple[str, str]:
     return os.path.splitext(path)

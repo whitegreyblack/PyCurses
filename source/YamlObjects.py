@@ -12,10 +12,13 @@ from datetime import date
 import yaml
 
 class Reciept(yaml.YAMLObject):
-    __doc__ = """Python Reciept using Yaml Object Parent for DB insertions"""
+    __doc__ = """Yaml Object Class used to describe a reciept"""
     yaml_tag = u'!Reciept'
+    properties = ['store', 'date', 'category', 'products', 'subtotal',
+        'tax', 'total']
 
-    def __init__(self, *args):
+    def __init__(self, *args, **kwargs):
+        print(args, *kwargs)
         self.store = args[0]
         self.date = args[1]
         self.category = args[2]

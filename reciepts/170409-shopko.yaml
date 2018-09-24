@@ -1,13 +1,13 @@
 --- !Reciept
 store: Shopko
 date: [2017,4,9]
-type: general store
-prod:
+category: general store
+products:
   {
     cheetos: 1.79,
     oreos: 1.79,
     fallout: 18.99,
   } 
-sub: 22.57
+subtotal: 22.57
 tax: 1.42
-tot: 23.99
+total: 23.99

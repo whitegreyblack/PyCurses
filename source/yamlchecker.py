@@ -11,13 +11,13 @@ import re
 import yaml
 import click
 import logging
+import source.config as config
 import source.decorators as wrap
 from os import walk
 from datetime import date
 from source.YamlObjects import Reciept
 import source.utils as utils
-
-border = "-" * 80
+from collections import namedtuple
 
 class YamlChecker:
     """Processes yaml files in specified folder for both file integrity and
@@ -40,22 +40,126 @@ class YamlChecker:
                                              extra=YamlChecker.logger_args)
             self.log("No logger passed into constructor. Creating new logger.")
 
-        self.log("Initializing yaml checker")
-
         self.folder = folder
-        self.startdate = None
+        
+        # since this class parses yaml files to verify if they are database safe,
+        # there should be a parameter to pass in files which have already been
+        # added to the database
+        # :: Database.get_filenames_in_db() => list of [1..n] filenames ::
+        # :: y = YamlChecker(folder, logger, filenameslist) ::
+        # Correction: only needs the list of filenames currently in database
+        # during the files_safe verification function call.
 
-        self.log(f"Initialized yaml checker: folderpath '{self.folder}'")
+        self.log(f"Initialized YamlChecker. Using folderpath: '{self.folder}'")
 
     def __exit__(self):
         self.log("Deleting yaml checker object")
 
-    def log(self, message):
-        self.logger.info(f"{self.__class__.__name__}: {message}")
+    def log(self, message, level=logging.INFO):
+        """Prints the message to the logger instead of to the terminal as with 
+        logging level of INFO.
+        """
+        formatted_message = f"{self.__class__.__name__}: {message}"
+        if level == logging.INFO:
+            self.logger.info(formatted_message)
+        elif level == logging.WARNING:
+            self.logger.warning(formatted_message)
+        else:
+            raise ValueError("Parameter level does not match logging levels")
+    
+    def verify_file_states(self, loaded_files=None):
+        """Iterate through each file in directory to verify if the file is
+        safe to load into the database.
 
-    def files_safe(self):
-        """Iterate through each file in directory"""
-        self.log(f"Verifying yaml files in {self.folder}")
+        Args:
+            loaded_files => file names pulled from database passed in to 
+                            skip future checking and loading during the 
+                            verification process.
+        """
+        commit = []
+        change = []
+        skipped = []
+
+        for _, _, files in walk(self.folder):
+            sortedfiles = sorted(files)
+            for file_name in files: 
+                filename, extension = utils.filename_and_extension(file_name)
+
+                # verify file not already loaded in db. 
+                # if true then skip over to next file
+                if loaded_files and filename in loaded_files:
+                    self.log(f"File is already loaded. Skipping.")
+                    skipped.append(filename)
+                    continue
+
+                # verify file extension is yaml
+                if extension != config.YAML_FILE_EXTENSION:
+                    error = f"{filename}: is not a yaml file."
+                    # self.log.warning(error)
+                    change.append(error)
+                    continue
+                
+                # now check regex for filename
+                regex = re.compile(config.YAML_FILE_NAME_REGEX)
+                if not regex.match(filename):
+                    error = f"{filename} does not match the config file regex"
+                    # self.log(error, level=logging.WARNING)
+                    change.append(error)
+                    continue
+
+                # try opening the files without error
+                try:
+                    with open (self.folder + file_name) as f:
+                        lines = f.read()
+                except Exception as e:
+                    # self.log(e, level=logging.WARNING)
+                    change.append(e)
+                    continue
+
+                # try loading the lines if not an empty file
+                if not lines:
+                    error = f"{filename} is an empty file. Nothing to read"
+                    # self.log(error, level=logging.WARNING)
+                    change.append(e)
+                    continue
+
+                try:
+                    yamlobj = yaml.load(lines)
+                except Exception as e:
+                    # self.log(error, level=logging.WARNING)
+                    change.append(e)
+                    continue
+
+                # check all properties in the object for non null existance
+                attributeError = None
+                for prop in yamlobj.properties:
+                    try:
+                        getattr(yamlobj, prop)
+                    except AttributeError as ae:
+                        attributeError = ae
+                        break
+                    
+                # some reason the property got an attribute error
+                if attributeError:
+                    error = f"{filename}: {attributeError}"
+                    # self.log(error, level=logging.WARNING)
+                    change.append(error)
+                    continue
+                    
+                commit.append(file_name)
+
+            return commit, change, skipped
+                
+
+    def files_safe(self, loaded_files=None):
+        """Iterate through each file in directory to verify if the file is
+        safe to load into the database.
+
+        2018-9-25: Function now depracated. Should use verify_file_states()
+        instead.
+        """
+        self.log(f"Verifying yaml files in '{self.folder}'")
+
         delete = []  # files to delete/modify
         commit = []  # files to be committed into db
         for _, _, files in walk(self.folder):
@@ -67,6 +171,7 @@ class YamlChecker:
                     # passes the filename test
                     ret = (self.file_safe(file_name) 
                            and self.yaml_safe(file_name))
+
                     if not ret:  # and db_safe()
                         delete.append(file_name)
                     else:
@@ -136,13 +241,25 @@ class YamlChecker:
         """Creates and returns yaml object"""
         with open(self.folder + file) as f:
             obj = yaml.load(f.read())
-            valid_yaml = isinstance(obj, Reciept)
-            self.log(f"Valid YamlObject: {valid_yaml}")
-            return obj
+        return obj
 
     def yaml_safe(self, filepath):
         """Check contents of yaml object"""
         obj = self.yaml_read(filepath)
+
+        # just because no error is raised when checking object does not mean
+        # object is a correct Reciept object. Only that all values have been
+        # loaded and no syntax errors found. Still need to check properties.
+        valid_yaml = isinstance(obj, Reciept)
+        self.log(f"Valid YamlObject: {valid_yaml}")
+
+        for prop in obj.properties:
+            try:
+                getattr(obj, prop)
+            except AttributeError as e:
+                self.log(e)
+                return False
+
         return (self.yaml_store(filepath, obj)
                 and self.yaml_date(filepath, obj)
                 and self.yaml_prod(filepath, obj)
@@ -177,6 +294,10 @@ class YamlChecker:
     def yaml_prod(self, file, obj):
         """iterate through yaml object[prod]:{str:int,[...]}"""
         self.log(f"Checking product and price syntax.")
+        if not hasattr(obj, 'products'):
+            self.log(f"\tThis file has no products property")
+            return False
+
         for product, price in obj.products.items():
             # TODO -- better if statements, early exit on condition match
             nonstring = not isinstance(product, str)
@@ -255,19 +376,19 @@ def main(f, p, l, d):
         print('ERROR: File specified is not a directory')
         exit()
 
-    logger.info(f"checking files in {filepath}")
     checker = YamlChecker(filepath, logger)
-    commits, deletes = checker.files_safe()
+    commits, changes, skipped = checker.verify_file_states()
+    # .files_safe()
     
-    if deletes:
-        logger.info("files to delete:")
-        for delete in deletes:
-            logger.info(wrap.tab + delete)
+    if changes:
+        logger.info("files needing changes:")
+        for changefile in changes:
+            logger.info(f"?\t{changefile}")
 
     if commits:
         logger.info("files to commit:")
         for commit in commits:
-            logger.info('+' + wrap.tab + commit)
+            logger.info(f"+\t{commit}")
 
     logger.info("completed checking files")
 

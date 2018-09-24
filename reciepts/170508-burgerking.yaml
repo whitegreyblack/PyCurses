@@ -1,11 +1,11 @@
 --- !Reciept
 store: Burger King
 date: [2017,5,8]
-type: fast food
-prod:
+category: fast food
+products:
   {
     bacon cheeseburger meal: 4.00, 
   }
-sub: 4.00
+subtotal: 4.00
 tax: 0.34
-tot: 4.34
+total: 4.34

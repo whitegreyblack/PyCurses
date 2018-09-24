@@ -1,11 +1,11 @@
 --- !Reciept
 store: Burger King
 date: [2017,4,29]
-type: fast food
-prod:
+category: fast food
+products:
   {
     whopper (2): 4.49,
   }
-sub: 4.49
+subtotal: 4.49
 tax: 0.38
-tot: 4.87
+total: 4.87
