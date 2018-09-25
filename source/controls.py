@@ -119,9 +119,9 @@ class Window:
 
     def draw(self, screen):
         screen.border()
-        screen.addstr(0, 1, self.title)
+        # screen.addstr(0, 1, self.title)
         dimensions = f"{self.term_width}, {self.term_height}"
-        screen.addstr(0, self.term_width - len(dimensions) - 1, dimensions)
+        # screen.addstr(0, self.term_width - len(dimensions) - 1, dimensions)
         for window in self.windows:
             window.draw(screen)
 
@@ -273,7 +273,7 @@ class ScrollList:
         if self.title:
             screen.addstr(self.y, self.x + 1, self.title) 
 
-        screen.addstr(self.y, self.x - 1, str(self.index))
+        # screen.addstr(self.y, self.x - 1, str(self.index))
         for index, item in enumerate(self.items):
             if self.index == index:
                 screen.addch(self.y + index + 1, 
@@ -344,9 +344,9 @@ class RecieptForm(Form):
         self.lines = []
         
         border(screen, self.x, self.y, self.width, self.height - self.y)
-        screen.addstr(self.y, 
-                self.width + self.x - len(f"x:{self.x}, y:{self.y}, w:{self.width}, z:{self.height}"), 
-                f"x:{self.x}, y:{self.y}, w:{self.width}, z:{self.height}")
+        # screen.addstr(self.y, 
+        #         self.width + self.x - len(f"x:{self.x}, y:{self.y}, w:{self.width}, z:{self.height}"), 
+        #         f"x:{self.x}, y:{self.y}, w:{self.width}, z:{self.height}")
 
         if self.model:
             vertical_offset = 1

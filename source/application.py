@@ -4,6 +4,8 @@ import datetime
 
 import source.utils as utils
 import source.config as config
+from source.logger import Loggable
+from source.schema import Table, SQLType
 from source.yamlchecker import YamlChecker
 from source.database import Connection
 from source.models.models import Reciept, Transaction
@@ -17,14 +19,47 @@ def setup_test_cards():
                 ['Apples', 'Oranges', 'Pears', 'Watermelons', 'Peaches'],
                 [3, 5, 888, 24, 55])]
 
-class Application:
-    def __init__(self, folder, logger, rebuild=False):
-        self.logger = logger
-        self.checker = YamlChecker(folder, logger=logger)
-        self.database = Connection(logger=logger, rebuild=rebuild)
+class Application(Loggable):
+    """Overview:
+    Buids the database and yamlchecker objects. (They are tightly coupled. May
+    need to change in the future.) The data from the yaml files found in using
+    the folder path paramter are first checked by the yamlchecker before
+    loading into the database.
 
-    def log(self, message):
-        self.logger.info(f"{self.__class__.__name__}: {message}")
+    With loading finished, the front end is created and views are initialized,
+    using data from the database.
+
+    Then the application is looped to draw the views onto the screen using 
+    curses framework.
+    """
+    def __init__(self, folder, logger, rebuild=False):
+        super().__init__(self, logger=logger)
+        self.checker = YamlChecker(folder, logger=logger)
+
+        tables = [
+            Table("reciepts",
+                  [
+                    ("filename", SQLType.TEXT),
+                    ("store", SQLType.VARCHAR()),
+                    ("short", SQLType.TEXT),
+                    ("date", SQLType.VARCHAR(10)), 
+                    ("category", SQLType.VARCHAR()),
+                    ("subtotal", SQLType.REAL),
+                    ("tax", SQLType.REAL),
+                    ("total", SQLType.REAL),
+                    ("payment", SQLType.REAL)
+                  ], unique=["filename",]
+            ),
+            Table("products", 
+                  [
+                    ("filename", SQLType.TEXT),
+                    ("product", SQLType.VARCHAR()),
+                    ("price", SQLType.REAL)
+                  ], unique=["filename", "product", "price"]
+            )
+        ]
+
+        self.database = Connection(tables, logger=logger, rebuild=rebuild)
 
     def setup(self):
         # TODO: need a setting to determine behavior of previously loaded data

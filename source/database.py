@@ -8,13 +8,12 @@ import sqlite3
 import logging
 import datetime
 from collections import namedtuple
-# from strings import stmts
-import source.statements as statements
-from source.utils import setup_logger
-from source.utils import filename_and_extension as fileonly
-from source.utils import format_float as real
-from source.utils import format_date as date
+from source.logger import Loggable
 from source.YamlObjects import Reciept
+from source.utils import (
+    logargs, setup_logger, setup_logger_from_logargs, format_date as date,
+    format_float as real, filename_and_extension as fileonly
+)
 
 spacer = "  "
 
@@ -22,26 +21,16 @@ def unpack(cursor):
     """Returns data in a database cursor object as list"""
     return [data for data in cursor]
 
-class Connection:
-    '''
-    Database object
-    '''
-    logger_name = 'database'
-    logger_file = 'database.log'
-    logger_args = {'currentfile':__file__}
-    
+class Connection(Loggable):
+    """Database Connection Object"""
     rebuild = False
 
-    def __init__(self, logger=None, rebuild=False):
-        """Create connection to db"""
-        
-        self.logger = logger
-        if not self.logger:
-            self.logger = setup_logger(Connection.logger_name,
-                                       Connection.logger_file, 
-                                       extra=Connection.logger_args)
+    def __init__(self, tables, logger=None, rebuild=False):
+        # leave the logging initialization to the loggable class
+        super().__init__(self, logger=logger)
 
         self.conn = sqlite3.connect('reciepts.db')
+        self.tables = tables
         self.rebuild = rebuild
         self.committed = []
         self.log("created database connection.")
@@ -51,8 +40,12 @@ class Connection:
         self.conn.close()
         self.log("closed database connection.")
 
-    def log(self, message):
-        self.logger.info(f"{self.__class__.__name__}: {message}")
+    def table(self, name):
+        for table in self.tables:
+            if table.name == name:
+                return table
+        self.log(f"{name} table not found in database tables list",
+                 level=logging.WARNING)
 
     def send(self, message):
         results = self.conn.execute(message.request)
@@ -65,34 +58,31 @@ class Connection:
             self.drop_tables()
             self.build_tables()
 
-    def drop_tables(self, tables=None):
+    def drop_tables(self):
         # delete tables in sqlite
-        if not tables:
-            tables = ['reciepts', 'products']
         self.log("dropping tables in database.")
-        for table in tables:
-            self.conn.execute(statements.drop_table(table))
-            self.log(f"{spacer}x Dropped {table}")
+        tablenames = []
+        for table in self.tables:
+            self.conn.execute(table.drop_command)
+            self.log(f"{spacer}x Dropped {table.name}")
+            tablenames.append(table.name)
         self.conn.commit()
-        self.log("dropped tables in database.")
+        self.log("dropped tables {', '.join(tablenames)} in database.")
 
     def build_tables(self, tables=None):
         # create tables in sqlite
-        if not tables:
-            tables = [
-                ('reciepts', statements.create_reciepts_table()),
-                ('products', statements.create_products_table()),
-                ]
         self.log("building tables in database.")
-        for tablename, tablequery in tables:
-            self.conn.execute(tablequery)
-            self.log(f"{spacer}+ Created {tablename}")
+        tablenames = []
+        for table in self.tables:
+            self.conn.execute(table.create_command)
+            self.log(f"{spacer}+ Created {table.name}")
+            tablenames.append(table.name)
         self.conn.commit()
-        self.log("built tables in database.")
+        self.log("created tables {', '.join(tablenames)} in database.")
 
     def inserted_files(self, fields=None):
         self.log("retrieving inserted files from database")
-        cursor = self.conn.execute("SELECT FILENAME FROM reciepts")
+        cursor = self.conn.execute("SELECT FILENAME FROM reciepts;")
         for data in unpack(cursor):
             yield data
 
@@ -103,27 +93,30 @@ class Connection:
 
         self.log("inserting reciepts data into database.")
         inserted_files = self.inserted_files()
-        # insert_command = statements.insert_command('reciepts', 
-        #                                            len(Reciept.properties))
-        insert_command = statements.insert_command_reciept_table()
-        self.log(f"Properties count: {len(Reciept.properties)}")
-        self.log(f"Command: {insert_command}")
-        product_command = statements.insert_command('products', 3)
+        
+        reciept_table = self.table("reciepts")
+        product_table = self.table("products")
+
+        # iterate through the files verified by yamlchecker
         for file_name, yaml_obj in yaml_objs.items():
             if file_name not in inserted_files:
                 self.log(f"inserting {file_name}")
 
                 file_only, _ = fileonly(file_name)
-                self.conn.execute(insert_command, (file_only,
-                                                   yaml_obj.store,
-                                                   yaml_obj.short,
-                                                   date(yaml_obj.date),
-                                                   yaml_obj.category,
-                                                   real(yaml_obj.subtotal),
-                                                   real(yaml_obj.tax),
-                                                   real(yaml_obj.total),
-                                                   real(yaml_obj.payment)))
-                                                   
+                self.conn.execute(reciept_table.insert_command, 
+                                  (
+                                    file_only,
+                                    yaml_obj.store,
+                                    yaml_obj.short,
+                                    date(yaml_obj.date),
+                                    yaml_obj.category,
+                                    real(yaml_obj.subtotal),
+                                    real(yaml_obj.tax),
+                                    real(yaml_obj.total),
+                                    real(yaml_obj.payment)
+                                  )
+                )
+                                    
                 self.log(f"{spacer}+ 'filename': '{file_only}'")
                 self.log(f"{spacer}+ 'storename': '{yaml_obj.store}'")
                 self.log(f"{spacer}+ 'category': '{yaml_obj.category}'")
@@ -131,10 +124,13 @@ class Connection:
 
                 for product, price in yaml_obj.products.items():
                     self.log(f"{spacer}+ '{product}': '{price:.2f}'")
-                    self.conn.execute(product_command, (file_only,
-                                                        product, 
-                                                        real(price)))
-
+                    self.conn.execute(product_table.insert_command, 
+                                      (
+                                        file_only,
+                                        product, 
+                                        real(price)
+                                      )
+                    )
                 self.log(f"{spacer}inserted into products table")
             else:
                 self.log(f"data from {file_name} already inserted")
@@ -169,5 +165,6 @@ class Connection:
             yield productinfo(*product)
 
 if __name__ == "__main__":
-    logger = setup_logger('dblog', 'db.log', extra={'currentfile': __file__})
-    db = Connection(logger=logger)
+    args = logargs(type("db_main", (), dict()))
+    logger = setup_logger_from_logargs(args)
+    db = Connection(None, logger=logger)

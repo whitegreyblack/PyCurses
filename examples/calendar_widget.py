@@ -5,7 +5,6 @@ import random
 import curses
 import braille
 import source.config as config
-import source.resources as strings
 from collections import namedtuple
 
 date = namedtuple("Date", "Year Month Day")
@@ -84,7 +83,7 @@ def parse_date(datestring: str) -> object:
     format. Returns a date object with year, month, date properties
     """
     if not re.match(config.DATE_FORMAT_REGEX, datestring):
-        error = f"{strings.DATE_FORMAT_INVALID} {strings.DATE_FORMAT_EXPECTED}"
+        error = f"{config.DATE_FORMAT_INVALID} {config.DATE_FORMAT_EXPECTED}"
         raise ValueError(error)
 
     return date(*[int(i) for i in datestring.split('-')])

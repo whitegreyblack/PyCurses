@@ -8,6 +8,12 @@ class SqlString(str):
     def __init__(self, string=""):
         self = string
 
+    def Drop(self, table):
+        return SqlString(f"DROP TABLE IF EXISTS {table}")
+
+    def Create(self, table, fields, unique):
+        return SqlString
+
     def Select(self, fields):
         def join(fields):
             return fields if fields is "*" else ", ".join(fields)
@@ -22,6 +28,9 @@ class SqlString(str):
     def OrderBy(self, orders):
         return SqlString(self + f" ORDER BY {' and '.join(orders)}")
 
+    def End(self):
+        return SqlString(self + ";")
+
     @staticmethod
     def check_syntax(string):
         return false
@@ -30,5 +39,5 @@ if __name__ == "__main__":
     string = SqlString()          \
                 .Select("*")      \
                 .From("Reciepts") \
-                .OrderBy([""])
+                .OrderBy(["Name", "Product"])
     print(string)

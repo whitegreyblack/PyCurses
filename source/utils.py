@@ -60,6 +60,16 @@ def check_or_create_folder(foldername):
         os.makedirs(full_path)
     return full_path
 
+args = namedtuple("Logargs", "name file extra")
+def logargs(cls):
+    classname = cls.__name__.lower()
+    filepath = format_directory_path(__file__)
+    fileonly = parse_file_from_path(filepath)
+    return args(classname, classname + ".log", {"currentfile": fileonly})
+
+def setup_logger_from_logargs(logargs):
+    return setup_logger(logargs.name, logargs.file, extra=logargs.extra)
+
 def setup_logger(logname,
                  logfile,
                  logfolder='./logs',
