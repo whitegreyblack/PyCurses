@@ -40,7 +40,7 @@ class Application:
             rproducts = list(self.database.select_reciept_products(rdata.filename))
             t = Transaction(rdata.total, rdata.payment, 
                             rdata.subtotal, rdata.tax)
-            self.log(f"Products: {rproducts}")
+            self.log(f"Number of Products: {len(rproducts)}")
             r = Reciept(rdata.store, rdata.date, rdata.category,
                         [Product(p.product, p.price) for p in rproducts], t)
             reciepts.append(r)

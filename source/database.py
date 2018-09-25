@@ -42,6 +42,7 @@ class Connection:
 
         self.conn = sqlite3.connect('reciepts.db')
         self.rebuild = rebuild
+        self.committed = []
         self.log("created database connection.")
 
     def __exit__(self):
@@ -104,7 +105,7 @@ class Connection:
         product_command = statements.insert_command('products', 3)
         for file_name, yaml_obj in yaml_objs.items():
             if file_name not in inserted_files:
-                self.log(f"inserting {file_name}:")
+                self.log(f"inserting {file_name}")
 
                 file_only, _ = fileonly(file_name)
                 self.conn.execute(insert_command, (file_only,
