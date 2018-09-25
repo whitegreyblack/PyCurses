@@ -4,6 +4,9 @@ import datetime
 
 import source.utils as utils
 import source.config as config
+from source.logger import Loggable
+from source.schema import Table
+from source.utils import SQLType
 from source.yamlchecker import YamlChecker
 from source.database import Connection
 from source.models.models import Reciept, Transaction
@@ -17,14 +20,39 @@ def setup_test_cards():
                 ['Apples', 'Oranges', 'Pears', 'Watermelons', 'Peaches'],
                 [3, 5, 888, 24, 55])]
 
-class Application:
+class Application(Loggable):
     def __init__(self, folder, logger, rebuild=False):
-        self.logger = logger
-        self.checker = YamlChecker(folder, logger=logger)
-        self.database = Connection(logger=logger, rebuild=rebuild)
+        # self.logger = logger
+        super().__init__(self.__class__.__name__,
+                         logargs=utils.logargs(self.__class__),
+                         logger=logger)
 
-    def log(self, message):
-        self.logger.info(f"{self.__class__.__name__}: {message}")
+        self.checker = YamlChecker(folder, logger=logger)
+
+        tables = [
+            Table("reciepts",
+                  [
+                    ("filename", SQLType.TEXT),
+                    ("store", SQLType.VARCHAR()),
+                    ("short", SQLType.TEXT),
+                    ("date", SQLType.VARCHAR(10)), 
+                    ("category", SQLType.VARCHAR()),
+                    ("subtotal", SQLType.REAL),
+                    ("tax", SQLType.REAL),
+                    ("total", SQLType.REAL),
+                    ("payment", SQLType.REAL)
+                  ], unique=["filename",]
+            ),
+            Table("products", 
+                  [
+                    ("filename", SQLType.TEXT),
+                    ("product", SQLType.VARCHAR()),
+                    ("price", SQLType.REAL)
+                  ], unique=["filename", "product", "price"]
+            )
+        ]
+
+        self.database = Connection(tables, logger=logger, rebuild=rebuild)
 
     def setup(self):
         # TODO: need a setting to determine behavior of previously loaded data

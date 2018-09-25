@@ -16,6 +16,19 @@ import os
 
 Currency = Union[int, float]
 
+class SQLType:
+    NULL = 'NULL'
+    INT = 'INTEGER'
+    REAL = 'REAL'
+    TEXT = 'TEXT'
+    BLOB = 'BLOB'
+    
+    @staticmethod
+    def VARCHAR(length: int = 0) -> str:
+        if length == 0:
+            return "VARCHAR"
+        return f"VARCHAR({length})"
+
 class Event(list):
     def __call__(self, sender, event):
         for fn in self:
@@ -59,6 +72,13 @@ def check_or_create_folder(foldername):
     if not os.path.exists(full_path):
         os.makedirs(full_path)
     return full_path
+
+args = namedtuple("Logargs", "name file extra")
+def logargs(cls):
+    classname = cls.__name__.lower()
+    filepath = format_directory_path(__file__)
+    fileonly = parse_file_from_path(filepath)
+    return args(classname, classname + ".log", {"currentfile": fileonly})
 
 def setup_logger(logname,
                  logfile,

@@ -9,12 +9,14 @@ import logging
 import datetime
 from collections import namedtuple
 # from strings import stmts
-import source.statements as statements
+from source.logger import Loggable
+from source.utils import logargs
 from source.utils import setup_logger
-from source.utils import filename_and_extension as fileonly
-from source.utils import format_float as real
-from source.utils import format_date as date
 from source.YamlObjects import Reciept
+import source.statements as statements
+from source.utils import format_date as date
+from source.utils import format_float as real
+from source.utils import filename_and_extension as fileonly
 
 spacer = "  "
 
@@ -22,7 +24,7 @@ def unpack(cursor):
     """Returns data in a database cursor object as list"""
     return [data for data in cursor]
 
-class Connection:
+class Connection(Loggable):
     '''
     Database object
     '''
@@ -32,16 +34,14 @@ class Connection:
     
     rebuild = False
 
-    def __init__(self, logger=None, rebuild=False):
-        """Create connection to db"""
-        
-        self.logger = logger
-        if not self.logger:
-            self.logger = setup_logger(Connection.logger_name,
-                                       Connection.logger_file, 
-                                       extra=Connection.logger_args)
+    def __init__(self, tables, logger=None, rebuild=False):
+        # leave the logging initialization to the loggable class
+        super().__init__(self.__class__.__name__,
+                         logargs(self.__class__),
+                         logger=logger)
 
         self.conn = sqlite3.connect('reciepts.db')
+        self.tables = tables
         self.rebuild = rebuild
         self.committed = []
         self.log("created database connection.")
@@ -50,9 +50,6 @@ class Connection:
         self.log("closing database connection.")
         self.conn.close()
         self.log("closed database connection.")
-
-    def log(self, message):
-        self.logger.info(f"{self.__class__.__name__}: {message}")
 
     def send(self, message):
         results = self.conn.execute(message.request)
@@ -65,30 +62,27 @@ class Connection:
             self.drop_tables()
             self.build_tables()
 
-    def drop_tables(self, tables=None):
+    def drop_tables(self):
         # delete tables in sqlite
-        if not tables:
-            tables = ['reciepts', 'products']
         self.log("dropping tables in database.")
-        for table in tables:
-            self.conn.execute(statements.drop_table(table))
-            self.log(f"{spacer}x Dropped {table}")
+        tablenames = []
+        for table in self.tables:
+            self.conn.execute(table.drop_command)
+            self.log(f"{spacer}x Dropped {table.name}")
+            tablenames.append(table.name)
         self.conn.commit()
-        self.log("dropped tables in database.")
+        self.log("dropped tables {', '.join(tablenames)} in database.")
 
     def build_tables(self, tables=None):
         # create tables in sqlite
-        if not tables:
-            tables = [
-                ('reciepts', statements.create_reciepts_table()),
-                ('products', statements.create_products_table()),
-                ]
         self.log("building tables in database.")
-        for tablename, tablequery in tables:
-            self.conn.execute(tablequery)
-            self.log(f"{spacer}+ Created {tablename}")
+        tablenames = []
+        for table in self.tables:
+            self.conn.execute(table.create_command)
+            self.log(f"{spacer}+ Created {table.name}")
+            tablenames.append(table.name)
         self.conn.commit()
-        self.log("built tables in database.")
+        self.log("created tables {', '.join(tablenames)} in database.")
 
     def inserted_files(self, fields=None):
         self.log("retrieving inserted files from database")
