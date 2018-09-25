@@ -16,23 +16,30 @@ class SQLType:
         return f"VARCHAR({length})"
 
 
-def create_table(table_name, columnslist):
+def create_table(table_name, columnslist, unique=None):
     columns = ', '.join(f"{n} {t}" for n, t in columnslist)
-    return f"CREATE TABLE IF NOT EXISTS {table_name} ({columns});"
+    uniquery = ""
+    if unique:
+        uniquery = f", UNIQUE({', '.join(unique)})"
+    return f"CREATE TABLE IF NOT EXISTS {table_name} ({columns}{uniquery})"
 
 def drop_table(table_name):
     return f"DROP TABLE IF EXISTS {table_name};"
 
 def create_reciepts_table():
-    return create_table('reciepts', [('filename', SQLType.TEXT),
-                                     ('store', SQLType.VARCHAR()),
-                                     ('short', SQLType.TEXT),
-                                     ('date', SQLType.VARCHAR(10)), 
-                                     ('category', SQLType.VARCHAR()),
-                                     ('subtotal', SQLType.REAL),
-                                     ('tax', SQLType.REAL),
-                                     ('total', SQLType.REAL),
-                                     ('payment', SQLType.REAL)])
+    return create_table('reciepts', 
+                        [
+                            ('filename', SQLType.TEXT),
+                            ('store', SQLType.VARCHAR()),
+                            ('short', SQLType.TEXT),
+                            ('date', SQLType.VARCHAR(10)), 
+                            ('category', SQLType.VARCHAR()),
+                            ('subtotal', SQLType.REAL),
+                            ('tax', SQLType.REAL),
+                            ('total', SQLType.REAL),
+                            ('payment', SQLType.REAL)
+                        ],
+                        unique=["filename",])
 
 def create_products_table():
     return create_table('products', [('filename', SQLType.TEXT),
@@ -41,21 +48,11 @@ def create_products_table():
 
 def insert_command(table, num_fields):
     fields = ', '.join(['?' for i in range(num_fields)])
-    return f"INSERT INTO {table} VALUES ({fields});"
+    return f"INSERT OR IGNORE INTO {table} VALUES ({fields});"
 
 def insert_command_reciept_table():
     return insert_command('reciepts', 9)
 
-'''
-def create_payments_table():
-    return create_table('payments', [('name', SQLType.VARCHAR()), 
-                                     ('payment', SQLType.REAL),
-                                     ('pay_type', SQLType.VARCHAR())])
-def create_store_table():
-    return create_table('stores', [('name', SQLType.VARCHAR()),
-                                   ('category', SQLType.VARCHAR()),
-                                   ('tax', SQLType.REAL)])
-'''
 stmts = {
     'headcreate': """create table if not exists reciepthead (store varchar(25),
         date varchar(10), type varchar(10), code varchar(30) PRIMARY KEY,
