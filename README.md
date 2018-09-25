@@ -35,7 +35,7 @@
 
 - example: Old applications based on old code. Holds examples like tabs, color, and mouse clicking
 
-# Overview
+## Overview
 The project will be broken down into several portions which may be revisited if need be:
 - Loading yamlfiles into database:
   - The yamlchecker and database files are currently psuedo-tightly coupled in that the

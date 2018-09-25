@@ -1,14 +1,16 @@
 --- !Reciept
 store: Marketplace
+short: Market
 date: [2017,5,2]
-type: grocery
-prod:
+category: grocery
+products:
   {
     cilantro: 1.49,
     lime: 1.00,
     romaine lettuce: 2.49,
     tortillas: 2.79,
   }
-sub: 7.77
+subtotal: 7.77
 tax: 0.00
-tot: 7.77
+total: 7.77
+payment: 7.77

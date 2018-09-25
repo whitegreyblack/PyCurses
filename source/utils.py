@@ -155,5 +155,11 @@ def border(screen: object, x: int, y: int, dx: int, dy: int) -> None:
 def format_float(number: Union[int, float]) -> float:
     return f"{number:10.2f}"
 
-def format_date(date) -> str:
-    return datetime.date(date[0], date[1], date[2]).isoformat()
+def format_database_date(date):
+    return [int(d) for d in date.split('-')]
+
+def format_date(date, dateformat=None) -> str:
+    newdate = datetime.date(*date)
+    if dateformat:
+        return newdate.strftime(dateformat)
+    return newdate.isoformat()

@@ -26,6 +26,7 @@ def drop_table(table_name):
 def create_reciepts_table():
     return create_table('reciepts', [('filename', SQLType.TEXT),
                                      ('store', SQLType.VARCHAR()),
+                                     ('short', SQLType.TEXT),
                                      ('date', SQLType.VARCHAR(10)), 
                                      ('category', SQLType.VARCHAR()),
                                      ('subtotal', SQLType.REAL),
@@ -41,6 +42,9 @@ def create_products_table():
 def insert_command(table, num_fields):
     fields = ', '.join(['?' for i in range(num_fields)])
     return f"INSERT INTO {table} VALUES ({fields});"
+
+def insert_command_reciept_table():
+    return insert_command('reciepts', 9)
 
 '''
 def create_payments_table():

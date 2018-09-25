@@ -1,11 +1,13 @@
 --- !Reciept 
-store: Bek Internet 
+store: Bek Internet
+short: BEK
 date: [2017, 7, 6]
-type: internet
-prod: 
+category: utility
+products: 
   { 
-    bill payment: 73.59
+    internet: 73.59
   } 
-sub: 73.59
+subtotal: 73.59
 tax: 0.00
-tot: 73.59
+total: 73.59
+payment: 73.59

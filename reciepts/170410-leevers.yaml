@@ -1,8 +1,9 @@
 --- !Reciept
-store: Leevers    
-date: [2017,4,10]
-category: grocery         
-products:             
+store: Leevers
+short: Leevers
+date: [2017, 4, 10]
+category: grocery
+products:
   {
     mini carrots (2): 4.00,
     bananas: 2.59,

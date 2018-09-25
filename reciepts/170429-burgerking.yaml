@@ -1,5 +1,6 @@
 --- !Reciept
 store: Burger King
+short: BK
 date: [2017,4,29]
 category: fast food
 products:
@@ -9,3 +10,4 @@ products:
 subtotal: 4.49
 tax: 0.38
 total: 4.87
+payment: 4.87

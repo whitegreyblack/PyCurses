@@ -14,6 +14,7 @@ from source.utils import setup_logger
 from source.utils import filename_and_extension as fileonly
 from source.utils import format_float as real
 from source.utils import format_date as date
+from source.YamlObjects import Reciept
 
 spacer = "  "
 
@@ -79,12 +80,13 @@ class Connection:
         # create tables in sqlite
         if not tables:
             tables = [
-                statements.create_reciepts_table(),
-                statements.create_products_table(),
+                ('reciepts', statements.create_reciepts_table()),
+                ('products', statements.create_products_table()),
                 ]
         self.log("building tables in database.")
-        for tablequery in tables:
+        for tablename, tablequery in tables:
             self.conn.execute(tablequery)
+            self.log(f"{spacer}+ Created {tablename}")
         self.conn.commit()
         self.log("built tables in database.")
 
@@ -101,7 +103,11 @@ class Connection:
 
         self.log("inserting reciepts data into database.")
         inserted_files = self.inserted_files()
-        insert_command = statements.insert_command('reciepts', 8) 
+        # insert_command = statements.insert_command('reciepts', 
+        #                                            len(Reciept.properties))
+        insert_command = statements.insert_command_reciept_table()
+        self.log(f"Properties count: {len(Reciept.properties)}")
+        self.log(f"Command: {insert_command}")
         product_command = statements.insert_command('products', 3)
         for file_name, yaml_obj in yaml_objs.items():
             if file_name not in inserted_files:
@@ -110,12 +116,14 @@ class Connection:
                 file_only, _ = fileonly(file_name)
                 self.conn.execute(insert_command, (file_only,
                                                    yaml_obj.store,
+                                                   yaml_obj.short,
                                                    date(yaml_obj.date),
                                                    yaml_obj.category,
                                                    real(yaml_obj.subtotal),
                                                    real(yaml_obj.tax),
                                                    real(yaml_obj.total),
                                                    real(yaml_obj.payment)))
+                                                   
                 self.log(f"{spacer}+ 'filename': '{file_only}'")
                 self.log(f"{spacer}+ 'storename': '{yaml_obj.store}'")
                 self.log(f"{spacer}+ 'category': '{yaml_obj.category}'")
@@ -136,7 +144,7 @@ class Connection:
         self.log("completed inserting reciepts data.")
 
     def select_reciepts(self):
-        fields = "filename store date category subtotal tax total payment"
+        fields = "filename store short date category subtotal tax total payment"
         reciepttuple = namedtuple('Reciept', fields)
         cursor = self.conn.execute("SELECT * FROM reciepts;")
         for recieptobj in list(cursor):
@@ -158,7 +166,6 @@ class Connection:
         cmd = f"SELECT {fields} FROM {table} {condition};"
         cursor = self.conn.execute(cmd)
         for product in unpack(cursor):
-            self.log(product)
             yield productinfo(*product)
 
 if __name__ == "__main__":

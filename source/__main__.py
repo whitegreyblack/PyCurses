@@ -18,7 +18,7 @@ def initialize_curses_settings():
     curses.init_pair(1, curses.COLOR_BLACK, curses.COLOR_WHITE)
     curses.init_pair(2, curses.COLOR_BLACK, curses.COLOR_CYAN) 
 
-def application(screen, folderpath):
+def application(screen, folderpath, rebuild):
     """Overview:
     Buids the database and yamlchecker objects. (They are tightly coupled. May
     need to change in the future.) The data from the yaml files found in using
@@ -39,7 +39,7 @@ def application(screen, folderpath):
     initialize_curses_settings()
     logger.info('main(): done')
     
-    app = Application(folderpath, logger=logger)
+    app = Application(folderpath, logger=logger, rebuild=rebuild)
     app.setup()
     app.build_windows(screen)
     app.draw(screen)
@@ -57,7 +57,8 @@ def usage():
 
 @click.command()
 @click.option('-f', help="Folder containing yaml data files")
-def main(f):
+@click.option('--rb', "rebuild", is_flag=True, default=False, help="Rebuild tables before inserting files")
+def main(f, rebuild):
     if not f:
         print("no data folder specified")
         print(usage())
@@ -73,7 +74,7 @@ def main(f):
         return 
 
     os.environ.setdefault('ESCDELAY', '25')
-    curses.wrapper(application, f)
+    curses.wrapper(application, f, rebuild)
 
 if __name__ == "__main__":
     main()

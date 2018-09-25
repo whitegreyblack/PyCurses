@@ -8,16 +8,17 @@ inserting data into the database.
 __author__ = "Samuel Whang"
 
 import re
+import os
 import yaml
 import click
 import logging
 import datetime
+from collections import namedtuple
+
+import source.utils as utils
 import source.config as config
 import source.decorators as wrap
-from os import walk
 from source.YamlObjects import Reciept
-import source.utils as utils
-from collections import namedtuple
 
 # TODO: change verbiage from '(UN)COMMIT' -> '(UN)VERIFIED' 
 #       commit should only be used in relation to db loads
@@ -27,11 +28,11 @@ class YamlChecker:
     yaml safe syntax
     """
 
-    logger_name = 'filechecker'
-    logger_file = 'filechecker.log'
-    logger_args = {'currentfile': __file__}
+    logger_name = "filechecker"
+    logger_file = "filechecker.log"
+    logger_args = {"currentfile": __file__}
 
-    def __init__(self, folder='reciepts', logger=None):
+    def __init__(self, folder="reciepts", logger=None):
         self.logargs = {'classname': self.__class__.__name__}
 
         self.logger = logger
@@ -49,14 +50,6 @@ class YamlChecker:
         self.unverified = []
         self.skipped = []
 
-        # since this class parses yaml files to verify if they are database safe,
-        # there should be a parameter to pass in files which have already been
-        # added to the database
-        # :: Database.get_filenames_in_db() => list of [1..n] filenames ::
-        # :: y = YamlChecker(folder, logger, filenameslist) ::
-        # Correction: only needs the list of filenames currently in database
-        # during the files_safe verification function call.
-
         self.log(f"Initialized YamlChecker. Using folderpath: '{self.folder}'")
 
     def __exit__(self):
@@ -64,7 +57,7 @@ class YamlChecker:
 
     @property
     def verified_files(self):
-        return {vf: self.yaml_read(vf) for vf in self.verified}
+        return { vf: self.yaml_read(vf) for vf in self.verified }
 
     def log(self, message, level=logging.INFO):
         """Prints the message to the logger instead of to the terminal as with 
@@ -87,11 +80,13 @@ class YamlChecker:
                             skip future checking and loading during the 
                             verification process.
         """
+        def convert_int(floatval):
+            return int(floatval * 100)
         commit = []
         change = []
         skipped = []
 
-        for _, _, files in walk(self.folder):
+        for _, _, files in os.walk(self.folder):
             sortedfiles = sorted(files)
             self.log(f"Verifying {len(sortedfiles)} files")
             for file_name in files: 
@@ -152,21 +147,25 @@ class YamlChecker:
                 attributeError = False
                 propertyTypeError = False
                 validationError = False
-                for prop, (ptype, validator) in yamlobj.properties.items():
+                for prop, (types, vdter, fmter) in yamlobj.properties.items():
                     try:
                         p = getattr(yamlobj, prop)
                     except AttributeError:
                         attributeError = True
                         break
                     
-                    if not isinstance(p, ptype):
+                    if not isinstance(p, types):
                         propertyTypeError = True
                         break
 
-                    if validator:
-                        if not validator(filename, p):
+                    if vdter:
+                        if not vdter(filename, p):
                             validationError = True
                             break
+
+                    if fmter:
+                        newval = fmter(filename, p)
+                        setattr(yamlobj, prop, newval)
 
                 # some reason the property got an attribute error
                 if attributeError:
@@ -177,11 +176,11 @@ class YamlChecker:
 
                 # some reason the property type failed
                 if propertyTypeError:
-                    if isinstance(ptype, (list, tuple)):
-                        types = ", ".join(str(t) for t in ptype)
+                    if isinstance(types, (list, tuple)):
+                        ptypes = ", ".join(str(t) for t in ptype)
                     else:
-                        types = ptype
-                    error = f"{filename}: {prop} is not of type(s) {types}"
+                        ptypes = types
+                    error = f"{filename}: {prop} is not of type(s) {ptypes}"
                     self.log(error, level=logging.WARNING)
                     change.append(error)
                     continue
@@ -189,6 +188,36 @@ class YamlChecker:
                 # some reason property failed validation
                 if validationError:
                     error = f"{filename}: {prop} failed validation. Check property"
+                    self.log(error, level=logging.WARNING)
+                    change.append(error)
+                    continue
+
+                transactionError = False
+                productSumInt = convert_int(sum(yamlobj.products.values()))
+                subtotalInt = convert_int(yamlobj.subtotal)
+                subtotalError = productSumInt != subtotalInt
+
+                subtaxInt = convert_int(yamlobj.subtotal + yamlobj.tax)
+                totalInt = convert_int(yamlobj.total)
+                subtaxtotalError = subtaxInt != totalInt
+
+                paymentInt = convert_int(yamlobj.payment)
+                totalpayError = totalInt != paymentInt
+
+                if subtotalError or subtaxtotalError or totalpayError:
+                    transactionError = True
+
+                if transactionError:
+                    error = f"{filename}: "
+                    if subtotalError:
+                        error += "Product subtotal does not match reciept subtotal. "
+                        error += f"Got: {sum(yamlobj.products.values())} != {yamlobj.subtotal}"
+                    elif subtaxtotalError:
+                        error += "Subtotal and tax does not match total. "
+                        error += f"Got: {yamlobj.subtotal + yamlobj.tax} != {yamlobj.total}"
+                    else:
+                        error += "Total does not match payment. "
+                        error += f"Got: {yamlobj.total} != {yamlobj.payment}"
                     self.log(error, level=logging.WARNING)
                     change.append(error)
                     continue
@@ -216,7 +245,7 @@ class YamlChecker:
 
         delete = []  # files to delete/modify
         commit = []  # files to be committed into db
-        for _, _, files in walk(self.folder):
+        for _, _, files in os.walk(self.folder):
             files = sorted(files)
             for file_name in files:
                 filename, extension = utils.filename_and_extension(file_name)
@@ -442,8 +471,8 @@ def log_file_results(logger, batches, toconsole):
             log(logger, batchmessage, toconsole)
 
 @click.command()
-@click.option('-f', help="Folder Containing Yaml Files")
-@click.option('-p', is_flag=True, help="MODE: Print")
+@click.option('-f', nargs=1, type=str, help="folder holding yaml data files")
+@click.option('-p', is_flag=True, help="print results to terminal screen")
 def main(f, p):
     # check required input args -- exit if incorrect
     if not f:

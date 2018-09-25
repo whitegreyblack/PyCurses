@@ -1,11 +1,13 @@
 --- !Reciept
 store: Taco Johns
+short: TJ
 date: [2017,4,27]
-type: fast food
-prod:
+category: fast food
+products:
   {
     taco salad: 5.69,
   }
-sub: 5.69
+subtotal: 5.69
 tax: 0.48
-tot: 6.17
+total: 6.17
+payment: 6.17

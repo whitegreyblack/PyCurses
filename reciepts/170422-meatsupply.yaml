@@ -1,5 +1,6 @@
 --- !Reciept
-store: VC Meat Supply
+store: Meat Supply
+short: Meats
 date: [2017,4,22]
 category: grocery
 products:

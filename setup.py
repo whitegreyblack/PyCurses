@@ -4,19 +4,19 @@
 import os
 from setuptools import setup, find_packages
 
-description = 'A curses application using sqlite and pyaml'
+description = 'A curses application using sqlite and pyyaml'
 
 setup(
-        name='PyCurses',
-        version='0.4.0',
-        author='Sam Whang',
-        author_email='sangwoowhang@gmail.com',
-        maintainer='Sam Whang',
-        maintainer_='sangwoowhang@gmail.com',
-        keywords='Curses, Python, Yaml, SQLite',
-        description=description,
-        license='MIT',
-        long_description=description,
-        url='https://github.com/whitegreyblack/PyCurses',
-        install_requires=['yaml'],
+    name='PyCurses',
+    version='0.4.0',
+    author='Sam Whang',
+    author_email='sangwoowhang@gmail.com',
+    maintainer='Sam Whang',
+    maintainer_='sangwoowhang@gmail.com',
+    keywords='Curses, Python, Yaml, SQLite',
+    description=description,
+    license='MIT',
+    long_description=description,
+    url='https://github.com/whitegreyblack/PyCurses',
+    install_requires=['pyyaml', 'sqlite3'],
 )

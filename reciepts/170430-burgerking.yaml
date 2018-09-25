@@ -1,11 +1,13 @@
 --- !Reciept
 store: Burger King
+short: BK
 date: [2017,4,30]
-type: fast food
-prod:
+category: fast food
+products:
   {
     bacon cheeseburger meal: 4.00
   }
-sub: 4.00
+subtotal: 4.00
 tax: 0.34
-tot: 4.34
+total: 4.34
+payment: 4.34

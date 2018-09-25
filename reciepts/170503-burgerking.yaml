@@ -1,12 +1,14 @@
 --- !Reciept
 store: Burger King
+short: BK
 date: [2017,5,3]
-type: fast food
-prod:
+category: fast food
+products:
   {
     whopper (2): 4.49,
     bacon and cheese (2): 2.70,
   }
-sub: 7.19
+subtotal: 7.19
 tax: 0.61
-tot: 7.80
+total: 7.80
+payment: 7.80

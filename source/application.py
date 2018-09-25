@@ -1,6 +1,9 @@
 import curses
 import logging
+import datetime
+
 import source.utils as utils
+import source.config as config
 from source.yamlchecker import YamlChecker
 from source.database import Connection
 from source.models.models import Reciept, Transaction
@@ -15,10 +18,10 @@ def setup_test_cards():
                 [3, 5, 888, 24, 55])]
 
 class Application:
-    def __init__(self, folder, logger):
+    def __init__(self, folder, logger, rebuild=False):
         self.logger = logger
         self.checker = YamlChecker(folder, logger=logger)
-        self.database = Connection(logger=logger, rebuild=True)
+        self.database = Connection(logger=logger, rebuild=rebuild)
 
     def log(self, message):
         self.logger.info(f"{self.__class__.__name__}: {message}")
@@ -32,16 +35,24 @@ class Application:
         files = self.checker.verified_files
 
         self.database.insert_files(files)
-        self.log(f"Committed: {', '.join(self.database.committed)}")
+        self.log(f"Committed:")
+        for commit in files:
+            self.log(f"+ {commit}")
 
     def build_reciepts(self):
         reciepts = []
         for rdata in self.database.select_reciepts():
-            rproducts = list(self.database.select_reciept_products(rdata.filename))
+            reciept = rdata.filename
+            rproducts = list(self.database.select_reciept_products(reciept))
             t = Transaction(rdata.total, rdata.payment, 
                             rdata.subtotal, rdata.tax)
-            self.log(f"Number of Products: {len(rproducts)}")
-            r = Reciept(rdata.store, rdata.date, rdata.category,
+
+            d = utils.format_database_date(rdata.date)
+            r = Reciept(rdata.store,
+                        rdata.short,
+                        utils.format_date(d, config.DATE_FORMAT['L']),
+                        utils.format_date(d, config.DATE_FORMAT['S']),
+                        rdata.category,
                         [Product(p.product, p.price) for p in rproducts], t)
             reciepts.append(r)
         return reciepts
@@ -96,3 +107,6 @@ class Application:
 
     def send_signal(self, signal):
         return self.window.send_signal(signal)
+
+if __name__ == "__main__":
+    pass

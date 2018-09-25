@@ -13,3 +13,16 @@ YAML_CHECKER_BATCH_SYMBOL = {
     "UNCOMMITTED": 'x',
     "SKIPPED": '?'
     }
+
+DATE_FORMATS = {
+    'ISO': {
+        'L': "%Y-%m-%d",
+        'S': "%y-%m-%d",
+    },
+    'USA': {
+        'L': "%m/%d/%Y",
+        'S': "%m/%d/%y",
+    },
+}
+
+DATE_FORMAT = DATE_FORMATS['USA']

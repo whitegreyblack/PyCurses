@@ -1,11 +1,13 @@
 --- !Reciept
 store: Shopko
+short: Shopko
 date: [2017,4,29]
-type: general merchandise
-prod:
+category: general store
+products:
   {
     double stuf oreos (2): 5.00,
   }
-sub: 5.00
+subtotal: 5.00
 tax: 0.00
-tot: 5.00
+total: 5.00
+payment: 5.00

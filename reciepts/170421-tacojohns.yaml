@@ -1,8 +1,9 @@
 --- !Reciept
 store: Taco Johns
+short: TJ
 date: [2017,4,21]
 category: fast food
-produts:
+products:
   {
     taco salad: 5.69,
   }

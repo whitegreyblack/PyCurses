@@ -1,8 +1,9 @@
 --- !Reciept
 store: Leevers
+short: Leevers
 date: [2017,4,27]
-type: grocery
-prod:
+category: grocery
+products:
   {
     bananas: 2.14,
     garlic clove (2): 1.70,
@@ -17,6 +18,7 @@ prod:
     pollock filets: 2.09,
     turkey drums: 2.54,
   }
-sub: 31.42
+subtotal: 31.42
 tax: 0.00
-tot: 31.42
+total: 31.42
+payment: 31.42

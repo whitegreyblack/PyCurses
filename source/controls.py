@@ -7,6 +7,7 @@ User Interface Control Components
 __author__ = "Samuel Whang"
 
 import curses
+from collections import namedtuple
 from source.utils import border
 from source.utils import format_float as Money
 
@@ -23,6 +24,8 @@ Window: vs Panel:?
         - Prompt
         - Form
 """
+
+line = namedtuple("Line", "x y line")
 
 class UIControl:
     def __init__(self, x, y, width, height, title=None):
@@ -271,47 +274,65 @@ class RecieptForm(Form):
     def draw(self, screen):
         def pad(word):
             return '.' * max(0, 34 - len(word))
+
+        self.lines = []
+        
         border(screen, self.x, self.y, self.width, self.height - self.y)
         screen.addstr(self.y, 
                 self.width + self.x - len(f"x:{self.x}, y:{self.y}, w:{self.width}, z:{self.height}"), 
                 f"x:{self.x}, y:{self.y}, w:{self.width}, z:{self.height}")
 
         if self.model:
+            vertical_offset = 1
             title = self.title if self.title else "Reciept"
-            screen.addstr(self.y + 1, self.x + 1, title)
-           
-            screen.addstr(self.y + 3,
-                          self.x + 1,
-                          f"Store{pad('store')}: {self.model.model.store:>20}")
-            screen.addstr(self.y + 4,
-                          self.x + 1,
-                          f"Date{pad('date')}: {self.model.model.date:>20}")
-            screen.addstr(self.y + 5,
-                          self.x + 1, 
-                          f"Category{pad('category')}: {self.model.model.category:>20}")
-
-            screen.addstr(self.y + 7, self.x + 1, f"Products:")
+            self.lines.append(line(self.x + 1, self.y + vertical_offset, title))
+            vertical_offset += 2
             
-            product_index = 8
-            for product in self.model.model.products:
-                screen.addstr(self.y + product_index, 
-                              self.x + 1,
-                              f"- {product.name:.<32}: {Money(product.price):>20}")
-                
-                product_index += 1
-            product_index += 1
+            for prop in ["store", "date", "category"]:
+                label = prop.capitalize()
+                value = getattr(self.model.model, prop)
+                message = f"{label}{pad(prop)}: {value:>20}"
+                l = line(self.x + 1, self.y + vertical_offset, message)
+                self.lines.append(l)
+                vertical_offset += 1
+            vertical_offset += 1
 
-            # TODO: make into a for loop. Don't need this long addstr for every property. be better.
-            for prop in ['Subtotal', 'Tax', 'Total', 'Payment']:
-                value = getattr(self.model.model.transaction, prop.lower())
-                screen.addstr(self.y + product_index,
-                              self.x + 1,
-                              f"{prop}{pad(prop)}: {Money(value):>20}")
-                product_index += 1
+            l = line(self.x + 1, self.y + vertical_offset, "Products:")
+            self.lines.append(l)
+            vertical_offset += 1
+
+            for product in self.model.model.products:
+                message = f"-{product.name:.<33}: {Money(product.price):>20}"
+                l = line(self.x + 1, self.y + vertical_offset, message)
+                self.lines.append(l)
+                vertical_offset += 1
+            vertical_offset += 1
+
+            for prop in self.model.model.transaction.properties:
+                label = prop.capitalize()
+                value = getattr(self.model.model.transaction, prop)
+                message = f"{label}{pad(prop)}: {Money(value):>20}"
+                # screen.addstr(self.y + product_index,
+                #               self.x + 1,
+                #               f"{prop}{pad(prop)}: {Money(value):>20}")
+                l = line(self.x + 1, self.y + vertical_offset, message)
+                self.lines.append(l)
+                vertical_offset += 1
+            vertical_offset += 1
         else:
-            screen.addstr((self.y + self.height) // 2, 
-                          ((self.x + self.width) // 2) - (len("No file selected") // 2), 
-                          "No file selected")
+            # screen.addstr((self.y + self.height) // 2, 
+            #               ((self.x + self.width) // 2) - (len("No file selected") // 2), 
+            #               "No file selected")
+            message = "No file to display"
+            l = line((self.x + self.width) // 2 - len(message) // 2, 
+                     (self.y + self.height) // 2, 
+                     message)
+            self.lines.append(l)
+
+        for l in self.lines:
+            if l.y > self.height - 1:
+                break
+            screen.addstr(l.y, l.x, l.line)
 
     def get_signal(self, command):
         return

@@ -29,6 +29,7 @@ point = namedtuple('Point', 'x y')
 pointgrid = namedtuple('PointGrid', 'x y width height')
 
 class Transaction:
+    properties = ["subtotal", "tax", "total", "payment"]
     def __init__(self, 
                  total: Currency, 
                  payment: Currency, 
@@ -67,24 +68,28 @@ class Product:
 class Reciept:
     def __init__(self, 
                  store: str, 
-                 date: str, 
+                 store_short: str,
+                 date: str,
+                 date_short: str,
                  category: str, 
                  products: list, 
                  transaction: Transaction):
         """Initialize fields used in reciept"""
         self.store = store
+        self.store_short = store_short
         self.date = date
+        self.date_short = date_short
         self.category = category
         self.products = products
         self.transaction = transaction
 
     @property
     def description(self):
-        return self.store, self.date
+        return self.store, self.date_short
 
     @property
     def short_description(self):
-        return shorten(self.store), self.date
+        return self.store_short, self.date_short
 
     @property
     def formats(self):
