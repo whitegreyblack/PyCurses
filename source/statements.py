@@ -21,7 +21,7 @@ def create_table(table_name, columnslist, unique=None):
     uniquery = ""
     if unique:
         uniquery = f", UNIQUE({', '.join(unique)})"
-    return f"CREATE TABLE IF NOT EXISTS {table_name} ({columns}{uniquery})"
+    return f"CREATE TABLE IF NOT EXISTS {table_name} ({columns}{uniquery});"
 
 def drop_table(table_name):
     return f"DROP TABLE IF EXISTS {table_name};"
@@ -42,9 +42,18 @@ def create_reciepts_table():
                         unique=["filename",])
 
 def create_products_table():
-    return create_table('products', [('filename', SQLType.TEXT),
-                                     ('product', SQLType.VARCHAR()),
-                                     ('price', SQLType.REAL)])
+    return create_table('products', 
+                        [
+                            ('filename', SQLType.TEXT),
+                            ('product', SQLType.VARCHAR()),
+                            ('price', SQLType.REAL)
+                        ],
+                        unique=[
+                            'filename', 
+                            'product', 
+                            'price'
+                        ])
+
 
 def insert_command(table, num_fields):
     fields = ', '.join(['?' for i in range(num_fields)])
