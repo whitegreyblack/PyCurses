@@ -24,7 +24,7 @@ class Application:
         self.logger.info(f"{self.__class__.__name__}: {message}")
 
     def setup(self):
-        # need a setting to determine behavior of previously loaded data
+        # TODO: need a setting to determine behavior of previously loaded data
         self.database.rebuild_tables()
         inserted = self.database.inserted_files()
 
