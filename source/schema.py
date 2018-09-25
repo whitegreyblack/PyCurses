@@ -7,6 +7,9 @@ from source.utils import SQLType
 from source.sqlbuilder import SqlString as sql
 
 class Table:
+    """Using a class to place all necessary table info into a single object
+    to create sql commands without outside input.
+    """
     def __init__(self, name, fields, unique=None):
         self.name = name
         self.fields = fields
@@ -17,6 +20,9 @@ class Table:
         unique = self.join_unique()
         return f"Table: {self.name}({columns}{unique});"
 
+    def join_params(self) -> str:
+        return ', '.join(['?' for _ in range(len(self.fields))])
+
     def join_fields(self) -> str:
         return ', '.join(f"{n} {t}" for n, t in self.fields)
 
@@ -25,6 +31,9 @@ class Table:
         if self.unique:
             unique = f", UNIQUE({', '.join(self.unique)})"
         return unique
+
+    def join_columns(self, columns) -> str:
+        return ', '.join(columns)
 
     @property
     def drop_command(self) -> str:
@@ -38,7 +47,16 @@ class Table:
 
     @property
     def insert_command(self) -> str:
-        pass
+        params = self.join_params()
+        return f"INSERT OR IGNORE INTO {self.name} VALUES ({params});"
+
+    @property
+    def select_command(self) -> str:
+        return f"SELECT * FROM {self.name}"
+
+    def select_command_on(self, columns) -> str:
+        fields = self.join_columns(columns)
+        return f"SELECT {fields} FROM {self.name};"
 
 if __name__ == "__main__":
     fields = [
@@ -50,3 +68,5 @@ if __name__ == "__main__":
     print(t)
     print(t.drop_command)
     print(t.create_command)
+    print(t.insert_command)
+    print(t.select_command_on(['a', 'b']))

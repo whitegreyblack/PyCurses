@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-
+"""Statements.py: DEPRACATED. Functions moved to schema.py"""
 __author__ = "Samuel Whang"
 
 from source.utils import SQLType

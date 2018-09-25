@@ -1,3 +1,4 @@
+"""Strings.py: DEPRACATED. Strings moved to statements.py"""
 # -----------------------------------------------------------------------------
 # AUTHOR: Sam Whang
 # FILE  : STRINGS.PY
