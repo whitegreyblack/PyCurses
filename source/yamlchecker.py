@@ -194,7 +194,7 @@ class YamlChecker:
                     continue
 
                 # all properties came back with a value. now check that value
-                self.log(f"  + Verfied {filename}")
+                self.log(f"  + Verified {filename}")
                 commit.append(filename)
 
             self.verified = [c + '.yaml' for c in commit]
@@ -442,23 +442,23 @@ def log_file_results(logger, batches, toconsole):
             log(logger, batchmessage, toconsole)
 
 @click.command()
-@click.option('-f', help='Folder Containing Yaml Files')
-@click.option('-p', is_flag=True, help='MODE: Print')
+@click.option('-f', help="Folder Containing Yaml Files")
+@click.option('-p', is_flag=True, help="MODE: Print")
 def main(f, p):
     # check required input args -- exit if incorrect
     if not f:
-        print('ERROR: incorrect arg - no input folder flag and arg specified')
+        print("ERROR: incorrect arg - no input folder flag and arg specified")
         print(usage()) 
         exit()
 
-    logger = utils.setup_logger('yamlcheck', 
-                                'filechecks.log',
+    logger = utils.setup_logger("yamlcheck",
+                                "filechecks.log",
                                 extra={'currentfile': __file__})
 
     filepath = utils.format_directory_path(f)
     if not utils.check_directory_path(filepath):
         print(filepath)
-        print('ERROR: File specified is not a directory')
+        print("ERROR: File specified is not a directory")
         exit()
 
     checker = YamlChecker(filepath, logger)

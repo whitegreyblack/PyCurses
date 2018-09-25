@@ -30,7 +30,8 @@ class Reciept(yaml.YAMLObject):
         'products': (dict, None),
         'subtotal': ((int, float), None),
         'tax': ((int, float), None),
-        'total': ((int, float), None)
+        'total': ((int, float), None),
+        'payment': ((int, float), None)
         }
 
     def __init__(self, *args, **kwargs):
