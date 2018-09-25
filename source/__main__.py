@@ -47,7 +47,10 @@ def application(screen, folderpath, rebuild):
     while True:
         key = screen.getch()
         retval = app.send_signal(key)
+        if key == 10:
+            logger.info(f"{retval}")
         if not retval:
+            logger.info("GOT EXIT SIGNAL")
             break
         screen.erase()
         app.draw(screen)

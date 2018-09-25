@@ -45,6 +45,21 @@ class UIControl:
                 if child != other and intersect(child, other):
                     raise ValueError(f"{child} and {other} intersect")
 
+    def selected(self):
+        """Returns all values within the view that are selected (1...n)"""
+        pass
+
+    def focused(self):
+        """Returns a single value within the view that is currently focused"""
+        pass
+
+class View(UIControl):
+    """Implements view screen and control over a single view within a window"""
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+        self.windows = []
+
 class Window:
     def __init__(self, title, x, y):
         self.title = title
@@ -81,7 +96,10 @@ class Window:
 
     def send_signal(self, command, debug=False):
         if (command, self.window.wid) in self.keymap:
-            self.window.get_signal(command)
+            retval = self.window.get_signal(command)
+            
+            if retval is False:
+                return retval
 
             if self.window.wid == 'ScrollList':
                 self.get_window('Form').model = self.window.model
@@ -93,7 +111,6 @@ class Window:
            
             if next_window_id is not self.window.wid:
                 next_window = self.get_window(next_window_id)
-                
                 self.window.selected = False
                 next_window.selected = True
                 if next_window.wid == 'Prompt':
@@ -110,32 +127,51 @@ class Window:
 
 # TODO Create a button class to pass into Prompt confirm/cancel parameters
 class Button(UIControl):
-    def __init__(self, x, y, width, height, label):
+    def __init__(self, x, y, width, height, label, selected=False):
         super().__init__(x, y, width, height, None)
         self.label = label
+        self.selected = selected
+
+    def select(self):
+        self.selected = True
+
+    def unselect(self):
         self.selected = False
 
     def draw(self, screen):
-        boxstring = f"x:{self.x}, y:{self.y}, w:{self.width}, h:{self.height}"
-        
         border(screen, self.x, self.y, self.width, self.height)
-        screen.addstr(self.height + 1, 0, boxstring)
+        # boxstring = f"x:{self.x}, y:{self.y}, w:{self.width}, h:{self.height}"
+        # screen.addstr(self.height + 1, 0, boxstring) 
         if self.selected:
-            screen.addstr(self.height - y - 1, self.x + 1, self.label, curses.color_pair(2))
+            color = curses.color_pair(1)
+            screen.addstr(self.height + self.y - 1, self.x + self.width - len(self.label) - 1, self.label, color)
         else:
-            screen.addstr(self.y + self.height - 1, self.x + 1, self.label)
+            screen.addstr(self.height + self.y - 1, self.x + self.width - len(self.label) - 1, self.label)
  
 class Prompt(UIControl):
-    def __init__(self, window, title=None, confirm=None, cancel=None, wid='Prompt'):
+    def __init__(self, window, title=None, confirm=None, cancel=None, wid='Prompt', logger=None):
         self.window = window
         oy, ox = window.getbegyx() # offset from parent window
         my, mx = window.getmaxyx()
+
         super().__init__(0, 0, mx, my, title)
         self.wid = wid
-        self.confirm = Button(self.x + 1, self.height - 4, len(confirm) + 2, 2, confirm)
-        # self.cancel = Button(x, y + mx, 5, 5, cancel)
         self.selected = False
         self.visible = False
+        self.logger = logger
+        longerlabel = max(len(confirm), len(cancel))
+        self.confirm = Button(self.x + 1, 
+                              self.height - 4, 
+                              longerlabel + 2, 
+                              2, 
+                              confirm, 
+                              True)
+
+        self.cancel = Button(self.width - 3 - longerlabel - 1, 
+                             self.height - 4, 
+                             longerlabel + 2, 
+                             2, 
+                             cancel)
 
         # TODO should be changeable through constructor
         # class button: property isSelected/Selected
@@ -148,12 +184,41 @@ class Prompt(UIControl):
                 return button
 
     def get_signal(self, command, debug=False):
-        if command == curses.KEY_LEFT and self.button == self.cancel:
-            self.cancel.select = False
-            self.confirm.select = True
-        if command == curses.KEY_RIGHT and self.button == self.confirm:
-            self.confirm.select = False
-            self.cancel.select = True
+        # unselect first then select in all cases
+        if command == 10 or command == curses.KEY_ENTER:
+            self.logger.info("GOT ENTER")
+            if self.button is self.cancel:
+                self.cancel.unselect()
+                self.confirm.select()
+                self.visible = False
+
+            elif self.button is self.confirm:
+                return False
+
+        if command == ord('y'):
+            return False
+        
+        if command == ord('n'):
+            self.visible = False
+
+        if command == curses.KEY_LEFT:
+            if self.button is self.cancel:
+                self.cancel.unselect()
+                self.confirm.select()
+
+        if command == curses.KEY_RIGHT:
+            if self.button is self.confirm:
+                self.confirm.unselect()
+                self.cancel.select()
+
+        if command == ord('\t'):
+            if self.button is self.cancel:
+                self.cancel.unselect()
+                self.confirm.select()
+            else:
+                self.confirm.unselect()
+                self.cancel.select()
+        return True
 
     def draw(self, screen):
         if self.visible:
@@ -164,9 +229,10 @@ class Prompt(UIControl):
             # self.window.bkgdset(' ', curses.color_pair(2))
             self.window.border()
             boxstring = f"x:{self.x}, y:{self.y}, w:{self.width}, h:{self.height}"
-            self.window.addstr(0, self.width - len(boxstring) - 1, boxstring)
-            self.window.addstr(1, 1, "Are you sure you want to quit?");
+            # self.window.addstr(0, self.width - len(boxstring) - 1, boxstring)
+            self.window.addstr(2, 2, "Are you sure you want to quit?");
             self.confirm.draw(self.window)
+            self.cancel.draw(self.window)
 
 class ScrollList:
     def __init__(self, x, y, width, height, title=None, wid='ScrollList', selected=False):

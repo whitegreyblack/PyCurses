@@ -10,5 +10,3 @@ class FilterPrompt(UIControl):
     def __init__(self, x, y, width, height, title=None, buttons=None):
         super().__init__(x, y, width, height, title)
         self.buttons = buttons
-
-

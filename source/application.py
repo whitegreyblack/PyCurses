@@ -71,17 +71,17 @@ class Application:
         reciept_cards = [Card(r) for r in reciepts]
         scroller.add_items(reciept_cards)
         form = RecieptForm((self.window.width // 4) + 1, # add 1 for offset
-                       1,
-                       self.window.width - (self.window.width // 4) - 1, 
-                       self.window.height,
-                       scroller.model)
+                           1,
+                           self.window.width - (self.window.width // 4) - 1, 
+                           self.window.height,
+                           scroller.model)
     
         subwin = screen.subwin(self.window.height // 3, 
                                self.window.width // 2, 
                                self.window.height // 3,
                                self.window.width // 4)
 
-        exitprompt = Prompt(subwin, 'Exit Prompt', 'Confirm', None)
+        exitprompt = Prompt(subwin, 'Exit Prompt', 'Confirm', 'Cancel', logger=self.logger)
 
         self.window.add_windows([scroller, form, exitprompt])
 
@@ -91,13 +91,19 @@ class Application:
         keymap[(curses.KEY_ENTER, scroller.wid)] = form.wid
         keymap[(curses.KEY_RIGHT, scroller.wid)] = form.wid
         keymap[(curses.KEY_LEFT, form.wid)] = scroller.wid
-        keymap[(curses.KEY_F1,)] = 'Reciepts'
+        keymap[(curses.KEY_LEFT, exitprompt.wid)] = exitprompt.wid
+        keymap[(curses.KEY_RIGHT, exitprompt.wid)] = exitprompt.wid
+        keymap[(ord('\t'), exitprompt.wid)] = exitprompt.wid
+        # keymap[(curses.KEY_F1,)] = 'Reciepts'
         # 10 : New Line Character
         keymap[(10, scroller.wid)] = form.wid
+        keymap[(10, exitprompt.wid)] = scroller.wid
         # 27 : Escape Key Code
         keymap[(27, scroller.wid)] =  exitprompt.wid
         keymap[(27, exitprompt.wid)] = None
         keymap[(27, form.wid)] = scroller.wid
+        keymap[(ord('y'), exitprompt.wid)] = None
+        keymap[(ord('n'), exitprompt.wid)] = form.wid
         keymap[(ord('q'), scroller.wid)] = None
         keymap[(curses.KEY_ENTER, exitprompt.wid)] = None
         self.window.add_keymap(keymap)
