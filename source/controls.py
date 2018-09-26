@@ -297,15 +297,11 @@ class ScrollList:
         if self.title:
             screen.addstr(self.y, self.x + 1, self.title) 
 
-<<<<<<< HEAD
-        # screen.addstr(self.y, self.x - 1, str(self.index))
-=======
         screen.addstr(self.y, self.x - 1, str(self.index))
         # if self.item_is_focused() and self.item_is_selected():
         #     screen.addstr(self.y + 1, self.x - 1, "FS")
         if self.item_is_selected():
             screen.addstr(self.y + 1, self.x - 1, "S")
->>>>>>> develop
         for index, item in enumerate(self.items):
             item.draw(screen,
                       self.x + 1, 
