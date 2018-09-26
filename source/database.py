@@ -12,7 +12,7 @@ from source.logger import Loggable
 from source.YamlObjects import Reciept
 from source.utils import (
     logargs, setup_logger, setup_logger_from_logargs, format_date as date,
-    format_float as real, filename_and_extension as file_only
+    format_float as real, filename_and_extension as fileonly
 )
 
 spacer = "  "

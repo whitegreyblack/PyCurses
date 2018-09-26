@@ -5,8 +5,7 @@ import datetime
 import source.utils as utils
 import source.config as config
 from source.logger import Loggable
-from source.schema import Table
-from source.utils import SQLType
+from source.schema import Table, SQLType
 from source.yamlchecker import YamlChecker
 from source.database import Connection
 from source.models.models import Reciept, Transaction

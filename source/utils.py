@@ -16,19 +16,6 @@ import os
 
 Currency = Union[int, float]
 
-class SQLType:
-    NULL = 'NULL'
-    INT = 'INTEGER'
-    REAL = 'REAL'
-    TEXT = 'TEXT'
-    BLOB = 'BLOB'
-    
-    @staticmethod
-    def VARCHAR(length: int = 0) -> str:
-        if length == 0:
-            return "VARCHAR"
-        return f"VARCHAR({length})"
-
 class Event(list):
     def __call__(self, sender, event):
         for fn in self:

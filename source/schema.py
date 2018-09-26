@@ -3,8 +3,20 @@ Holds table info to build sqlite tables much easier
 """
 
 __author__ = "Samuel Whang"
-from source.utils import SQLType
-from source.sqlbuilder import SqlString as sql
+
+class SQLType:
+    """Handles datatype inserting for sql create commands"""
+    NULL = 'NULL'
+    INT = 'INTEGER'
+    REAL = 'REAL'
+    TEXT = 'TEXT'
+    BLOB = 'BLOB'
+    
+    @staticmethod
+    def VARCHAR(length: int = 0) -> str:
+        if length == 0:
+            return "VARCHAR"
+        return f"VARCHAR({length})"
 
 class Table:
     """Using a class to place all necessary table info into a single object
