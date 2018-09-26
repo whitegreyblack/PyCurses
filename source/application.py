@@ -21,11 +21,20 @@ def setup_test_cards():
                 [3, 5, 888, 24, 55])]
 
 class Application(Loggable):
+    """Overview:
+    Buids the database and yamlchecker objects. (They are tightly coupled. May
+    need to change in the future.) The data from the yaml files found in using
+    the folder path paramter are first checked by the yamlchecker before
+    loading into the database.
+
+    With loading finished, the front end is created and views are initialized,
+    using data from the database.
+
+    Then the application is looped to draw the views onto the screen using 
+    curses framework.
+    """
     def __init__(self, folder, logger, rebuild=False):
-        # self.logger = logger
-        super().__init__(self.__class__.__name__,
-                         logargs=utils.logargs(self.__class__),
-                         logger=logger)
+        super().__init__(self, logger=logger)
 
         self.checker = YamlChecker(folder, logger=logger)
 

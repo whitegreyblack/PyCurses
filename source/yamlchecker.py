@@ -28,11 +28,9 @@ class YamlChecker(Loggable):
     """Processes yaml files in specified folder for both file integrity and
     yaml safe syntax
     """
-    def __init__(self, folder="reciepts", logger=None):
+    def __init__(self, folder, logger=None):
         # leave the logging initialization to the loggable class
-        super().__init__(self.__class__.__name__, 
-                         logargs=utils.logargs(self.__class__),
-                         logger=logger)
+        super().__init__(self, logger=logger)
 
         self.folder = folder
         if not self.folder:

@@ -29,9 +29,7 @@ class Connection(Loggable):
 
     def __init__(self, tables, logger=None, rebuild=False):
         # leave the logging initialization to the loggable class
-        super().__init__(self.__class__.__name__,
-                         logargs(self.__class__),
-                         logger=logger)
+        super().__init__(self, logger=logger)
 
         self.conn = sqlite3.connect('reciepts.db')
         self.tables = tables

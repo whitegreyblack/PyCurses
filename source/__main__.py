@@ -1,5 +1,4 @@
 """Application.py : Reciept Viewer App
-
 Handles application functionality between Views/Models/Controller
 """
 
@@ -16,20 +15,19 @@ def initialize_curses_settings():
     """Sets Curses related settings"""
     curses.curs_set(0)
     curses.init_pair(1, curses.COLOR_BLACK, curses.COLOR_WHITE)
-    curses.init_pair(2, curses.COLOR_BLACK, curses.COLOR_CYAN) 
+    curses.init_pair(2, curses.COLOR_BLACK, curses.COLOR_CYAN)
 
 def application(screen, folderpath, rebuild):
-    """Overview:
-    Buids the database and yamlchecker objects. (They are tightly coupled. May
-    need to change in the future.) The data from the yaml files found in using
-    the folder path paramter are first checked by the yamlchecker before
-    loading into the database.
+    """Initializes the Application object which builds the rest of the
+    necessary frontend/backend objects.
 
-    With loading finished, the front end is created and views are initialized,
-    using data from the database.
+    The main loop however if handled here as well as signal processing,
+    screen drawing and erasing.
 
-    Then the application is looped to draw the views onto the screen using 
-    curses framework.
+    We build the logger at this top level to print from this function
+    as well as pass in to application and child objects under application.
+    However we could also not build the logger and have only the application
+    object and its children have access to the logger.
     """
     logger = utils.setup_logger('applicationlogger',
                                 'app.log',
@@ -55,29 +53,32 @@ def application(screen, folderpath, rebuild):
         screen.erase()
         app.draw(screen)
 
-def usage():
-    return("Usage: python -m source -f [args]")
-
 @click.command()
-@click.option('-f', help="Folder containing yaml data files")
-@click.option('--rb', "rebuild", is_flag=True, default=False, help="Rebuild tables before inserting files")
-def main(f, rebuild):
-    if not f:
-        print("no data folder specified")
-        print(usage())
-        return
+@click.option('-f', "folder", nargs=1, required=True,
+              help="Folder containing yaml data files")
+@click.option('--rb', "rebuild", is_flag=True, default=False,
+              help="Rebuild tables before inserting files")
+def main(folder, rebuild):
+    """Handles argument parsing using click framework"""
 
-    if f == '.':
+    # special case. Dot notation usually means current folder within the file
+    # system. Prevent this case in order to stop importing all subfiles
+    # within the currently selected folder.
+    if folder == '.':
         print("Invalid folder specified: cannot use dot")
         return
 
-    filepath = utils.format_directory_path(f)
+    # Format the given path for the correct path delimiter and the check if
+    # that path exists as a directory within the filesystem. Exit early if
+    # false.
+    filepath = utils.format_directory_path(folder)
     if not utils.check_directory_path(filepath):
         print("Folder argument is not a directory")
         return 
 
+    # Reduce the delay when pressing escape key on keyboard.
     os.environ.setdefault('ESCDELAY', '25')
-    curses.wrapper(application, f, rebuild)
+    curses.wrapper(application, folder, rebuild)
 
 if __name__ == "__main__":
     main()
