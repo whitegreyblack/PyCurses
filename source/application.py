@@ -35,7 +35,6 @@ class Application(Loggable):
     """
     def __init__(self, folder, logger, rebuild=False):
         super().__init__(self, logger=logger)
-
         self.checker = YamlChecker(folder, logger=logger)
 
         tables = [

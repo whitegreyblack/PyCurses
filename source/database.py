@@ -8,14 +8,12 @@ import sqlite3
 import logging
 import datetime
 from collections import namedtuple
-# from strings import stmts
 from source.logger import Loggable
-from source.utils import logargs
-from source.utils import setup_logger
 from source.YamlObjects import Reciept
-from source.utils import format_date as date
-from source.utils import format_float as real
-from source.utils import filename_and_extension as fileonly
+from source.utils import (
+    logargs, setup_logger, setup_logger_from_logargs, format_date as date,
+    format_float as real, filename_and_extension as file_only
+)
 
 spacer = "  "
 
@@ -167,5 +165,6 @@ class Connection(Loggable):
             yield productinfo(*product)
 
 if __name__ == "__main__":
-    logger = setup_logger('dblog', 'db.log', extra={'currentfile': __file__})
-    db = Connection(logger=logger)
+    args = logargs(type("db_main", (), dict()))
+    logger = setup_logger_from_logargs(args)
+    db = Connection(None, logger=logger)

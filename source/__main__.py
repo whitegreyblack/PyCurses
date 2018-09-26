@@ -11,8 +11,10 @@ import curses
 import source.utils as utils
 from source.application import Application
 
-def initialize_curses_settings():
-    """Sets Curses related settings"""
+def initialize_curses_settings(logger=None):
+    """Sets settings for cursor visibility and color pairings"""
+    if logger:
+        logger.info('main(): initializing curses library settings')
     curses.curs_set(0)
     curses.init_pair(1, curses.COLOR_BLACK, curses.COLOR_WHITE)
     curses.init_pair(2, curses.COLOR_BLACK, curses.COLOR_CYAN)
@@ -26,29 +28,27 @@ def application(screen, folderpath, rebuild):
 
     We build the logger at this top level to print from this function
     as well as pass in to application and child objects under application.
-    However we could also not build the logger and have only the application
-    object and its children have access to the logger.
+    However we could also not build the logger and have the application
+    object handle logger building and only the app and app children would
+    have access to the logger.
     """
-    logger = utils.setup_logger('applicationlogger',
-                                'app.log',
-                                extra={'currentfile': __file__})
-
-    logger.info('main(): initializing curses library settings')
-    initialize_curses_settings()
-    logger.info('main(): done')
+    logargs = utils.logargs(application)
+    logger = utils.setup_logger_from_logargs(logargs)
     
+    # curses only options.
+    initialize_curses_settings()
+    
+    # initialize application object and build front/back end
     app = Application(folderpath, logger=logger, rebuild=rebuild)
     app.setup()
     app.build_windows(screen)
     app.draw(screen)
 
+    # TODO: May be place this in a .Run() function inside app?
     while True:
         key = screen.getch()
         retval = app.send_signal(key)
-        if key == 10:
-            logger.info(f"{retval}")
         if not retval:
-            logger.info("GOT EXIT SIGNAL")
             break
         screen.erase()
         app.draw(screen)
@@ -59,7 +59,9 @@ def application(screen, folderpath, rebuild):
 @click.option('--rb', "rebuild", is_flag=True, default=False,
               help="Rebuild tables before inserting files")
 def main(folder, rebuild):
-    """Handles argument parsing using click framework"""
+    """Handles argument parsing using click framework before calling the
+    curses wrapper handler function
+    """
 
     # special case. Dot notation usually means current folder within the file
     # system. Prevent this case in order to stop importing all subfiles

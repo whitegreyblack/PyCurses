@@ -69,13 +69,16 @@ class YamlChecker(Loggable):
         unverified = []
         skipped = []
 
+        # iterate through each file in given folder path. Checks file name,
+        # file extension, and contents before adding them to the verified list
         for _, _, files in os.walk(self.folder):
-            sortedfiles = sorted(files)
-            self.log(f"Verifying {len(sortedfiles)} files")
-            for file_name in files: 
+            # sortedfiles = sorted(files)
+            self.log(f"Verifying {len(files)} files")
+
+            for file_name in files:
                 filename, extension = utils.filename_and_extension(file_name)
 
-                # check for dot files in the verify beginning
+                # check for dot files in the verify beginning. Usually configs
                 if file_name[0] == ".":
                     error = f"{file_name} begins with a dot. Skipping."
                     self.log(error)
@@ -131,21 +134,25 @@ class YamlChecker(Loggable):
                 propertyTypeError = False
                 validationError = False
                 for prop, (types, vdter, fmter) in yamlobj.properties.items():
+                    # access the property. Error means not set or nonexistant
                     try:
                         p = getattr(yamlobj, prop)
                     except AttributeError:
                         attributeError = True
                         break
                     
+                    # check value against the types allowable for the property
                     if not isinstance(p, types):
                         propertyTypeError = True
                         break
 
+                    # if property came with validator, check against it
                     if vdter:
                         if not vdter(filename, p):
                             validationError = True
                             break
 
+                    # if property came with formatter, format the value
                     if fmter:
                         newval = fmter(filename, p)
                         setattr(yamlobj, prop, newval)
@@ -175,6 +182,9 @@ class YamlChecker(Loggable):
                     unverified.append(error)
                     continue
 
+                # these are more Reciept object specific checks. Could place them
+                # in the reciept class as a callback handler after regular checks
+                # have finished. For now keep here but remember TODO refactoring.
                 transactionError = False
                 productSumInt = convert_int(sum(yamlobj.products.values()))
                 subtotalInt = convert_int(yamlobj.subtotal)
@@ -205,7 +215,7 @@ class YamlChecker(Loggable):
                     unverified.append(error)
                     continue
 
-                # all properties came back with a value. now check that value
+                # Checking finished. No errors found. Add to verified list
                 self.log(f"  + Verified {filename}")
                 verified.append(filename)
 
@@ -218,6 +228,7 @@ class YamlChecker(Loggable):
                 "UNVERIFIED": unverified,
                 }
 
+    #!DEPRACATED CODE! TODO: REMOVE CODE
     # def files_safe(self, loaded_files=None):
     #     """Iterate through each file in directory to verify if the file is
     #     safe to load into the database.
@@ -371,7 +382,6 @@ class YamlChecker(Loggable):
     #         return False
 
     #     for product, price in obj.products.items():
-    #         # TODO -- better if statements, early exit on condition match
     #         nonstring = not isinstance(product, str)
     #         invalidlen = 2 <= len(product) <= 25
     #         nonfloat = not isinstance(price, float)
@@ -456,17 +466,16 @@ def log_file_results(logger, batches, toconsole):
             log(logger, batchmessage, toconsole)
 
 @click.command()
-@click.option('-f', nargs=1, type=str, help="folder holding yaml data files")
+@click.option('-f', "folder", nargs=1, type=str, required=True,
+              help="folder holding yaml data files")
 @click.option('-p', is_flag=True, help="print results to terminal screen")
-def main(f, p):
-    filepath = utils.format_directory_path(f)
+def main(folder, p):
+    filepath = utils.format_directory_path(folder)
     if not utils.check_directory_path(filepath):
         exit(config.ARGS_PATH_IS_NOT_DIR)
 
     logargs = utils.logargs(type("yc_main", (), dict()))
-    logger = utils.setup_logger(logargs.name, 
-                                logargs.file, 
-                                extra=logargs.extra)
+    logger = utils.setup_logger_from_logargs(logargs)
 
     checker = YamlChecker(filepath, logger)
     fileresults = checker.verify_file_states()
