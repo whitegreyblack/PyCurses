@@ -1,15 +1,17 @@
 # from imports import *
-
+import curses
 months=['jan','feb','mar','apr','may']
-gggdot = dot['to']
+# gggdot = dot['to']
 
 def addvline(scr, y, x, dv):
-    scr.vline(y, x, background.vl, dv)
+    vl = curses.ACS_VLINE
+    scr.vline(y, x, vl, dv)
     scr.addch(y, x, curses.ACS_TTEE)
     scr.addch(dv - 1, x, curses.ACS_BTEE)
 
 def addhline(scr, y, x, dh):
-    scr.hline(y, x, background.hl, dh)
+    hl = curses.ACS_HLINE
+    scr.hline(y, x, hl, dh)
     scr.addch(y, x, curses.ACS_LTEE)
     scr.addch(y, dh - 1, curses.ACS_RTEE)
 
@@ -25,6 +27,13 @@ def main(scr):
     curses.init_pair(4, curses.COLOR_YELLOW, curses.COLOR_BLACK)
     curses.curs_set(0)
 
+    li = curses.ACS_BOARD
+    bd = curses.ACS_CKBOARD
+    re = curses.A_REVERSE
+    bl = curses.ACS_BULLET
+    dg = curses.ACS_DEGREE
+    di = curses.ACS_DIAMOND
+
     addhline(scr, 10, 0, x)
     addvline(scr, 0, 4, y)
     scr.addstr(1, 1, " 17")
@@ -37,10 +46,10 @@ def main(scr):
     scr.addch(12, 10, curses.ACS_VLINE)
     
     # scr.addch(1,5,dot[5])
-    scr.addch(15, 1, background.bl, curses.color_pair(1))
-    scr.addch(16, 1, background.di, curses.color_pair(2))
-    scr.addch(17, 1, background.dg, curses.color_pair(3))
-    scr.addch(18, 1, background.bd, curses.color_pair(4))
+    scr.addch(15, 1, bl, curses.color_pair(1))
+    scr.addch(16, 1, di, curses.color_pair(2))
+    scr.addch(17, 1, dg, curses.color_pair(3))
+    scr.addch(18, 1, bd, curses.color_pair(4))
     scr.addch(19, 1,'o', curses.color_pair(4));
     
     char=scr.getch()

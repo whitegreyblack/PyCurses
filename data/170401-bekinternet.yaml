@@ -4,9 +4,7 @@ short: BEK
 date: [2017, 4, 1]
 category: utility
 products:
-  {
-    internet: 78.86
-  }
+  internet: 78.86
 subtotal: 78.86
 tax: 0.00
 total: 78.86

@@ -52,3 +52,4 @@ class Reciept(yaml.YAMLObject):
         self.subtotal = args[5]
         self.tax = args[6]
         self.total = args[7]
+        self.payment = args[8]

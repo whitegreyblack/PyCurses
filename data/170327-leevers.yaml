@@ -4,9 +4,7 @@ short: Leevers
 date: [2017, 3, 27]
 category: grocery
 products:
-  {
-    dollar item: 1.00
-  }
+  dollar item: 1.00
 subtotal: 1.00
 tax: 0.00
 total: 1.00
