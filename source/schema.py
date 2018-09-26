@@ -1,6 +1,4 @@
-"""Schema.py
-Holds table info to build sqlite tables much easier
-"""
+"""Schema.py: Holds table info to build sqlite tables much easier"""
 
 __author__ = "Samuel Whang"
 
@@ -22,7 +20,7 @@ class Table:
     """Using a class to place all necessary table info into a single object
     to create sql commands without outside input.
     """
-    def __init__(self, name, fields, unique=None):
+    def __init__(self, name: str, fields: list, unique=None):
         self.name = name
         self.fields = fields
         self.unique = unique
@@ -44,7 +42,7 @@ class Table:
             unique = f", UNIQUE({', '.join(self.unique)})"
         return unique
 
-    def join_columns(self, columns) -> str:
+    def join_columns(self, columns: list) -> str:
         return ', '.join(columns)
 
     @property
@@ -66,7 +64,7 @@ class Table:
     def select_command(self) -> str:
         return f"SELECT * FROM {self.name}"
 
-    def select_command_on(self, columns) -> str:
+    def select_command_on(self, columns: list) -> str:
         fields = self.join_columns(columns)
         return f"SELECT {fields} FROM {self.name};"
 

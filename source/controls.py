@@ -1,18 +1,7 @@
 #!/usr/bin/env python3
-
-'''
+"""controls.py:
 User Interface Control Components
-'''
-
-__author__ = "Samuel Whang"
-
-import curses
-from collections import namedtuple
-from source.utils import border
-from source.utils import format_float as Money
-
-def intersect(this, other):
-    return False
+"""
 
 """
 Parent (UIControl)?
@@ -26,7 +15,16 @@ Window: vs Panel:?
     Move to json?
 """
 
+__author__ = "Samuel Whang"
+
+import curses
+from collections import namedtuple
+from source.utils import border
+from source.utils import format_float as Money
+
 line = namedtuple("Line", "x y line")
+def intersect(this, other):
+    return False
 
 class UIControl:
     def __init__(self, x, y, width, height, title=None):

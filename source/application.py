@@ -1,3 +1,5 @@
+__author__ = "Samuel Whang"
+
 import yaml
 import curses
 import logging
@@ -33,11 +35,12 @@ class Application(Loggable):
     Then the application is looped to draw the views onto the screen using 
     curses framework.
     """
-    def __init__(self, folder, logger, rebuild=False):
+    def __init__(self, folder, logger=None, rebuild=False):
         super().__init__(self, logger=logger)
         self.folder = folder
         self.export = "export/"
         self.checker = YamlChecker(folder, logger=logger)
+
         tables = [
             Table("reciepts",
                   [
@@ -83,6 +86,7 @@ class Application(Loggable):
         self.keymap[key]()
 
     def build_reciepts(self):
+        """Generates View Reciept objects from database"""
         for rdata in self.database.select_reciepts():
             reciept = rdata.filename
             rproducts = list(self.database.select_reciept_products(reciept))
@@ -99,6 +103,7 @@ class Application(Loggable):
             yield r
 
     def build_reciepts_for_export(self):
+        """Generates Yaml Reciept objects from database"""
         for r in self.database.select_reciepts():
             products = {
                 p.product: p.price
@@ -191,4 +196,6 @@ class Application(Loggable):
         return self.window.send_signal(signal)
 
 if __name__ == "__main__":
-    pass
+    a = Application('data/')
+    for table in a.database.tables:
+        print(table)

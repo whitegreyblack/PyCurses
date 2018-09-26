@@ -1,5 +1,5 @@
-"""Application.py : Reciept Viewer App
-Handles application functionality between Views/Models/Controller
+"""__main__.py: Reciept Viewer App
+Handles building application within curses environment
 """
 
 __author__ = "Samuel Whang"
