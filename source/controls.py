@@ -7,11 +7,13 @@ User Interface Control Components
 Parent (UIControl)?
 Bounding boxes?
 
-Window: vs Panel:?
-    + Panel vs Window?
-        - ScrollList
-        - Prompt
-        - Form
+Window:
+    ::Router::
+        + View 1:
+            - Scroller
+            - Form
+        + View 2:
+            - Exit prompt
     Move to json?
 """
 
@@ -26,6 +28,7 @@ line = namedtuple("Line", "x y line")
 def intersect(this, other):
     return False
 
+# -- Curses-independent classes --
 class UIControl:
     def __init__(self, x, y, width, height, title=None):
         self.x = x
@@ -51,13 +54,6 @@ class UIControl:
     def focused(self):
         """Returns a single value within the view that is currently focused"""
         pass
-
-class View(UIControl):
-    """Implements view screen and control over a single view within a window"""
-    def __init__(self, x, y):
-        self.x = x
-        self.y = y
-        self.windows = []
 
 class Window:
     def __init__(self, title, x, y):
@@ -237,7 +233,7 @@ class Prompt(UIControl):
             self.window.erase()
             # self.window.bkgdset(' ', curses.color_pair(2))
             self.window.border()
-            boxstring = f"x:{self.x}, y:{self.y}, w:{self.width}, h:{self.height}"
+            # boxstring = f"x:{self.x}, y:{self.y}, w:{self.width}, h:{self.height}"
             # self.window.addstr(0, self.width - len(boxstring) - 1, boxstring)
             self.window.addstr(2, 2, "Are you sure you want to quit?");
             self.confirm.draw(self.window)
