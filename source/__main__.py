@@ -1,5 +1,5 @@
-"""Application.py : Reciept Viewer App
-Handles application functionality between Views/Models/Controller
+"""__main__.py: Reciept Viewer App
+Handles building application within curses environment
 """
 
 __author__ = "Samuel Whang"
@@ -16,8 +16,9 @@ def initialize_curses_settings(logger=None):
     if logger:
         logger.info('main(): initializing curses library settings')
     curses.curs_set(0)
-    curses.init_pair(1, curses.COLOR_BLACK, curses.COLOR_WHITE)
-    curses.init_pair(2, curses.COLOR_BLACK, curses.COLOR_CYAN)
+    curses.init_pair(1, curses.COLOR_WHITE, curses.COLOR_BLACK)
+    curses.init_pair(2, curses.COLOR_BLACK, curses.COLOR_WHITE)
+    curses.init_pair(3, curses.COLOR_BLACK, curses.COLOR_CYAN)
 
 def application(screen, folderpath, rebuild):
     """Initializes the Application object which builds the rest of the
@@ -47,9 +48,12 @@ def application(screen, folderpath, rebuild):
     # TODO: May be place this in a .Run() function inside app?
     while True:
         key = screen.getch()
-        retval = app.send_signal(key)
-        if not retval:
-            break
+        if key in app.keymap.keys():
+            app.keyhandler(key)
+        else:
+            retval = app.send_signal(key)
+            if not retval:
+                break
         screen.erase()
         app.draw(screen)
 

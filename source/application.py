@@ -1,7 +1,9 @@
+__author__ = "Samuel Whang"
+
+import yaml
 import curses
 import logging
 import datetime
-
 import source.utils as utils
 import source.config as config
 from source.logger import Loggable
@@ -10,6 +12,7 @@ from source.yamlchecker import YamlChecker
 from source.database import Connection
 from source.models.models import Reciept, Transaction
 from source.models.product import Product
+from source.YamlObjects import Reciept as YamlReciept
 from source.controls import Window, ScrollList, Card, RecieptForm, Prompt, Button
 
 def setup_test_cards():
@@ -32,8 +35,10 @@ class Application(Loggable):
     Then the application is looped to draw the views onto the screen using 
     curses framework.
     """
-    def __init__(self, folder, logger, rebuild=False):
+    def __init__(self, folder, logger=None, rebuild=False):
         super().__init__(self, logger=logger)
+        self.folder = folder
+        self.export = "export/"
         self.checker = YamlChecker(folder, logger=logger)
 
         tables = [
@@ -59,6 +64,9 @@ class Application(Loggable):
             )
         ]
 
+        self.keymap = dict()
+        self.keymap[ord('e')] = self.export_reciepts
+
         self.database = Connection(tables, logger=logger, rebuild=rebuild)
 
     def setup(self):
@@ -74,23 +82,62 @@ class Application(Loggable):
         for commit in files:
             self.log(f"+ {commit}")
 
+    def keyhandler(self, key):
+        self.keymap[key]()
+
     def build_reciepts(self):
-        reciepts = []
+        """Generates View Reciept objects from database"""
         for rdata in self.database.select_reciepts():
             reciept = rdata.filename
             rproducts = list(self.database.select_reciept_products(reciept))
             t = Transaction(rdata.total, rdata.payment, 
                             rdata.subtotal, rdata.tax)
 
-            d = utils.format_database_date(rdata.date)
+            d = utils.parse_date_from_database(rdata.date)
             r = Reciept(rdata.store,
                         rdata.short,
                         utils.format_date(d, config.DATE_FORMAT['L']),
                         utils.format_date(d, config.DATE_FORMAT['S']),
                         rdata.category,
                         [Product(p.product, p.price) for p in rproducts], t)
-            reciepts.append(r)
-        return reciepts
+            yield r
+
+    def build_reciepts_for_export(self):
+        """Generates Yaml Reciept objects from database"""
+        for r in self.database.select_reciepts():
+            products = {
+                p.product: p.price
+                    for p in self.database.select_reciept_products(r.filename)
+            }
+
+            # separates date into list of int values again
+            datelist = utils.parse_date_from_database(r.date)
+
+            # reuse yaml object to export
+            reciept = YamlReciept(r.store, r.short, datelist, r.category, 
+                                  products, r.subtotal, r.tax, r.total,
+                                  r.payment)
+            yield (r.filename, reciept)
+
+    def export_reciepts(self):
+        """Should create a folder that matches exactly the input folder"""
+        # verify folder exists. If not then create it
+        exportpath = utils.format_directory_path(self.export)
+        folderpath = utils.check_or_create_folder(self.export)
+        formatpath = utils.format_directory_path(folderpath)
+        self.log(f"Begin exporting to {formatpath}")
+        for filename, reciept in self.build_reciepts_for_export():
+            filepath = formatpath + filename + config.YAML_FILE_EXTENSION
+            with open(filepath, 'w') as yamlfile:
+                yamlfile.write(yaml.dump(reciept))
+        self.log("Finished exporting.")
+
+    def generate_reports(self):
+        """Basically does a join on all the files in the database for common
+        data comparisons. Could use a handler to generate all the reports
+        specific to the database being used.
+        """
+        pass
 
     def build_windows(self, screen):
         height, width = screen.getmaxyx()
@@ -102,8 +149,7 @@ class Application(Loggable):
                               'Reciepts',
                               selected = True)
 
-        reciepts = self.build_reciepts()
-        reciept_cards = [Card(r) for r in reciepts]
+        reciept_cards = [ Card(r) for r in self.build_reciepts() ]
         scroller.add_items(reciept_cards)
         form = RecieptForm((self.window.width // 4) + 1, # add 1 for offset
                            1,
@@ -150,4 +196,6 @@ class Application(Loggable):
         return self.window.send_signal(signal)
 
 if __name__ == "__main__":
-    pass
+    a = Application('data/')
+    for table in a.database.tables:
+        print(table)

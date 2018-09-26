@@ -1,6 +1,4 @@
-"""
-database.py: Connection object to access sqlite3 database
-"""
+"""database.py: Connection object to access sqlite3 database"""
 
 __author__ = "Samuel Whang"
 

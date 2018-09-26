@@ -1,6 +1,9 @@
 # log files
 *.log
 
+# export folder -- should be created throughs source app
+export/
+
 # vs code settings folder
 .vscode/
 

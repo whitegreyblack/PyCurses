@@ -1,8 +1,21 @@
 #!/usr/bin/env python3
-
-'''
+"""controls.py:
 User Interface Control Components
-'''
+"""
+
+"""
+Parent (UIControl)?
+Bounding boxes?
+
+Window:
+    ::Router::
+        + View 1:
+            - Scroller
+            - Form
+        + View 2:
+            - Exit prompt
+    Move to json?
+"""
 
 __author__ = "Samuel Whang"
 
@@ -11,22 +24,11 @@ from collections import namedtuple
 from source.utils import border
 from source.utils import format_float as Money
 
+line = namedtuple("Line", "x y line")
 def intersect(this, other):
     return False
 
-"""
-Parent (UIControl)?
-Bounding boxes?
-
-Window: vs Panel:?
-    + Panel vs Window?
-        - ScrollList
-        - Prompt
-        - Form
-"""
-
-line = namedtuple("Line", "x y line")
-
+# -- Curses-independent classes --
 class UIControl:
     def __init__(self, x, y, width, height, title=None):
         self.x = x
@@ -52,13 +54,6 @@ class UIControl:
     def focused(self):
         """Returns a single value within the view that is currently focused"""
         pass
-
-class View(UIControl):
-    """Implements view screen and control over a single view within a window"""
-    def __init__(self, x, y):
-        self.x = x
-        self.y = y
-        self.windows = []
 
 class Window:
     def __init__(self, title, x, y):
@@ -143,13 +138,23 @@ class Button(UIControl):
         # boxstring = f"x:{self.x}, y:{self.y}, w:{self.width}, h:{self.height}"
         # screen.addstr(self.height + 1, 0, boxstring) 
         if self.selected:
-            color = curses.color_pair(1)
-            screen.addstr(self.height + self.y - 1, self.x + self.width - len(self.label) - 1, self.label, color)
+            color = curses.color_pair(2)
         else:
-            screen.addstr(self.height + self.y - 1, self.x + self.width - len(self.label) - 1, self.label)
+            color = curses.color_pair(1)
+        screen.addstr(self.height + self.y - 1, 
+                      self.x + self.width - len(self.label) - 1,
+                      self.label, color)
  
 class Prompt(UIControl):
-    def __init__(self, window, title=None, confirm=None, cancel=None, wid='Prompt', logger=None):
+    def __init__(
+            self, 
+            window, 
+            title=None, 
+            confirm=None, 
+            cancel=None, 
+            wid='Prompt', 
+            logger=None
+        ):
         self.window = window
         oy, ox = window.getbegyx() # offset from parent window
         my, mx = window.getmaxyx()
@@ -228,13 +233,22 @@ class Prompt(UIControl):
             self.window.erase()
             # self.window.bkgdset(' ', curses.color_pair(2))
             self.window.border()
-            boxstring = f"x:{self.x}, y:{self.y}, w:{self.width}, h:{self.height}"
+            # boxstring = f"x:{self.x}, y:{self.y}, w:{self.width}, h:{self.height}"
             # self.window.addstr(0, self.width - len(boxstring) - 1, boxstring)
             self.window.addstr(2, 2, "Are you sure you want to quit?");
             self.confirm.draw(self.window)
             self.cancel.draw(self.window)
 
 class ScrollList:
+    """ScrollList should be able to take in any model type that is wrapped in
+    a Card class. As long as the items come in as Cards scrolllsit should be
+    able to scroll through a list longer than the height of the screen,
+    highlight items, and select with highlighting.
+    Should implement select, focus, scroll. If selected, card item becomes
+    focused. Should still be able to scroll through other items however.
+
+    TODO: inherit from UIControl. Make it also loggable?
+    """
     def __init__(self, x, y, width, height, title=None, wid='ScrollList', selected=False):
         self.wid = wid
         self.items = []
@@ -252,6 +266,16 @@ class ScrollList:
     def add_items(self, items):
         for item in items:
             self.items.append(item)
+
+    def item_is_selected(self):
+        if not self.items:
+            return None
+        return self.items[self.index].selected
+
+    # def item_is_focused(self):
+    #     if not self.items:
+    #         return None
+    #     return self.items[self.index].focused
 
     @property
     def model(self):
@@ -273,12 +297,16 @@ class ScrollList:
         if self.title:
             screen.addstr(self.y, self.x + 1, self.title) 
 
+<<<<<<< HEAD
         # screen.addstr(self.y, self.x - 1, str(self.index))
+=======
+        screen.addstr(self.y, self.x - 1, str(self.index))
+        # if self.item_is_focused() and self.item_is_selected():
+        #     screen.addstr(self.y + 1, self.x - 1, "FS")
+        if self.item_is_selected():
+            screen.addstr(self.y + 1, self.x - 1, "S")
+>>>>>>> develop
         for index, item in enumerate(self.items):
-            if self.index == index:
-                screen.addch(self.y + index + 1, 
-                             self.width, 
-                             curses.ACS_BLOCK)
             item.draw(screen,
                       self.x + 1, 
                       self.y + index + 1, 
@@ -286,6 +314,16 @@ class ScrollList:
                       self.height,
                       self.selected,
                       self.index == index)
+
+            # if self.index == index:
+            #     for x in (self.x, self.width):
+            #         y = self.y + index + 1
+            #         c = curses.color_pair(1)
+            #         if self.item_is_selected() and self.item_is_focused():
+            #             c = curses.color_pair(2)
+            #         elif self.item_is_selected():
+            #             c = curses.color_pair(3)
+            #         screen.addch(y, x, curses.ACS_BLOCK, c)
         
 class Card:
     def __init__(self, model, title=None):
@@ -311,16 +349,12 @@ class Card:
 
     def draw(self, screen, x, y, dx, dy, focused, selected):
         description = self.format_description(dx - x)
+        color = curses.color_pair(1)
         if focused and selected:
-            screen.addstr(y, x, 
-                          description, 
-                          curses.color_pair(1))
+            color = curses.color_pair(3)
         elif selected:
-            screen.addstr(y, x,
-                          description,
-                          curses.color_pair(2))
-        else:
-            screen.addstr(y, x, description)
+            color = curses.color_pair(2)
+        screen.addstr(y, x, description, color)
 
 class Form:
     def __init__(self, x, y, width, height, model=None, wid='Form', title=None):

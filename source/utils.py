@@ -128,9 +128,8 @@ def log_message(logger, message, extra=None):
     logger.info(message, extra)
 
 def format_directory_path(path: str) -> str:
-    """
-    Replaces windows style path seperators to forward-slashes and adds
-    another slash to the end of the string
+    """Replaces windows style path seperators to forward-slashes and adds
+    another slash to the end of the string.
     """
     if path == ".":
         return path
@@ -165,10 +164,13 @@ def border(screen: object, x: int, y: int, dx: int, dy: int) -> None:
 def format_float(number: Union[int, float]) -> float:
     return f"{number:10.2f}"
 
-def format_database_date(date):
+def parse_date_from_database(date: str) -> list:
+    """Returns a list of ints denoting Year, Month, Date in that order"""
     return [int(d) for d in date.split('-')]
 
-def format_date(date, dateformat=None) -> str:
+def format_date(date: list, dateformat: str=None) -> str:
+    """Creates a date string using the date format paramter. If no parameter
+    is provided then returns the string in the default datetime isoformat"""
     newdate = datetime.date(*date)
     if dateformat:
         return newdate.strftime(dateformat)
