@@ -146,7 +146,6 @@ class Window:
         return True
 
     def draw(self, screen):
-        # screen.border()
         # screen.addstr(0, 1, self.title)
         dimensions = f"{self.term_width}, {self.term_height}"
         # screen.addstr(0, self.term_width - len(dimensions) - 1, dimensions)
@@ -154,6 +153,7 @@ class Window:
             window.draw(screen)
 
         for view in self.views:
+            view.window.border()
             view.draw()
 
 # TODO Create a button class to pass into Prompt confirm/cancel parameters
@@ -283,18 +283,27 @@ class ScrollList:
     Should implement select, focus, scroll. If selected, card item becomes
     focused. Should still be able to scroll through other items however.
 
+    ScrollList border will always be on to ensure division from other element
+    controls.
+
     TODO: inherit from UIControl. Make it also loggable?
     """
     def __init__(self, x, y, width, height, title=None, wid='ScrollList', selected=False):
         self.wid = wid
         self.items = []
+        self.cards = []
         self.x = x
         self.y = y
         self.width = width
+        self.card_width = width - 2
+        self.card_height = height - 2
         self.height = height
         self.title = title
         self.index = 0
         self.selected = selected
+
+    def add_card(self, card):
+        self.cards.append(card)
 
     def add_item(self, item):
         self.items.append(item)
@@ -332,23 +341,24 @@ class ScrollList:
         screen.border()
         if self.title:
             screen.addstr(self.y, self.x + 1, self.title) 
-        '''
+
         screen.addstr(self.y, self.width - 2, str(self.index))
         # if self.item_is_focused() and self.item_is_selected():
         #     screen.addstr(self.y + 1, self.x - 1, "FS")
         if self.item_is_selected():
             screen.addstr(self.y + 1, self.x - 1, "S")
-        
+
         for index, item in enumerate(self.items):
-            if index < self.height - self.x - 1:            
+            if index < self.height - self.x - 1:
+                # screen.addstr(self.y, self.x + 1, item.model.description[0])
                 item.draw(screen,
                         self.x + 1, 
-                        self.y + index + 1, 
-                        self.width,
-                        self.height,
+                        self.y + index, 
+                        self.card_width,
+                        self.card_height,
                         self.selected,
                         self.index == index)
-
+        '''
             # if self.index == index:
             #     for x in (self.x, self.width):
             #         y = self.y + index + 1
@@ -371,8 +381,6 @@ class Card:
         formats = self.model.formats
         space = max(0, length - sum(len(fo.format(fi)) 
                         for fi, fo in zip(fields, formats)))
-
-        # minimum width should be 80? 
         if space == 0:
             fields = self.model.short_description
             space = max(0, length - sum(len(fo.format(fi))
@@ -382,14 +390,15 @@ class Card:
                                                  ' ' * space,
                                                  fields[1])
 
-    def draw(self, screen, x, y, dx, dy, focused, selected):
-        description = self.format_description(dx - x)
+    def draw(self, screen, x, y, width, height, focused, selected):
+        description = self.format_description(width)
         color = curses.color_pair(1)
         if focused and selected:
             color = curses.color_pair(3)
         elif selected:
             color = curses.color_pair(2)
         screen.addstr(y, x, description, color)
+        pass
 
 class Form:
     def __init__(self, x, y, width, height, model=None, wid='Form', title=None):

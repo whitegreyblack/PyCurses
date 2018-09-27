@@ -170,7 +170,13 @@ class Application(Loggable):
         v1.add_element(form)
         # v2 = View(1, 1, width, height - 1)
 
+        optionview1 = View(screen.subwin(4, 14, 1, 0))
+        optionview2 = View(screen.subwin(4, 15, 1, 6))
+        optionview3 = View(screen.subwin(4, 15, 1, 12))
         self.window.add_view(v1)
+        self.window.add_view(optionview1)
+        self.window.add_view(optionview2)
+        self.window.add_view(optionview3)
         #self.window.add_view(View(1, 1, width, height - 1))
 
     def build_windows(self, screen):
