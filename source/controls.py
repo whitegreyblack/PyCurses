@@ -60,13 +60,18 @@ class UIControl:
 # include the border for the main window and instead extend the view down
 # to last row of the screen.
 class View:
-    def __init__(self, window):
+    def __init__(self, window, columns=1, rows=1):
         self.window = window
         self.x = window.getbegyx()[1]
         self.y = window.getbegyx()[0]
         self.width = window.getmaxyx()[1]
         self.height = window.getmaxyx()[0]
+        self.curcolumns = 0
+        self.maxcolumns = columns
+        self.currows = 0
+        self.maxrows = rows
         self.elements = []
+        self.usedgrid = []
 
     @property
     def component(self):
@@ -77,8 +82,19 @@ class View:
     def add_element(self, element):
         self.elements.append(element)
 
-    def hide(self):
-        pass
+    def subwin(self, element):
+        if self.curcolumns >= self.maxcolumns or self.currows >= self.maxrows:
+            raise ValueError("cannot add element to the grid")
+        columnwidth = self.width // self.columns
+        rowheight = self.height // self.rows
+
+        for i in range(element.columnspan):
+            self.curcolumns += 1
+
+        for j in range(element.rowspan):
+            self.currows += 1
+
+        return self.window.subwin()
 
     def draw(self):
         for el in self.elements:
@@ -275,6 +291,20 @@ class Prompt(UIControl):
             self.confirm.draw(self.window)
             self.cancel.draw(self.window)
 
+class Scroller:
+    columnspan = 1
+    rowspan = 2
+
+    def __init__(self, view, cards=None) # column=0, columnspan=1, row=0, rowspan=1):
+        self.view = view
+        self.cards = cards
+        if not self.cards:
+            self.cards = []
+
+    def draw(self):
+        if not hasattr(self, 'subwin'):
+            self.subwin = self.view.subwin(self.columnspan, self.rowspan)
+
 class ScrollList:
     """ScrollList should be able to take in any model type that is wrapped in
     a Card class. As long as the items come in as Cards scrolllsit should be
@@ -285,6 +315,8 @@ class ScrollList:
 
     ScrollList border will always be on to ensure division from other element
     controls.
+    Default is one column and spans one column
+    Takes up all the horizontally space it can.
 
     TODO: inherit from UIControl. Make it also loggable?
     """

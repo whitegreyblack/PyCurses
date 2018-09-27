@@ -155,7 +155,7 @@ class Application(Loggable):
         # TODO: options manager, view manager, component manager
         self.window = Window('Application', width, height)
 
-        v1 = View(screen.subwin(height - 1, width, 1, 0))
+        v1 = View(screen.subwin(height - 1, width, 1, 0), columns=2, rows=2)
 
         reciept_cards = [ Card(r) for r in self.build_reciepts() ]
         scroller = ScrollList(v1.x, v1.y, v1.width // 4, v1.height)
