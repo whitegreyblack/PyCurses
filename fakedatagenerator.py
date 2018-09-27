@@ -9,7 +9,7 @@ import source.utils as utils
 from source.logger import Loggable
 from source.YamlObjects import Reciept
 from source.database import Connection
-from examples.calendar_widget import date, iter_months_years
+from examples.calendar_widget import date, parse_date, iter_months_years
 # This can either go two ways. Building data directly from sql queries with a
 # join on the tables being used. Very similar to a view table. Or load all
 # tables being used into python and have the dataprocessing done within a
@@ -23,6 +23,7 @@ from examples.calendar_widget import date, iter_months_years
 # ]
 # print(filenames)
 
+# TODO: single file option
 internet_build_query = """SELECT * FROM reciepts WHERE short='BEK'"""
 
 class DataGenerator:
@@ -34,12 +35,22 @@ class DataGenerator:
 
         print(f"PATH: {self.export_folder}")
 
-    def generate_internet_data(self):
-        filenames = {
-            (y, m, 1): str(y)[2:] + f"{m:02}" + '01' + '-internet.yaml'
-                for y, m in iter_months_years(date(2017, 3, 1), 
-                                              date(2018, 9, 1))
+    def generate_filenames(self, start, end, days, category):
+        startDate = parse_date(start)
+        endDate = parse_date(end)
+        return {
+            (y, m, d): f"{str(y)[2:]}{m:02}{d:02}-{cat}.yaml"
+                for y, m in iter_months_years(startDate, endDate)
+                    for cat in category
+                        for d in days
         }
+
+    def generate_internet_data(self):
+        filenames = self.generate_filenames("2017-3-1", 
+                                            "2018-3-1", 
+                                            (1,), 
+                                            ("utility",))
+
         for datetup, filename in filenames.items():
             reciept = Reciept('Internet', 
                               'Net', 
@@ -54,12 +65,11 @@ class DataGenerator:
                 yamlfile.write(yaml.dump(reciept))
 
     def generate_grocery_data(self):
-        filenames = {
-            (y, m, d): str(y)[2:] + f"{m:02}" + f"{d:02}" + '-grocery.yaml'
-                for y, m in iter_months_years(date(2017, 3, 1),
-                                              date(2018, 9, 1))
-                    for d in (15, 30)
-        }
+        filenames = self.generate_filenames("2017-3-1", 
+                                            "2018-3-1", 
+                                            (8, 22), 
+                                            ("groceries",))
+
         for datetup, filename in filenames.items():
             reciept = Reciept('Grocery',
                               'Food',
@@ -72,6 +82,12 @@ class DataGenerator:
                               24.99)
             with open(self.export_folder + filename, 'w') as yamlfile:
                 yamlfile.write(yaml.dump(reciept))
+
+    def generate_fast_food_data(self):
+        pass
+
+    def generate_general_store_data(self):
+        pass
 
     # Let's try both ways
     # Option 1: Sql Join Query to generate data

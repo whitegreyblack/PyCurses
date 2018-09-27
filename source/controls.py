@@ -55,6 +55,35 @@ class UIControl:
         """Returns a single value within the view that is currently focused"""
         pass
 
+# We've shifted away from border around entire window. That takes away a lot
+# of space that could be used to show information instead. Now we will not
+# include the border for the main window and instead extend the view down
+# to last row of the screen.
+class View:
+    def __init__(self, window):
+        self.window = window
+        self.x = window.getbegyx()[1]
+        self.y = window.getbegyx()[0]
+        self.width = window.getmaxyx()[1]
+        self.height = window.getmaxyx()[0]
+        self.elements = []
+
+    @property
+    def component(self):
+        for c in self.elements:
+            if hasattr(c, "selected") and getattr(c, "selected"):
+                return c
+
+    def add_element(self, element):
+        self.elements.append(element)
+
+    def hide(self):
+        pass
+
+    def draw(self):
+        for el in self.elements:
+            el.draw(self.window.subwin(el.height, el.width, el.y, el.x))
+
 class Window:
     def __init__(self, title, x, y):
         self.title = title
@@ -63,6 +92,7 @@ class Window:
         self.width = x - 2
         self.height = y - 2
         self.windows = []
+        self.views = []
         self.index = 0
 
     @property
@@ -70,6 +100,9 @@ class Window:
         for window in self.windows:
             if hasattr(window, 'selected') and window.selected:
                 return window
+
+    def add_view(self, view):
+        self.views.append(view)
 
     def add_window(self, window):
         self.windows.append(window)
@@ -119,6 +152,9 @@ class Window:
         # screen.addstr(0, self.term_width - len(dimensions) - 1, dimensions)
         for window in self.windows:
             window.draw(screen)
+
+        for view in self.views:
+            view.draw()
 
 # TODO Create a button class to pass into Prompt confirm/cancel parameters
 class Button(UIControl):
@@ -292,11 +328,11 @@ class ScrollList:
     def draw(self, screen):
         dx = self.width - self.x
         dy = self.height - self.y
-        border(screen, self.x, self.y, dx, dy)
-        
+        # border(screen, self.x, self.y, dx, dy)
+        screen.border()
         if self.title:
             screen.addstr(self.y, self.x + 1, self.title) 
-
+        '''
         screen.addstr(self.y, self.width - 2, str(self.index))
         # if self.item_is_focused() and self.item_is_selected():
         #     screen.addstr(self.y + 1, self.x - 1, "FS")
@@ -322,7 +358,8 @@ class ScrollList:
             #         elif self.item_is_selected():
             #             c = curses.color_pair(3)
             #         screen.addch(y, x, curses.ACS_BLOCK, c)
-        
+        '''
+
 class Card:
     def __init__(self, model, title=None):
         self.model = model
@@ -373,13 +410,14 @@ class RecieptForm(Form):
         def pad(word):
             return '.' * max(0, 34 - len(word))
 
+        screen.border()
         self.lines = []
-        
+        """
         border(screen, self.x, self.y, self.width, self.height - self.y)
         # screen.addstr(self.y, 
         #         self.width + self.x - len(f"x:{self.x}, y:{self.y}, w:{self.width}, z:{self.height}"), 
         #         f"x:{self.x}, y:{self.y}, w:{self.width}, z:{self.height}")
-
+        """
         if self.model:
             vertical_offset = 1
             title = self.title if self.title else "Reciept"

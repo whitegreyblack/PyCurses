@@ -19,7 +19,9 @@ from source.database import Connection
 from source.models.models import Reciept, Transaction
 from source.models.product import Product
 from source.YamlObjects import Reciept as YamlReciept
-from source.controls import Window, ScrollList, Card, RecieptForm, Prompt, Button
+from source.controls import (
+    Window, ScrollList, Card, RecieptForm, Prompt, Button, View
+)
 
 def setup_test_cards():
     """List of example product cards used in testing"""
@@ -49,6 +51,8 @@ class Application(Loggable):
 
         self.keymap = dict()
         self.keymap[ord('e')] = self.export_reciepts
+        self.keymap[ord('Q')] = None
+        self.keymap[ord('q')] = None
 
         self.database = Connection(logger=logger, rebuild=rebuild)
 
@@ -73,6 +77,8 @@ class Application(Loggable):
         while True:
             key = self.screen.getch()
             if key in self.keymap.keys():
+                if self.keymap[key] == None:
+                    break
                 self.keyhandler(key)
             else:
                 retval = self.send_signal(key)
@@ -142,11 +148,37 @@ class Application(Loggable):
         """
         pass
 
+    def build_windows2(self, screen):
+        self.screen = screen
+        y, x = screen.getbegyx() # just a cool way of getting 0, 0
+        height, width = screen.getmaxyx()
+        # TODO: options manager, view manager, component manager
+        self.window = Window('Application', width, height)
+
+        v1 = View(screen.subwin(height - 1, width, 1, 0))
+
+        reciept_cards = [ Card(r) for r in self.build_reciepts() ]
+        scroller = ScrollList(v1.x, v1.y, v1.width // 4, v1.height)
+        scroller.add_items(reciept_cards)
+
+        form = RecieptForm(v1.width // 4,
+                           v1.y,
+                           (v1.width // 4) * 3,
+                           v1.height, scroller.model)
+
+        v1.add_element(scroller)
+        v1.add_element(form)
+        # v2 = View(1, 1, width, height - 1)
+
+        self.window.add_view(v1)
+        #self.window.add_view(View(1, 1, width, height - 1))
+
     def build_windows(self, screen):
         self.screen = screen
         height, width = screen.getmaxyx()
         self.window = Window('Application', width, height)
-        
+        self.window.add_view()
+
         scroller = ScrollList(1, 1,
                               self.window.width // 4,
                               self.window.height,
@@ -189,7 +221,6 @@ class Application(Loggable):
         keymap[(27, form.wid)] = scroller.wid
         keymap[(ord('y'), exitprompt.wid)] = None
         keymap[(ord('n'), exitprompt.wid)] = form.wid
-        keymap[(ord('q'), scroller.wid)] = None
         keymap[(curses.KEY_ENTER, exitprompt.wid)] = None
         self.window.add_keymap(keymap)
 
