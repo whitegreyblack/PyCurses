@@ -43,19 +43,8 @@ def application(screen, folderpath, rebuild):
     app = Application(folderpath, logger=logger, rebuild=rebuild)
     app.setup()
     app.build_windows(screen)
-    app.draw(screen)
-
-    # TODO: May be place this in a .Run() function inside app?
-    while True:
-        key = screen.getch()
-        if key in app.keymap.keys():
-            app.keyhandler(key)
-        else:
-            retval = app.send_signal(key)
-            if not retval:
-                break
-        screen.erase()
-        app.draw(screen)
+    app.draw()
+    app.run()
 
 @click.command()
 @click.option('-f', "folder", nargs=1, required=True,

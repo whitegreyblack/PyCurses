@@ -7,7 +7,9 @@ import datetime
 import source.utils as utils
 import source.config as config
 from source.logger import Loggable
-from source.schema import Table, SQLType
+from source.schema import (
+    Table, SQLType, build_products_table, build_reciepts_table
+)
 from source.yamlchecker import YamlChecker
 from source.database import Connection
 from source.models.models import Reciept, Transaction
@@ -42,26 +44,8 @@ class Application(Loggable):
         self.checker = YamlChecker(folder, logger=logger)
 
         tables = [
-            Table("reciepts",
-                  [
-                    ("filename", SQLType.TEXT),
-                    ("store", SQLType.VARCHAR()),
-                    ("short", SQLType.TEXT),
-                    ("date", SQLType.VARCHAR(10)), 
-                    ("category", SQLType.VARCHAR()),
-                    ("subtotal", SQLType.REAL),
-                    ("tax", SQLType.REAL),
-                    ("total", SQLType.REAL),
-                    ("payment", SQLType.REAL)
-                  ], unique=["filename",]
-            ),
-            Table("products", 
-                  [
-                    ("filename", SQLType.TEXT),
-                    ("product", SQLType.VARCHAR()),
-                    ("price", SQLType.REAL)
-                  ], unique=["filename", "product", "price"]
-            )
+            build_reciepts_table(),
+            build_products_table()
         ]
 
         self.keymap = dict()
@@ -81,6 +65,18 @@ class Application(Loggable):
         self.log(f"Committed:")
         for commit in files:
             self.log(f"+ {commit}")
+
+    def run(self):
+        while True:
+            key = self.screen.getch()
+            if key in self.keymap.keys():
+                self.keyhandler(key)
+            else:
+                retval = self.send_signal(key)
+                if not retval:
+                    break
+            self.screen.erase()
+            self.draw()
 
     def keyhandler(self, key):
         self.keymap[key]()
@@ -140,10 +136,11 @@ class Application(Loggable):
         pass
 
     def build_windows(self, screen):
+        self.screen = screen
         height, width = screen.getmaxyx()
         self.window = Window('Application', width, height)
         
-        scroller = ScrollList(1, 1,
+        scroller = ScrollList(self.window.width // 8 - 2, 4,
                               self.window.width // 4,
                               self.window.height,
                               'Reciepts',
@@ -157,12 +154,12 @@ class Application(Loggable):
                            self.window.height,
                            scroller.model)
     
-        subwin = screen.subwin(self.window.height // 3, 
-                               self.window.width // 2, 
-                               self.window.height // 3,
-                               self.window.width // 4)
+        promptwin = screen.subwin(self.window.height // 3, 
+                                  self.window.width // 2, 
+                                  self.window.height // 3,
+                                  self.window.width // 4)
 
-        exitprompt = Prompt(subwin, 'Exit Prompt', 'Confirm', 'Cancel', logger=self.logger)
+        exitprompt = Prompt(promptwin, 'Exit Prompt', 'Confirm', 'Cancel', logger=self.logger)
 
         self.window.add_windows([scroller, form, exitprompt])
 
@@ -189,8 +186,15 @@ class Application(Loggable):
         keymap[(curses.KEY_ENTER, exitprompt.wid)] = None
         self.window.add_keymap(keymap)
 
-    def draw(self, screen):
-        self.window.draw(screen)
+    def draw(self):
+        self.screen.addstr(1, 2, "Options:")
+        self.screen.addstr(2, 2, "[e] export files")
+        self.screen.addstr(4, 2, "[E] export current file")
+
+        self.screen.addstr(2, self.window.width // 8, "[Reciepts]")
+        self.screen.addstr(2, self.window.width // 8 + 11, "[Products]")
+        self.screen.addstr(2, self.window.width // 8 + 22, "[Stores]")
+        self.window.draw(self.screen)
 
     def send_signal(self, signal):
         return self.window.send_signal(signal)

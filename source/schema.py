@@ -68,6 +68,28 @@ class Table:
         fields = self.join_columns(columns)
         return f"SELECT {fields} FROM {self.name};"
 
+def build_reciepts_table():
+    return Table("reciepts",
+                 [
+                    ("filename", SQLType.TEXT),
+                    ("store", SQLType.VARCHAR()),
+                    ("short", SQLType.TEXT),
+                    ("date", SQLType.VARCHAR(10)), 
+                    ("category", SQLType.VARCHAR()),
+                    ("subtotal", SQLType.REAL),
+                    ("tax", SQLType.REAL),
+                    ("total", SQLType.REAL),
+                    ("payment", SQLType.REAL)
+                 ], unique=["filename",])
+
+def build_products_table():
+    return Table("products", 
+                 [
+                    ("filename", SQLType.TEXT),
+                    ("product", SQLType.VARCHAR()),
+                    ("price", SQLType.REAL)
+                 ], unique=["filename", "product", "price"])
+
 if __name__ == "__main__":
     fields = [
         ("a", SQLType.INT),
@@ -80,3 +102,6 @@ if __name__ == "__main__":
     print(t.create_command)
     print(t.insert_command)
     print(t.select_command_on(['a', 'b']))
+
+    print(build_reciepts_table())
+    print(build_products_table())

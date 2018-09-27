@@ -7,15 +7,16 @@ drawer, and variable formatting.
 
 __author__ = "Samuel Whang"
 
-from typing import Union, Tuple
-from collections import namedtuple
+import os
 import curses
 import logging
 import datetime
-import os
+from typing import Union, Tuple
+from collections import namedtuple
 
 Currency = Union[int, float]
 
+EventArg = namedtuple('EventArg', 'sender msg')
 class Event(list):
     def __call__(self, sender, event):
         for fn in self:
@@ -38,8 +39,6 @@ class Permissions(Enum):
             if ((flags & index) != 0):
                 print([k for k, v in cls.flags.items() if v == index])
             index = index << 1
-
-EventArg = namedtuple('EventArg', 'sender msg')
 
 default_log_format = "[%(asctime)s] %(currentfile)s: %(message)s"
 default_log_noargs = "[%(asctime)s] %(message)s"

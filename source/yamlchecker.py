@@ -17,19 +17,14 @@ from collections import namedtuple
 
 import source.utils as utils
 import source.config as config
-# import source.decorators as wrap
 from source.logger import Loggable
 from source.YamlObjects import Reciept
-
-# TODO: change verbiage from '(UN)COMMIT' -> '(UN)VERIFIED' 
-#       commit should only be used in relation to db loads
 
 class YamlChecker(Loggable):
     """Processes yaml files in specified folder for both file integrity and
     yaml safe syntax
     """
     def __init__(self, folder, logger=None):
-        # leave the logging initialization to the loggable class
         super().__init__(self, logger=logger)
 
         self.folder = folder
