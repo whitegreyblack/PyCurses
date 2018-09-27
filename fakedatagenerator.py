@@ -53,6 +53,26 @@ class DataGenerator:
             with open(self.export_folder + filename, 'w') as yamlfile:
                 yamlfile.write(yaml.dump(reciept))
 
+    def generate_grocery_data(self):
+        filenames = {
+            (y, m, d): str(y)[2:] + f"{m:02}" + f"{d:02}" + '-grocery.yaml'
+                for y, m in iter_months_years(date(2017, 3, 1),
+                                              date(2018, 9, 1))
+                    for d in (15, 30)
+        }
+        for datetup, filename in filenames.items():
+            reciept = Reciept('Grocery',
+                              'Food',
+                              list(datetup),
+                              'groceries',
+                              {'food': 24.99},
+                              24.99,
+                              0.0,
+                              24.99,
+                              24.99)
+            with open(self.export_folder + filename, 'w') as yamlfile:
+                yamlfile.write(yaml.dump(reciept))
+
     # Let's try both ways
     # Option 1: Sql Join Query to generate data
     def generate_data(self):
@@ -77,7 +97,8 @@ class DataGenerator:
               help="Folder to hold all generated files from script.")
 def main(folder):
     dg = DataGenerator(folder)
-    dg.generate_internet_data()
+    # dg.generate_internet_data()
+    dg.generate_grocery_data()
 
 if __name__ == "__main__":
     main()
