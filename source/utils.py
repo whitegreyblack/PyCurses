@@ -56,7 +56,7 @@ class LogColor:
 def check_or_create_folder(foldername):
     full_path = os.path.join(os.path.abspath('.'), foldername)
     formatted_path = format_directory_path(full_path)
-    if not os.path.exists(formatted_path) and check_directory_path(formatted_path):
+    if not os.path.exists(formatted_path):
         os.makedirs(formatted_path)
     return formatted_path
 

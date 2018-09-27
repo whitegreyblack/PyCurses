@@ -3,7 +3,6 @@ import calendar
 import re
 import random
 import curses
-import braille
 import source.config as config
 from collections import namedtuple
 

@@ -304,7 +304,7 @@ class ScrollList:
             screen.addstr(self.y + 1, self.x - 1, "S")
         
         for index, item in enumerate(self.items):
-            if index > self.height:            
+            if index <= self.height:            
                 item.draw(screen,
                         self.x + 1, 
                         self.y + index + 1, 
