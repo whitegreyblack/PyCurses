@@ -60,9 +60,9 @@ def check_or_create_folder(foldername):
     return full_path
 
 args = namedtuple("Logargs", "name file extra")
-def logargs(cls):
+def logargs(cls, fromfile):
     classname = cls.__name__.lower()
-    filepath = format_directory_path(__file__)
+    filepath = format_directory_path(fromfile)
     fileonly = parse_file_from_path(filepath)
     return args(classname, classname + ".log", {"currentfile": fileonly})
 

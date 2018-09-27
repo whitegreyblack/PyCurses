@@ -23,7 +23,7 @@ class Loggable:
 
         self.logger = logger
         if not self.logger:
-            logargs = utils.logargs(child.__class__)
+            logargs = utils.logargs(child.__class__, __file__)
             self.logger = utils.setup_logger(logargs.name,
                                              logargs.file,
                                              extra=logargs.extra)

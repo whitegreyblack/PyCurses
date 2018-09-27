@@ -113,7 +113,7 @@ class Window:
         return True
 
     def draw(self, screen):
-        screen.border()
+        # screen.border()
         # screen.addstr(0, 1, self.title)
         dimensions = f"{self.term_width}, {self.term_height}"
         # screen.addstr(0, self.term_width - len(dimensions) - 1, dimensions)

@@ -20,7 +20,7 @@ def initialize_curses_settings(logger=None):
     curses.init_pair(2, curses.COLOR_BLACK, curses.COLOR_WHITE)
     curses.init_pair(3, curses.COLOR_BLACK, curses.COLOR_CYAN)
 
-def application(screen, folderpath, rebuild):
+def application(screen, folderpath, rebuild, logger=None):
     """Initializes the Application object which builds the rest of the
     necessary frontend/backend objects.
 
@@ -33,14 +33,13 @@ def application(screen, folderpath, rebuild):
     object handle logger building and only the app and app children would
     have access to the logger.
     """
-    logargs = utils.logargs(application)
-    logger = utils.setup_logger_from_logargs(logargs)
-    
     # curses only options.
     initialize_curses_settings()
     
     # initialize application object and build front/back end
     app = Application(folderpath, logger=logger, rebuild=rebuild)
+
+    # should we create a new function that calls all 4 functions?
     app.setup()
     app.build_windows(screen)
     app.draw()
@@ -73,7 +72,11 @@ def main(folder, rebuild):
 
     # Reduce the delay when pressing escape key on keyboard.
     os.environ.setdefault('ESCDELAY', '25')
-    curses.wrapper(application, folder, rebuild)
+
+    # logger class before we enter main curses loop
+    logargs = utils.logargs(application, __file__)
+    logger = utils.setup_logger_from_logargs(logargs)
+    curses.wrapper(application, folder, rebuild, logger)
 
 if __name__ == "__main__":
     main()

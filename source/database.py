@@ -8,6 +8,9 @@ import datetime
 from collections import namedtuple
 from source.logger import Loggable
 from source.YamlObjects import Reciept
+from source.schema import (
+    Table, SQLType, build_products_table, build_reciepts_table
+)
 from source.utils import (
     logargs, setup_logger, setup_logger_from_logargs, format_date as date,
     format_float as real, filename_and_extension as fileonly
@@ -23,12 +26,15 @@ class Connection(Loggable):
     """Database Connection Object"""
     rebuild = False
 
-    def __init__(self, tables, logger=None, rebuild=False):
+    def __init__(self, logger=None, rebuild=False):
         # leave the logging initialization to the loggable class
         super().__init__(self, logger=logger)
 
         self.conn = sqlite3.connect('reciepts.db')
-        self.tables = tables
+        self.tables = [
+            build_reciepts_table(),
+            build_products_table()
+        ]
         self.rebuild = rebuild
         self.committed = []
         self.log("created database connection.")

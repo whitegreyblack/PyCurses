@@ -43,15 +43,10 @@ class Application(Loggable):
         self.export = "export/"
         self.checker = YamlChecker(folder, logger=logger)
 
-        tables = [
-            build_reciepts_table(),
-            build_products_table()
-        ]
-
         self.keymap = dict()
         self.keymap[ord('e')] = self.export_reciepts
 
-        self.database = Connection(tables, logger=logger, rebuild=rebuild)
+        self.database = Connection(logger=logger, rebuild=rebuild)
 
     def setup(self):
         # TODO: need a setting to determine behavior of previously loaded data
@@ -140,7 +135,7 @@ class Application(Loggable):
         height, width = screen.getmaxyx()
         self.window = Window('Application', width, height)
         
-        scroller = ScrollList(self.window.width // 8 - 2, 4,
+        scroller = ScrollList(1, 1,
                               self.window.width // 4,
                               self.window.height,
                               'Reciepts',
@@ -187,13 +182,22 @@ class Application(Loggable):
         self.window.add_keymap(keymap)
 
     def draw(self):
-        self.screen.addstr(1, 2, "Options:")
-        self.screen.addstr(2, 2, "[e] export files")
-        self.screen.addstr(4, 2, "[E] export current file")
+        self.screen.addstr(0, 0, ' ' * (self.window.width + 2), curses.color_pair(2))
+        # self.screen.insstr(self.window.height + 1,
+        #                    0,
+        #                    ' ' * (self.window.width + 2),
+        #                    curses.color_pair(3))
+        self.screen.addstr(0, 1, "File", curses.color_pair(2))
+        self.screen.addstr(0, 7, "Edit", curses.color_pair(2))
+        self.screen.addstr(0, 13, "Selection", curses.color_pair(2))
 
-        self.screen.addstr(2, self.window.width // 8, "[Reciepts]")
-        self.screen.addstr(2, self.window.width // 8 + 11, "[Products]")
-        self.screen.addstr(2, self.window.width // 8 + 22, "[Stores]")
+        # self.screen.addstr(1, 2, "Options:")
+        # self.screen.addstr(2, 2, "[e] export files")
+        # self.screen.addstr(4, 2, "[E] export current file")
+
+        # self.screen.addstr(2, self.window.width // 8, "[Reciepts]")
+        # self.screen.addstr(2, self.window.width // 8 + 11, "[Products]")
+        # self.screen.addstr(2, self.window.width // 8 + 22, "[Stores]")
         self.window.draw(self.screen)
 
     def send_signal(self, signal):
