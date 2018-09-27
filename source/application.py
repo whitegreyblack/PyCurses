@@ -1,3 +1,7 @@
+"""Application.py: 
+Main class that builds all other objects and runs the curses loop
+"""
+
 __author__ = "Samuel Whang"
 
 import yaml
@@ -50,6 +54,10 @@ class Application(Loggable):
 
     def setup(self):
         # TODO: need a setting to determine behavior of previously loaded data
+        # TODO: need a way to format paths before creating other objects
+        self.formatted_import_paths = None        
+        self.formatted_export_path = None
+
         self.database.rebuild_tables()
         inserted = self.database.inserted_files()
 
@@ -112,6 +120,10 @@ class Application(Loggable):
 
     def export_reciepts(self):
         """Should create a folder that matches exactly the input folder"""
+        # TODO: single file to hold all data vs multiple files
+        # TODO: move file/folder existance checks to self.setup(). That way
+        #       the export folder can be checked/created only once and not
+        #       every time this function is called
         # verify folder exists. If not then create it
         exportpath = utils.format_directory_path(self.export)
         folderpath = utils.check_or_create_folder(self.export)

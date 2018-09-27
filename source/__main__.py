@@ -45,6 +45,9 @@ def application(screen, folderpath, rebuild, logger=None):
     app.draw()
     app.run()
 
+# TODO: need a way to run main without needing a folder
+# TODO: need a way to run main with multiple folders
+# TODO: need a way to run main with export folder specified
 @click.command()
 @click.option('-f', "folder", nargs=1, required=True,
               help="Folder containing yaml data files")
