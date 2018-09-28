@@ -1,5 +1,5 @@
 import curses
-from source.controls import Window, View, OptionsBar, OptionsList, Label
+from source.controls import Window, View, OptionsBar, Label
 
 def initialize_curses_settings(logger=None):
     """Sets settings for cursor visibility and color pairings"""
@@ -16,19 +16,49 @@ def initialize_curses_settings(logger=None):
 def main(screen):
     initialize_curses_settings()
     height, width = screen.getmaxyx()
-    window = Window('Application', width, height)  
+    window = Window('Application', width, height)
     v1 = View(screen.subwin(1, width, 0, 0))
-    optbar = OptionsBar(v1.width)
-    v1.add_element(optbar)
-    file_options = OptionsList(screen, ("longoption", "shortopt"))
-    optbar.add_option('File', file_options)
-    optbar.add_option('Edit', None)
-    optbar.add_option('Select', None)
-    optbar.add_option('Help', None)
-    window.add_view(v1)
+    optbar = OptionsBar(screen,
+                        options=[("File", ("long option", "shortopt")),
+                                 ("Edit", ("someother", "secondopt")),])
+    # v1.add_element(optbar)
+    v2 = View(screen.subwin(height-1, width, 1, 0))
+    # optionsbar(
+    #   options=[], 
+    #   handlers=[]
+    # )
 
-    window.draw(screen)
-    c = screen.getch()
+    # optbar.add_option('File', file_options)
+    # optbar.add_option('Edit', None)
+    # optbar.add_option('Select', None)
+    # optbar.add_option('Help', None)
+    window.add_view(v1)
+    window.add_view(v2)
+
+    keymap = dict()
+    keymap[49] = "File"
+    keymap[50] = "Edit"
+    # keymap[51] = 'Select'
+    # keymap[52] = 'Help'
+
+    #window.add_keymap(keymap)
+
+    while 1:
+        window.draw(screen)
+        # screen.refresh()
+        c = screen.getch()
+
+        # screen.addstr(10, 10, f"{c}")
+        if c in keymap.keys():
+            screen.addstr(10, 10, 'ff')
+            optbar.show(keymap[c])
+        if c == 27:
+            optbar.close_option_menus()
+        if c == ord('q'):
+            break
+    #     window.clear()
+    #     window.draw(screen)
+
 
 if __name__ == "__main__":
     curses.wrapper(main)

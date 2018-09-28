@@ -100,6 +100,11 @@ class View:
         for el in self.elements:
             el.draw(self.window.subwin(el.height, el.width, el.y, el.x))
 
+    def clear(self):
+        self.window.erase()
+        for element in element:
+            element.clear()
+
     def border(self):
         self.window.border()
 
@@ -175,6 +180,10 @@ class Window:
             # view.window.border()
             view.draw()
 
+    def clear(self):
+        for view in self.views:
+            view.clear()
+
 class Label:
     def __init__(self, x, y, string):
         self.x = x
@@ -185,43 +194,87 @@ class OptionsBar:
     """Creates a single line header containing window and file options as
     well as option selection callbacks
     """
-    def __init__(self, width, x=0, y=0, height=1):
-        self.x = x
-        self.y = y
-        self.width = width
-        self.height = height
-        self.options = dict()
+    class OptionsMenu:
+        def __init__(self, screen, options):
+            self.options = options
+            self.maxlen = max(map(len, options))
+            self.view = View(screen.subwin(len(options), self.maxlen + 4, 1, 1))
+            self.show = False
 
-    def add_option(self, name, options):
-        self.options[name] = options
+        def draw(self):
+            def pad(opt):
+                return ' ' + opt + ' ' * (self.maxlen - len(opt) + 3)
+            self.view.window.border()
+            # self.view.window.bkgdset(' ', curses.color_pair(2))
+            # for i, opt in enumerate(self.options):
+            #     self.view.window.insstr(i, 0, pad(opt))
+
+    def __init__(self, screen, options=None):
+        # should create the subwin internally
+        h, w = screen.getmaxyx()
+        self.x = 0
+        self.y = 0
+        self.width = w
+        self.height = 1
+        self.screen = screen.subwin(1, w, 0, 0)
+        self.options = dict()
+        self.showlabel = None
+        if options:
+            for name, option in options:
+                optionlist = self.OptionsMenu(screen, option)
+                self.add_option(name, optionlist)
+
+    def add_option(self, option, options):
+        self.options[option] = options
 
     def draw(self, screen):
-        # for y in range(self.height):
-        #     screen.insstr(self.y + y, self.x, ' ' * self.width, curses.color_pair(2))
+        # set background
         screen.bkgd(' ', curses.color_pair(2))
         prevopt = ''
         step = 0
+
+        # draw stuff
         for opt, win in self.options.items():
             screen.addstr(0, 1 + len(prevopt) + step, opt, curses.color_pair(2))
             prevopt += opt + ' ' * step
-            if win:
-                win.draw()
+            if self.showlabel and self.options[self.showlabel].show:
+                self.options[self.showlabel].draw()
             step = 2
 
-class OptionsList:
-    def __init__(self, screen, options):
-        self.options = options
-        self.maxlen = max(map(len, options)) # width
-        self.view = View(screen.subwin(len(options), self.maxlen + 2, 1, 1))
-    
-    def draw(self):
-        # self.screen.border()
-        self.view.window.bkgd(' ', curses.color_pair(2))
-        for i, opt in enumerate(self.options):
-            self.view.window.addstr(i, 1, opt)
+        for option in self.options.keys():
+            if self.options[option].show:
+                self.options[option].draw()
 
-    def hide(self):
-        self.view.window.erase()
+    def show(self, title):
+        # if title in self.options.keys():
+        self.close_option_menus()
+        self.showlabel = title
+        self.options[title].show = True
+
+    def clear(self):
+        self.screen.erase()
+        for opt in self.options:
+            self.options[opt].erase()
+
+    def close_option_menus(self):
+        for k in self.options.keys():
+            self.options[k].view.window.erase()
+            self.options[k].show = False
+
+# class OptionsList:
+#     def __init__(self, screen, options):
+#         self.options = options
+#         self.maxlen = max(map(len, options)) # width
+#         self.view = View(screen.subwin(len(options), self.maxlen + 2, 1, 1))
+    
+#     def draw(self):
+#         # self.screen.border()
+#         self.view.window.bkgd(' ', curses.color_pair(2))
+#         for i, opt in enumerate(self.options):
+#             self.view.window.addstr(i, 1, opt)
+
+#     def hide(self):
+#         self.view.window.erase()
 
 # TODO Create a button class to pass into Prompt confirm/cancel parameters
 class Button(UIControl):
