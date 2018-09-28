@@ -20,7 +20,8 @@ from source.models.models import Reciept, Transaction
 from source.models.product import Product
 from source.YamlObjects import Reciept as YamlReciept
 from source.controls import (
-    Window, ScrollList, Card, RecieptForm, Prompt, Button, View
+    Window, ScrollList, Card, RecieptForm, Prompt, Button, View, OptionsBar,
+    OptionsList
 )
 
 def setup_test_cards():
@@ -148,6 +149,20 @@ class Application(Loggable):
         """
         pass
 
+    def build_windows3(self, screen):
+        height, width = screen.getmaxyx()
+        self.screen = screen
+        self.window = Window('Application', width, height)  
+        v1 = View(screen.subwin(1, width, 0, 0))
+        optbar = OptionsBar(v1.width)
+        v1.add_element(optbar)
+        file_options = OptionsList(screen, ("longoption", "shortopt"))
+        optbar.add_option('File', file_options)
+        optbar.add_option('Edit', None)
+        optbar.add_option('Select', None)
+        optbar.add_option('Help', None)
+        self.window.add_view(v1)
+
     def build_windows2(self, screen):
         self.screen = screen
         y, x = screen.getbegyx() # just a cool way of getting 0, 0
@@ -231,14 +246,14 @@ class Application(Loggable):
         self.window.add_keymap(keymap)
 
     def draw(self):
-        self.screen.addstr(0, 0, ' ' * (self.window.width + 2), curses.color_pair(2))
+        # self.screen.addstr(0, 0, ' ' * (self.window.width + 2), curses.color_pair(2))
         # self.screen.insstr(self.window.height + 1,
         #                    0,
         #                    ' ' * (self.window.width + 2),
         #                    curses.color_pair(3))
-        self.screen.addstr(0, 1, "File", curses.color_pair(2))
-        self.screen.addstr(0, 7, "Edit", curses.color_pair(2))
-        self.screen.addstr(0, 13, "Selection", curses.color_pair(2))
+        # self.screen.addstr(0, 1, "File", curses.color_pair(2))
+        # self.screen.addstr(0, 7, "Edit", curses.color_pair(2))
+        # self.screen.addstr(0, 13, "Selection", curses.color_pair(2))
 
         # self.screen.addstr(1, 2, "Options:")
         # self.screen.addstr(2, 2, "[e] export files")

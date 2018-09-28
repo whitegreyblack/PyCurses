@@ -100,6 +100,9 @@ class View:
         for el in self.elements:
             el.draw(self.window.subwin(el.height, el.width, el.y, el.x))
 
+    def border(self):
+        self.window.border()
+
 class Window:
     def __init__(self, title, x, y):
         self.title = title
@@ -169,8 +172,50 @@ class Window:
             window.draw(screen)
 
         for view in self.views:
-            view.window.border()
+            # view.window.border()
             view.draw()
+
+class Label:
+    def __init__(self, x, y, string):
+        self.x = x
+        self.y = y
+        self.string = string
+
+class OptionsBar:
+    """Creates a single line header containing window and file options as
+    well as option selection callbacks
+    """
+    def __init__(self, width, x=0, y=0, height=1):
+        self.x = x
+        self.y = y
+        self.width = width
+        self.height = height
+        self.options = dict()
+
+    def add_option(self, name, options):
+        self.options[name] = options
+
+    def draw(self, screen):
+        for y in range(self.height):
+            screen.insstr(self.y + y, self.x, ' ' * self.width, curses.color_pair(2))
+
+        prevopt = ''
+        step = 0
+        for opt, win in self.options.items():
+            screen.addstr(0, 1 + len(prevopt) + step, opt, curses.color_pair(2))
+            prevopt += opt + ' ' * step
+            if win:
+                win.draw()
+            step = 2
+
+class OptionsList:
+    def __init__(self, screen, options):
+        self.options = options
+        self.maxlen = max(map(len, options)) # width
+        self.screen = View(screen.subwin(len(options), self.maxlen, 1, 0))
+    
+    def draw(self):
+        self.screen.border()
 
 # TODO Create a button class to pass into Prompt confirm/cancel parameters
 class Button(UIControl):
@@ -295,7 +340,7 @@ class Scroller:
     columnspan = 1
     rowspan = 2
 
-    def __init__(self, view, cards=None) # column=0, columnspan=1, row=0, rowspan=1):
+    def __init__(self, view, cards=None): # column=0, columnspan=1, row=0, rowspan=1):
         self.view = view
         self.cards = cards
         if not self.cards:
