@@ -1,6 +1,11 @@
+"""Test right window vertical and vertical splitting using curses"""
 import curses
 win = None
 x, y, h, w = 0, 0, 0, 0
+
+class Direction:
+    VERTICAL = 0
+    HORIZONTAL = 1
 
 def dimensions(screen):
     y, x = screen.getbegyx()
@@ -18,20 +23,32 @@ class Window:
     def __repr__(self):
         return f"{self.x}, {self.y}, {self.w}, {self.h}"
 
-    def split(self):
-        if self.w <= 5:
+    def split(self, direction=Direction.VERTICAL):
+        if direction==Direction.VERTICAL and self.w <= 5:
+            return
+
+        if direction==Direction.HORIZONTAL and self.h <= 5:
             return
 
         if not self.right and not self.left:
-            odd_offset = 0
-            if self.w % 2 != 0:
-                odd_offset = 1
-            self.left = Window(self.screen.subwin(self.h, self.w//2, self.y, self.x))
-            self.right = Window(self.screen.subwin(self.h, self.w//2 + odd_offset, self.y, self.w//2 + self.x))
+            if direction == Direction.VERTICAL:
+                odd_offset = 0
+                if self.w % 2 != 0:
+                    odd_offset = 1
+                self.left = Window(self.screen.subwin(self.h, self.w//2, self.y, self.x))
+                self.right = Window(self.screen.subwin(self.h, self.w//2 + odd_offset, self.y, self.w//2 + self.x))
+            else:
+                odd_offset = 0
+                if self.h % 2 != 0:
+                    odd_offset = 1
+                self.left = Window(self.screen.subwin(self.h//2, self.w, self.y, self.x))
+                self.right = Window(self.screen.subwin(self.h//2 + odd_offset, self.w, self.h//2 + self.y, self.x))
 
         else:
-            self.right.split()
-            self.left.split()
+            if self.right:
+                self.right.split(direction)
+            if self.left:
+                self.left.split(direction)
 
     def draw(self):
         self.screen.border()
@@ -45,7 +62,10 @@ def main(screen):
     w.draw()
     i = screen.getch()
     while i != ord('q'):
-        w.split()
+        if i == ord('v'):
+            w.split()
+        if i == ord('h'):
+            w.split(Direction.HORIZONTAL)
         w.draw()
         i = screen.getch()
 
