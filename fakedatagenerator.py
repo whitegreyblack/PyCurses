@@ -3,6 +3,7 @@ __author__ = "Samuel Whang"
 
 import yaml
 import click
+import random
 import datetime
 import calendar
 import source.utils as utils
@@ -22,6 +23,43 @@ from examples.calendar_widget import date, parse_date, iter_months_years
 #         for y, m in monthsinyear
 # ]
 # print(filenames)
+
+# fake data stuff -- probably create a fake table to hold these
+class RandomProductData:
+    def __init__(self, table, product, price, deviation):
+        self.table = table
+        self.product = product
+        self.price = int((price + random.uniform(-1, 1) * deviation) * 100) / 100
+
+    def __repr__(self):
+        return f"{self.table}-{self.product}: {self.price}"
+
+# products[storecategory][product](price, deviation)
+products = {
+    'general': {
+        'toothbrush': (2.99, 1.0),
+        'toilet paper': (7.99, 1.0),
+    },
+    'utility': {
+        'electricity': (110.0, 30.0),
+        'sewage': (37.0, 12.0),
+        'internet': (78.0, 7.0),
+        'gas': (112.0, 13)
+    },
+    'grocery': {
+        'meat': (8.99, 4.0),
+        'veggies': (1.50, 2.0),
+        'pastry': (4.0, 1.0),
+        'chips': (3.99, 1.25),
+    }
+}
+
+def random_product_data(catalog):
+    return [
+        RandomProductData(category, product, price, deviation)
+            for category, products in catalog.items()
+                for product, (price, deviation) in products.items()
+    ]
 
 # TODO: single file option
 internet_build_query = """SELECT * FROM reciepts WHERE short='BEK'"""
