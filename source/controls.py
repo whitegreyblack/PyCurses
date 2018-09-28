@@ -115,9 +115,13 @@ class Window:
         self.term_height = y
         self.width = x - 2
         self.height = y - 2
+        self.components = []
         self.windows = []
         self.views = []
         self.index = 0
+
+    def add_component(self, component):
+        self.components.append(component)
 
     @property
     def window(self):
@@ -169,16 +173,19 @@ class Window:
                     next_window.visible = True
         return True
 
-    def draw(self, screen):
+    def draw(self):
         # screen.addstr(0, 1, self.title)
-        dimensions = f"{self.term_width}, {self.term_height}"
+        # dimensions = f"{self.term_width}, {self.term_height}"
         # screen.addstr(0, self.term_width - len(dimensions) - 1, dimensions)
-        for window in self.windows:
-            window.draw(screen)
+        # for window in self.windows:
+        #     window.draw(screen)
 
-        for view in self.views:
-            # view.window.border()
-            view.draw()
+        # for view in self.views:
+        #     # view.window.border()
+        #     view.draw()
+
+        for comp in self.components:
+            comp.draw()
 
     def clear(self):
         for view in self.views:
@@ -259,6 +266,7 @@ class OptionsBar:
     def close_option_menus(self):
         for k in self.options.keys():
             self.options[k].view.window.erase()
+            self.options[k].view.window.refresh()
             self.options[k].show = False
 
 # class OptionsList:

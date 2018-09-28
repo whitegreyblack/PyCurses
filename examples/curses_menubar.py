@@ -17,12 +17,11 @@ def main(screen):
     initialize_curses_settings()
     height, width = screen.getmaxyx()
     window = Window('Application', width, height)
-    v1 = View(screen.subwin(1, width, 0, 0))
     optbar = OptionsBar(screen,
                         options=[("File", ("long option", "shortopt")),
                                  ("Edit", ("someother", "secondopt")),])
     # v1.add_element(optbar)
-    v2 = View(screen.subwin(height-1, width, 1, 0))
+    # v2 = View(screen.subwin(height-1, width, 1, 0))
     # optionsbar(
     #   options=[], 
     #   handlers=[]
@@ -32,8 +31,7 @@ def main(screen):
     # optbar.add_option('Edit', None)
     # optbar.add_option('Select', None)
     # optbar.add_option('Help', None)
-    window.add_view(v1)
-    window.add_view(v2)
+    window.add_component(optbar)
 
     keymap = dict()
     keymap[49] = "File"
@@ -44,7 +42,7 @@ def main(screen):
     #window.add_keymap(keymap)
 
     while 1:
-        window.draw(screen)
+        window.draw()
         # screen.refresh()
         c = screen.getch()
 
