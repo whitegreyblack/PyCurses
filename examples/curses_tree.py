@@ -1,41 +1,53 @@
 import curses
-w = None
+win = None
+x, y, h, w = 0, 0, 0, 0
+
+def dimensions(screen):
+    y, x = screen.getbegyx()
+    h, w = screen.getmaxyx()
+    return x, y, w, h
+
 class Window:
-    def __init__(self, window):
-        self.w = window
-        self.w.border()
-        self.w.refresh()
+    def __init__(self, screen):
+        # self.x, self.y, self.w, self.h = box
+        self.screen = screen
+        self.x, self.y , self.w, self. h = dimensions(screen)
         self.left = None
         self.right = None
 
-    def split_v(self):
-        self.w.erase()
-        y, x = self.w.getbegyx()
-        h, w = self.w.getmaxyx()
-        self.left = Window(self.w.subwin(h, w // 2, y, x))
-        self.right = Window(self.w.subwin(h, w // 2, y, w // 2))
+    def __repr__(self):
+        return f"{self.x}, {self.y}, {self.w}, {self.h}"
 
-    def clear(self):
-        if not self.left and not self.right:
-            self.w.clear()
+    def split(self):
+        if self.w <= 5:
             return
 
-        if self.left:
-            self.left.w.clear()
+        if not self.right and not self.left:
+            odd_offset = 0
+            if self.w % 2 != 0:
+                odd_offset = 1
+            self.left = Window(self.screen.subwin(self.h, self.w//2, self.y, self.x))
+            self.right = Window(self.screen.subwin(self.h, self.w//2 + odd_offset, self.y, self.w//2 + self.x))
 
+        else:
+            self.right.split()
+            self.left.split()
+
+    def draw(self):
+        self.screen.border()
         if self.right:
-            self.right.w.clear()
+            self.right.draw()
+        if self.left:
+            self.left.draw()
 
-def main(scr):
-    global w
-    w = Window(scr)
-    c = scr.getch()
-    while c != ord('q'):
-        if c == ord('h'):
-            w.split_v()           
-        c = scr.getch()
+def main(screen):
+    w = Window(screen)
+    w.draw()
+    i = screen.getch()
+    while i != ord('q'):
+        w.split()
+        w.draw()
+        i = screen.getch()
 
 if __name__ == "__main__":
     curses.wrapper(main)
-    print(w.left.w.getmaxyx())
-    print(w.right.w.getmaxyx())
