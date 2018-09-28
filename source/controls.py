@@ -196,9 +196,9 @@ class OptionsBar:
         self.options[name] = options
 
     def draw(self, screen):
-        for y in range(self.height):
-            screen.insstr(self.y + y, self.x, ' ' * self.width, curses.color_pair(2))
-
+        # for y in range(self.height):
+        #     screen.insstr(self.y + y, self.x, ' ' * self.width, curses.color_pair(2))
+        screen.bkgd(' ', curses.color_pair(2))
         prevopt = ''
         step = 0
         for opt, win in self.options.items():
@@ -212,10 +212,16 @@ class OptionsList:
     def __init__(self, screen, options):
         self.options = options
         self.maxlen = max(map(len, options)) # width
-        self.screen = View(screen.subwin(len(options), self.maxlen, 1, 0))
+        self.view = View(screen.subwin(len(options), self.maxlen + 2, 1, 1))
     
     def draw(self):
-        self.screen.border()
+        # self.screen.border()
+        self.view.window.bkgd(' ', curses.color_pair(2))
+        for i, opt in enumerate(self.options):
+            self.view.window.addstr(i, 1, opt)
+
+    def hide(self):
+        self.view.window.erase()
 
 # TODO Create a button class to pass into Prompt confirm/cancel parameters
 class Button(UIControl):
