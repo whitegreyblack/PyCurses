@@ -39,6 +39,7 @@ products = {
     'general': {
         'toothbrush': (2.99, 1.0),
         'toilet paper': (7.99, 1.0),
+        'miscellanious': (8.97, 2.0),
     },
     'utility': {
         'electricity': (110.0, 30.0),
@@ -51,6 +52,11 @@ products = {
         'veggies': (1.50, 2.0),
         'pastry': (4.0, 1.0),
         'chips': (3.99, 1.25),
+    },
+    'resturant': {
+        'dine-in': (9.99, 1.25),
+        'take-out': (9.00, 0.84),
+        'fast-food': (7.99, 1.25),
     }
 }
 
