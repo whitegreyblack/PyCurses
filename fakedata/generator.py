@@ -71,6 +71,14 @@ def random_product_data(catalog):
 internet_build_query = """SELECT * FROM reciepts WHERE short='BEK'"""
 
 class DataGenerator:
+    phone_number_formats = (
+            "###-###-####",
+            "###.###.####",
+            "(###)###-####",
+            "(###) ###-####",
+            "(###)###.####",
+            "(###) ###.####"
+    )
     def __init__(self, folder):
         self.folder = folder
         self.export_folder = utils.check_or_create_folder(folder)
@@ -78,6 +86,9 @@ class DataGenerator:
         self.database = Connection(logger=self.logger.logger)
 
         print(f"PATH: {self.export_folder}")
+
+    def generate_phonenumber(self):
+        return 
 
     def generate_filenames(self, start, end, days, category):
         startDate = parse_date(start)
