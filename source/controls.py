@@ -234,15 +234,18 @@ class OptionsBar:
     def add_option(self, option, options):
         self.options[option] = options
 
-    def draw(self, screen):
+    def draw(self):
         # set background
-        screen.bkgd(' ', curses.color_pair(2))
+        self.screen.bkgd(' ', curses.color_pair(2))
         prevopt = ''
         step = 0
 
         # draw stuff
         for opt, win in self.options.items():
-            screen.addstr(0, 1 + len(prevopt) + step, opt, curses.color_pair(2))
+            self.screen.addstr(0, 
+                               1 + len(prevopt) + step, 
+                               opt, 
+                               curses.color_pair(2))
             prevopt += opt + ' ' * step
             if self.showlabel and self.options[self.showlabel].show:
                 self.options[self.showlabel].draw()
