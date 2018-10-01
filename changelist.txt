@@ -1,0 +1,45 @@
+# Exit prompt:
+  - fix key bindings for confirm/cancel
+  - add cancel button
+
+# Reciept UI Cards:
+  - [DONE] add logic for short names
+
+# Yaml Reciept Files:
+  - [DONE] add new property short for short names
+  
+# Reciept Folder:
+  - [DONE] Modify to use current mappings
+  
+# Date formats: Setting for long and short formats
+  - [DONE] Option to keep YYYY-MM-dd or YY-MM-dd
+  - [DONE] Change to MM/dd/YY -or- MM/dd/YYYY
+ 
+# [DONE] Change reciept name format -> [storename]-[date]?
+-----
+# Resize prompt on full screen vs 80x25 but keep min/max settings to keep it
+# from being too big
+
+# Exporter? [DONE]
+
+# Handle multiple folders with yaml files
+
+# Refactor Window/Views/Controls under a single UI parent class
+
+# Add router and default view function
+
+# Add scroller indicator to scrolllist
+
+# Adding stuff
+    window = Window()
+    window.create_view('View Label')
+    window.view
+    
+# Resize form contents based on size of screen space given at instantiation
+# add a event handler to print messages to the bottom of the screen. 
+    - Probably need a timer too then
+    
+# Resizing manager
+
+# Format date when all reciepts are within a single year.
+# Format date when all reciepts span more than one year
