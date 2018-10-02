@@ -71,6 +71,7 @@ def random_product_data(catalog):
 internet_build_query = """SELECT * FROM reciepts WHERE short='BEK'"""
 
 class DataGenerator:
+    phone_number_regex = r"[1]?[\-\.\ ]??\d{3}?[\-\.\ ]?\d{3}[\-\.\ ]?\d{4}|(?>\(\d{3}\)|\d{3})[\-\.\ ]?\d{3}[\-\.\ ]\d{4}"
     phone_number_formats = (
             "###-###-####",
             "###.###.####",
