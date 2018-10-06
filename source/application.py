@@ -21,7 +21,6 @@ from source.models.product import Product
 from source.YamlObjects import Reciept as YamlReciept
 from source.controls import (
     Window, ScrollList, Card, RecieptForm, Prompt, Button, View, OptionsBar,
-    OptionsList
 )
 
 def setup_test_cards():

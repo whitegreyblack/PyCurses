@@ -20,6 +20,13 @@ def initialize_curses_settings(logger=None):
     curses.init_pair(2, curses.COLOR_BLACK, curses.COLOR_WHITE)
     curses.init_pair(3, curses.COLOR_BLACK, curses.COLOR_CYAN)
 
+def initialize_environment_settings(logger=None):
+    """Sets up environment variables for the application"""
+    # TODO: revert the environment_settings back to original values
+    #       on application exit
+    # Reduce the delay when pressing escape key on keyboard.
+    os.environ.setdefault('ESCDELAY', '25')
+
 def application(screen, folderpath, rebuild, logger=None):
     """Initializes the Application object which builds the rest of the
     necessary frontend/backend objects.
@@ -74,8 +81,7 @@ def main(folder, rebuild):
         print("Folder argument is not a directory")
         return 
 
-    # Reduce the delay when pressing escape key on keyboard.
-    os.environ.setdefault('ESCDELAY', '25')
+    initialize_environment_settings()
 
     # logger class before we enter main curses loop
     logargs = utils.logargs(application, __file__)

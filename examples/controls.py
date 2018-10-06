@@ -1,5 +1,5 @@
 import curses
-from source.controls import MainWindow, View
+import source.controls as controls
 
 v = None
 def main(screen):
