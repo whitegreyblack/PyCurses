@@ -24,6 +24,21 @@ from examples.calendar_widget import date, parse_date, iter_months_years
 # ]
 # print(filenames)
 
+class Person:
+    def __init__(self, name, age, phone, address):
+        self.name = name
+        self.age = age
+        self.phonenumber = phone
+        self.address = address
+
+    @classmethod
+    def random(cls):
+        # TODO: Name.Random(), Age.Random(), Phone.Random(), address.Random()
+        #       A random person is still faraway from where the generator is
+        #       currently at. We would need at least random name, age and 
+        #       phone number to create a basic person object.
+        return cls(None, None, None, None)
+
 # fake data stuff -- probably create a fake table to hold these
 class RandomProductData:
     def __init__(self, table, product, price, deviation):
