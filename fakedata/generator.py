@@ -24,6 +24,14 @@ from examples.calendar_widget import date, parse_date, iter_months_years
 # ]
 # print(filenames)
 
+class Age(int):
+    def __init__(self, age):
+        self = age
+
+    @classmethod
+    def random(cls):
+        return cls(random.randint(0, 100))
+
 class Person:
     def __init__(self, name, age, phone, address):
         self.name = name
