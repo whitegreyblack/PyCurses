@@ -22,8 +22,10 @@ class Event(list):
         for fn in self:
             fn(sender, event)
 
+
 class Enum:
     pass
+
 
 class Permissions(Enum): 
     flags = {
@@ -43,8 +45,10 @@ class Permissions(Enum):
 default_log_format = "[%(asctime)s] %(currentfile)s: %(message)s"
 default_log_noargs = "[%(asctime)s] %(message)s"
 
+
 def parse_args(argv):
     pass
+
 
 class LogColor:
     GREEN='\x1b[1;32;40m'
@@ -53,6 +57,7 @@ class LogColor:
     YELLOW='\x1b[0;33;40m'
     END='\x1b[0m'
 
+
 def check_or_create_folder(foldername):
     full_path = os.path.join(os.path.abspath('.'), foldername)
     formatted_path = format_directory_path(full_path)
@@ -60,15 +65,20 @@ def check_or_create_folder(foldername):
         os.makedirs(formatted_path)
     return formatted_path
 
+
 args = namedtuple("Logargs", "name file extra")
+
+
 def logargs(cls, fromfile):
     classname = cls.__name__.lower()
     filepath = format_directory_path(fromfile)
     fileonly = parse_file_from_path(filepath)
     return args(classname, classname + ".log", {"currentfile": fileonly})
 
+
 def setup_logger_from_logargs(logargs):
     return setup_logger(logargs.name, logargs.file, extra=logargs.extra)
+
 
 def setup_logger(logname,
                  logfile,
@@ -124,8 +134,13 @@ def setup_logger(logname,
 
     return logger
 
+
 def log_message(logger, message, extra=None):
+    """Simple log function given a logger and message"""
+    # TODO: allow level of log passed in as parameter. 
+    #       Use getattr(logger, lvl)
     logger.info(message, extra)
+
 
 def format_directory_path(path: str) -> str:
     """Replaces windows style path seperators to forward-slashes and adds
@@ -138,15 +153,22 @@ def format_directory_path(path: str) -> str:
         formatted_path += '/'
     return formatted_path
 
+
 def check_directory_path(path: str) -> bool:
+    """Wrapper for os's isdir function"""
     return os.path.isdir(path)
 
+
 def parse_file_from_path(path: str) -> str:
+    """Given the absolute path to a file, returns the file name only"""
     formattedpath = format_directory_path(path)
     return formattedpath.split('/')[-2]
 
+
 def filename_and_extension(path: str) -> Tuple[str, str]:
+    """Returns a tuple with the filename and extension elements"""
     return os.path.splitext(path)
+
 
 def border(screen: object, x: int, y: int, dx: int, dy: int) -> None:
     """
@@ -161,16 +183,21 @@ def border(screen: object, x: int, y: int, dx: int, dy: int) -> None:
     screen.addch(y + dy, x, curses.ACS_SSBB)
     screen.addch(y + dy, x + dx, curses.ACS_SBBS)
 
+
 def format_float(number: Union[int, float]) -> float:
+    """Returns a formatted float up to 10 spaces and 2 precision places"""
     return f"{number:10.2f}"
+
 
 def parse_date_from_database(date: str) -> list:
     """Returns a list of ints denoting Year, Month, Date in that order"""
     return [int(d) for d in date.split('-')]
 
+
 def format_date(date: list, dateformat: str=None) -> str:
     """Creates a date string using the date format paramter. If no parameter
-    is provided then returns the string in the default datetime isoformat"""
+    is provided then returns the string in the default datetime isoformat
+    """
     newdate = datetime.date(*date)
     if dateformat:
         return newdate.strftime(dateformat)
