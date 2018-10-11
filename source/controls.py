@@ -58,12 +58,12 @@ class UIControl:
 # We've shifted away from border around entire window. That takes away a lot
 # of space that could be used to show information instead. Now we will not
 # include the border for the main window and instead extend the view down
-# to last row of the screen.
+# to the last row of the screen.
 class View:
     def __init__(self, window, columns=1, rows=1):
         self.window = window
-        self.x = window.getbegyx()[1]
-        self.y = window.getbegyx()[0]
+        self.x = window.getbegyx()[1] # could be cleaner with one call
+        self.y = window.getbegyx()[0] # but this is pretty self explanatory
         self.width = window.getmaxyx()[1]
         self.height = window.getmaxyx()[0]
         self.curcolumns = 0
@@ -311,7 +311,50 @@ class Button(UIControl):
         screen.addstr(self.height + self.y - 1, 
                       self.x + self.width - len(self.label) - 1,
                       self.label, color)
- 
+
+# TODO: Create a button with internal handling and external api to add more
+#       handlers
+#     : Add config settings for buttons. Could add to the config file or
+#       as properties under the class
+# A single call to this class should have the button initialized and ready
+# to be drawn to the screen
+class NewButton:
+    default_x = 3
+    default_y = 7
+    default_s = "Button"
+
+    # determine flags to use on init constructor
+    DEFAULT = 0
+    FOCUSED = 1
+    SELECTED = 2
+    DISABLED = 4
+    BORDER = 8
+
+    def __init__(self, label=None, box=None, flags=None)
+        # the flags would have the properties with boolean?(undeterminded)
+        self.label = label
+        self.focused = False
+        self.selected = False
+        self.disabled = False # property changes the border color
+        self.border = False
+        self.background = None
+        self.box = None # if none is given then button with all defaults
+
+    # these should be core methods in every button but unsure whether to
+    # have only one of the focus or select vs both.
+    def focus(self):
+        self.focused = True
+    def unfocus(self):
+        self.focused = False
+    def select(self):
+        self.selected = True
+    def unselect(self):
+        self.selected = False
+
+    # TODO: add handlers the attribute needs to be added with a name
+    def handle(self, name, handler):
+        setattr(self, name, None)
+
 class Prompt(UIControl):
     def __init__(
             self, 
