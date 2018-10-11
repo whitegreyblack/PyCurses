@@ -1,10 +1,9 @@
 """ScrollList Component Test"""
-
-__author__ = "Samuel Whang"
-
+import curses
 from source.controls import Window
 from source.controls import ScrollList as Scroller
-import curses
+
+__author__ = "Samuel Whang"
 
 def view(screen):
     pass
