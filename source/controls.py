@@ -24,7 +24,10 @@ from collections import namedtuple
 from source.utils import border
 from source.utils import format_float as Money
 
+
 line = namedtuple("Line", "x y line")
+
+
 def intersect(this, other):
     return False
 
