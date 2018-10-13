@@ -1,7 +1,5 @@
 """UI Button component"""
-from collections import namedtuple
-
-box = namedtuple("Box", "x y width height")
+from source.utils import point, size, box
 
 # TODO: Create a button with internal handling and external api to add more
 #       handlers

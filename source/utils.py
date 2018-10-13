@@ -1,5 +1,4 @@
 """utils.py 
-
 Common utility functions used throughout the program. Includes path 
 manipulation and checking using the os library, a custom curses border
 drawer, and variable formatting.
@@ -16,15 +15,18 @@ from collections import namedtuple
 
 Currency = Union[int, float]
 
+point = namedtuple('Point', 'x y')
+size = namedtuple('Size', 'width height')
+box = namedtuple('Box', 'x y width height')
+
+
 EventArg = namedtuple('EventArg', 'sender msg')
+
+
 class Event(list):
     def __call__(self, sender, event):
         for fn in self:
             fn(sender, event)
-
-
-class Enum:
-    pass
 
 
 class Permissions(Enum): 
@@ -41,6 +43,7 @@ class Permissions(Enum):
             if ((flags & index) != 0):
                 print([k for k, v in cls.flags.items() if v == index])
             index = index << 1
+
 
 default_log_format = "[%(asctime)s] %(currentfile)s: %(message)s"
 default_log_noargs = "[%(asctime)s] %(message)s"
