@@ -28,7 +28,7 @@ class Event(list):
         for fn in self:
             fn(sender, event)
 
-
+'''
 class Permissions(Enum): 
     flags = {
         'READ': 1 << 0,
@@ -43,7 +43,7 @@ class Permissions(Enum):
             if ((flags & index) != 0):
                 print([k for k, v in cls.flags.items() if v == index])
             index = index << 1
-
+'''
 
 default_log_format = "[%(asctime)s] %(currentfile)s: %(message)s"
 default_log_noargs = "[%(asctime)s] %(message)s"
@@ -178,13 +178,23 @@ def border(screen: object, x: int, y: int, dx: int, dy: int) -> None:
     Draws a box with given input parameters using the default characters
     """
     screen.vline(y, x, curses.ACS_SBSB, dy)
-    screen.vline(y, x + dx, curses.ACS_SBSB, dy)
+    screen.vline(y, x + dx - 1, curses.ACS_SBSB, dy)
     screen.hline(y, x, curses.ACS_BSBS, dx)
-    screen.hline(y + dy, x, curses.ACS_BSBS, dx)
+    screen.hline(y + dy - 1, x, curses.ACS_BSBS, dx)
     screen.addch(y, x, curses.ACS_BSSB)
-    screen.addch(y, x + dx, curses.ACS_BBSS)
-    screen.addch(y + dy, x, curses.ACS_SSBB)
-    screen.addch(y + dy, x + dx, curses.ACS_SBBS)
+    screen.addch(y, x + dx - 1, curses.ACS_BBSS)
+    screen.addch(y + dy - 1, x, curses.ACS_SSBB)
+    screen.addch(y + dy - 1, x + dx - 1, curses.ACS_SBBS)
+
+
+def initialize_curses_settings(logger=None):
+    """Sets settings for cursor visibility and color pairings"""
+    if logger:
+        logger.info('main(): initializing curses library settings')
+    curses.curs_set(0)
+    curses.init_pair(1, curses.COLOR_WHITE, curses.COLOR_BLACK)
+    curses.init_pair(2, curses.COLOR_BLACK, curses.COLOR_WHITE)
+    curses.init_pair(3, curses.COLOR_BLACK, curses.COLOR_CYAN)
 
 
 def format_float(number: Union[int, float]) -> float:

@@ -1,6 +1,5 @@
 """UI Button component"""
-from source.utils import point, size, box
-
+import source.utils as utils
 # TODO: Create a button with internal handling and external api to add more
 #       handlers
 #     : Add config settings for buttons. Could add to the config file or
@@ -8,8 +7,9 @@ from source.utils import point, size, box
 # A single call to this class should have the button initialized and ready
 # to be drawn to the screen
 class Button:
+    # defaults for buttons without arguments passed in
     height = 3
-    width = 7
+    width = 8
     label = "Button"
 
     # determine flags to use on init constructor
@@ -49,18 +49,35 @@ class Button:
     def handle(self, name, handler):
         setattr(self, name, None)
 
-    def draw(self, term):
-        pass
+    def draw(self, term, x, y):
+        '''     
+            +------+
+            |Button|
+            +------+ 3
+                   8
+        '''
+        utils.border(term, x, y, self.width, self.height)
+        color = curses.color_pair(1)
+        if self.selected:
+            color = curses.color_pair(2)
+        term.addstr(y+1, x+1, self.label, color)
 
 if __name__ == "__main__":
     import curses
+    from source.utils import initialize_curses_settings
     def main(term):
+        initialize_curses_settings()
         button = Button()
+        button.draw(term, 1, 1)
         while True:
             key = term.getch()
             if key == ord('q'):
                 break
+            if key == ord('s'):
+                button.select()
+            if key == ord('S'):
+                button.unselect()
             term.erase()
-            button.draw(term)
-
+            button.draw(term, 1, 1)
+            term.refresh()
     curses.wrapper(main)
