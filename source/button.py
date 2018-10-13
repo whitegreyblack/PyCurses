@@ -10,9 +10,9 @@ box = namedtuple("Box", "x y width height")
 # A single call to this class should have the button initialized and ready
 # to be drawn to the screen
 class Button:
-    default_height = 3
-    default_width = 7
-    default_label = "Button"
+    height = 3
+    width = 7
+    label = "Button"
 
     # determine flags to use on init constructor
     DEFAULT = 0
@@ -24,12 +24,12 @@ class Button:
     def __init__(self, label=None, box=None, flags=None):
         # the flags would have the properties with boolean?(undeterminded)
         if not box:
-            self.width = Button.default_width
-            self.height = Button.default_height
+            self.width = Button.width
+            self.height = Button.height
         else:
             self.width = box.width
             self.height = box.height
-        self.label = label if label else Button.default_s
+        self.label = label if label else Button.label
         self.focused = False
         self.selected = False
         self.disabled = False # property changes the border color
