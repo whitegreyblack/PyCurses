@@ -67,17 +67,24 @@ if __name__ == "__main__":
     from source.utils import initialize_curses_settings
     def main(term):
         initialize_curses_settings()
-        button = Button()
-        button.draw(term, 1, 1)
+        default = Button()
+        selected = Button('Text')
+        large = Button('Large', utils.box(0, 0, 14, 6))
+        selected.select()
+        selected.draw(term, 8, 0)
+        default.draw(term, 0, 0)
+        large.draw(term, 16, 0)
         while True:
             key = term.getch()
             if key == ord('q'):
                 break
             if key == ord('s'):
-                button.select()
+                default.select()
             if key == ord('S'):
-                button.unselect()
+                default.unselect()
             term.erase()
-            button.draw(term, 1, 1)
+            default.draw(term, 0, 0)
+            default.draw(term, 8, 0)
+            default.draw(term, 16, 0)
             term.refresh()
     curses.wrapper(main)
