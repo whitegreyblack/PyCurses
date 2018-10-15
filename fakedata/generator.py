@@ -78,8 +78,9 @@ class DataGenerator:
             "(###)###-####",
             "(###) ###-####",
             "(###)###.####",
-            "(###) ###.####"
-    )
+            "(###) ###.####",
+        )
+
     def __init__(self, folder):
         self.folder = folder
         self.export_folder = utils.check_or_create_folder(folder)
