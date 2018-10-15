@@ -12,6 +12,13 @@ class Button:
     width = 8
     label = "Button"
 
+    # default state
+    focused = False
+    selected = False
+    disabled = False
+    border = False
+    background = None
+
     # determine flags to use on init constructor
     DEFAULT = 0
     FOCUSED = 1
@@ -27,12 +34,14 @@ class Button:
         else:
             self.width = box.width
             self.height = box.height
+        
         self.label = label if label else Button.label
-        self.focused = False
-        self.selected = False
-        self.disabled = False # property changes the border color
-        self.border = False
-        self.background = None
+
+        if flags:
+            self.focused = False
+            self.selected = flags & Button.SELECTED
+            self.disabled = False # property changes the border color
+            self.border = False
 
     # these should be core methods in every button but unsure whether to
     # have only one of the focus or select vs both.
@@ -69,8 +78,10 @@ if __name__ == "__main__":
         initialize_curses_settings()
         default = Button()
         selected = Button('Text')
-        large = Button('Large', utils.box(0, 0, 14, 6))
-        selected.select()
+        large = Button('Large', box=utils.box(0, 0, 14, 6))
+        flagged = Button('Flagged', flags=Button.SELECTED) # auto selected
+        selected.select() # manual select
+        flagged.draw(term, 24, 0)
         selected.draw(term, 8, 0)
         default.draw(term, 0, 0)
         large.draw(term, 16, 0)
@@ -84,7 +95,8 @@ if __name__ == "__main__":
                 default.unselect()
             term.erase()
             default.draw(term, 0, 0)
-            default.draw(term, 8, 0)
-            default.draw(term, 16, 0)
+            selected.draw(term, 8, 0)
+            large.draw(term, 16, 0)
+            flagged.draw(term, 24, 0)
             term.refresh()
     curses.wrapper(main)
