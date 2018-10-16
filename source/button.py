@@ -6,7 +6,16 @@ import source.utils as utils
 #       as properties under the class
 # A single call to this class should have the button initialized and ready
 # to be drawn to the screen
-class Button:
+
+# Possibly use metaclass instead.
+# Allows all derived children of Control to be added to the elements list,
+# thus having a single point of access to all children in the application.
+class Control:
+    elements = []
+    def __init__(self):
+        Control.elements.append(self)
+
+class Button(Control):
     # defaults for buttons without arguments passed in
     height = 3
     width = 8
@@ -29,6 +38,7 @@ class Button:
     CENTERED = 16
 
     def __init__(self, label=None, box=None, flags=None):
+        super().__init__()
         # the flags would have the properties with boolean?(undeterminded)
         self.label = label if label else Button.label
         
