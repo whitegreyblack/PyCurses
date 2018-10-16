@@ -37,6 +37,9 @@ class Control:
     def __init__(self):
         Control.elements.append(self)
 
+class Label(Control):
+    pass
+
 class Button(Control):
     # defaults for button class without arguments passed in
     height = 3
@@ -48,6 +51,9 @@ class Button(Control):
         # the flags would have the properties with boolean?(undeterminded)
         self.label = label if label else Button.label
         
+        # begin with starting point (0, 0) initially and overwrite on draw
+        self.pivot = utils.point(0, 0)
+        self.bounds = None # will be a tuple of two points
         if not box:
             if len(self.label) < Button.width - 2:
                 self.width = Button.width
@@ -58,13 +64,28 @@ class Button(Control):
             # these are manually set so assume they are correct
             self.width = box.width
             self.height = box.height
-        
+
         if flags:
             self.focused = False
             self.selected = flags & Control.SELECTED
             self.disabled = False # property changes the border color
             self.bordered = flags & Control.BORDERED | Control.bordered # (flag & enum | default)
             self.centered = flags & Control.CENTERED
+
+        self.handlers = dict()
+
+    def covers(self, point):
+        if not self.bounds:
+            # not been drawn yet so coordinates are not known yet
+            return False
+
+        p1, p2 = self.bounds
+        return p1.x <= point.x <= p2.x and p1.y <= point.y <= p2.y
+
+    # key handlers
+    def on_key(self, key):
+        if key in self.handlers.keys():
+            pass
 
     # these should be core methods in every button but unsure whether to
     # have only one of the focus or select vs both.
@@ -82,13 +103,23 @@ class Button(Control):
     def handle(self, name, handler):
         setattr(self, name, None)
 
-    def draw(self, term, x, y):
+    def clicked(self, term):
+        term.addstr(14, 0, f"Box with label '{self.label}' was clicked")
+
+    def draw(self, term, pivot):
         '''     
             +------+
             |Button|
             +------+ 3
                    8
         '''
+        if self.pivot != pivot:
+            self.pivot = pivot
+            p2 = utils.point(pivot.x + self.width, pivot.y + self.height)
+            self.bounds = pivot, p2
+
+        x, y = self.pivot
+
         color = curses.color_pair(1)
         if self.selected:
             color = curses.color_pair(2)
@@ -121,26 +152,33 @@ class Button(Control):
 if __name__ == "__main__":
     import curses
     from source.utils import initialize_curses_settings
+    from source.utils import point
     def main(term):
         initialize_curses_settings()
         default = Button()
         selected = Button('Text')
         centered = Button('Text', flags=Control.CENTERED)
         large = Button('Large', box=utils.size(14, 6))
-        flagged = Button('Flagged', flags=Control.SELECTED) # selected through constructor flags parameter
-        selected_centered = Button('Text', flags=Control.SELECTED|Control.CENTERED)
+        
+        # selected through constructor flags parameter
+        flagged = Button('Flagged', flags=Control.SELECTED)
+        # both selected and centered properties
+        selected_centered = Button('Text1', 
+                                   flags=Control.SELECTED | Control.CENTERED)
         selected.select() # manual select
 
         mouse_down = False
+        element_clicked = None
         mouse_move = False
+        px, py = 0, 0
         while True:
             term.erase()
-            default.draw(term, 0, 0)
-            selected.draw(term, 8, 0)
-            large.draw(term, 16, 0)
-            flagged.draw(term, 30, 0)
-            centered.draw(term, 39, 0)
-            selected_centered.draw(term, 47, 0)
+            default.draw(term, point(0, 0))
+            selected.draw(term, point(8, 0))
+            large.draw(term, point(16, 0))
+            flagged.draw(term, point(30, 0))
+            centered.draw(term, point(39, 0))
+            selected_centered.draw(term, point(47, 0))
 
             term.addstr(7, 0, "Default button shows button with all defaults.")
             term.addstr(8, 0, "Selected button shows button with selected property as true manually.")
@@ -153,6 +191,11 @@ if __name__ == "__main__":
 
             if mouse_move:
                 term.addstr(14, 0, "Mouse moved")
+
+            if element_clicked:
+                term.addstr(15, 0, "element")
+                element_clicked.clicked(term)
+
             # term.refresh()
             key = term.getch()
             if key == ord('q'):
@@ -163,8 +206,15 @@ if __name__ == "__main__":
                 default.unselect()
             if key == curses.KEY_MOUSE:
                 mouse_down = True
+                _, px, py, _, _ = curses.getmouse()
+                e = 0
+                for element in Control.elements:
+                    if element.covers(point(px, py)):
+                        element_clicked = element
+                        break
             else:
                 mouse_down = False
+                element_clicked = None
             if key == curses.KEY_MOVE:
                 mouse_move = True
             else:
