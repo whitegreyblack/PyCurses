@@ -7,25 +7,22 @@ import source.utils as utils
 # A single call to this class should have the button initialized and ready
 # to be drawn to the screen
 
+def fn(pre, f, post):
+    pre()
+    f()
+    post()
+
 # Possibly use metaclass instead.
 # Allows all derived children of Control to be added to the elements list,
 # thus having a single point of access to all children in the application.
 class Control:
     elements = []
-    def __init__(self):
-        Control.elements.append(self)
-
-class Button(Control):
-    # defaults for buttons without arguments passed in
-    height = 3
-    width = 8
-    label = "Button"
 
     # default state
     focused = False
     selected = False
     disabled = False
-    border = False
+    bordered = True
     background = None
     centered = False
 
@@ -34,8 +31,17 @@ class Button(Control):
     FOCUSED = 1
     SELECTED = 2
     DISABLED = 4
-    BORDER = 8
+    BORDERED = 8
     CENTERED = 16
+
+    def __init__(self):
+        Control.elements.append(self)
+
+class Button(Control):
+    # defaults for button class without arguments passed in
+    height = 3
+    width = 8
+    label = "Button"
 
     def __init__(self, label=None, box=None, flags=None):
         super().__init__()
@@ -55,10 +61,10 @@ class Button(Control):
         
         if flags:
             self.focused = False
-            self.selected = flags & Button.SELECTED
+            self.selected = flags & Control.SELECTED
             self.disabled = False # property changes the border color
-            self.border = False
-            self.centered = flags & Button.CENTERED
+            self.bordered = flags & Control.BORDERED | Control.bordered # (flag & enum | default)
+            self.centered = flags & Control.CENTERED
 
     # these should be core methods in every button but unsure whether to
     # have only one of the focus or select vs both.
@@ -87,7 +93,8 @@ class Button(Control):
         if self.selected:
             color = curses.color_pair(2)
 
-        utils.border(term, x, y, self.width, self.height)
+        if self.bordered:
+            utils.border(term, x, y, self.width, self.height)
 
         # determine starting point for label
         if self.centered:
@@ -118,10 +125,10 @@ if __name__ == "__main__":
         initialize_curses_settings()
         default = Button()
         selected = Button('Text')
-        centered = Button('Text', flags=Button.CENTERED)
+        centered = Button('Text', flags=Control.CENTERED)
         large = Button('Large', box=utils.size(14, 6))
-        flagged = Button('Flagged', flags=Button.SELECTED) # selected through constructor flags parameter
-        selected_centered = Button('Text', flags=Button.SELECTED|Button.CENTERED)
+        flagged = Button('Flagged', flags=Control.SELECTED) # selected through constructor flags parameter
+        selected_centered = Button('Text', flags=Control.SELECTED|Control.CENTERED)
         selected.select() # manual select
         while True:
             term.erase()
