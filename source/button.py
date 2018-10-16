@@ -130,6 +130,9 @@ if __name__ == "__main__":
         flagged = Button('Flagged', flags=Control.SELECTED) # selected through constructor flags parameter
         selected_centered = Button('Text', flags=Control.SELECTED|Control.CENTERED)
         selected.select() # manual select
+
+        mouse_down = False
+        mouse_move = False
         while True:
             term.erase()
             default.draw(term, 0, 0)
@@ -144,7 +147,12 @@ if __name__ == "__main__":
             term.addstr(9, 0, "Large button shows button with a size input. ex. Size=(14, 6).")
             term.addstr(10, 0, "Flagged button shows button with selected property as true through constructor.")
             term.addstr(11, 0, "Next button shows button initialized with multiple flags: Selected and Centered.")
+            
+            if mouse_down:
+                term.addstr(13, 0, "Mouse click")
 
+            if mouse_move:
+                term.addstr(14, 0, "Mouse moved")
             # term.refresh()
             key = term.getch()
             if key == ord('q'):
@@ -153,5 +161,12 @@ if __name__ == "__main__":
                 default.select()
             if key == ord('S'):
                 default.unselect()
-
+            if key == curses.KEY_MOUSE:
+                mouse_down = True
+            else:
+                mouse_down = False
+            if key == curses.KEY_MOVE:
+                mouse_move = True
+            else:
+                mose_move = False
     curses.wrapper(main)
