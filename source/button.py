@@ -203,7 +203,7 @@ if __name__ == "__main__":
                 element_clicked.clicked(term)
             elif point_clicked:
                 term.addstr(15, 0, f"point(x={point_clicked[0]}, y={point_clicked[1]})")
-                term.addstr(16, 0, f"other(a={other_mouse[0]}, b={other_mouse[1]}, c={other_mouse[2]})")
+                term.addstr(16, 0, f"other(a={other_mouse[0]}, buttonmask={other_mouse[1]})")
 
             if mouse_scroll:
                 term.addstr(17, 0, f"scrolling {'up' if mouse_scroll == 1 else 'down'}")
@@ -234,9 +234,8 @@ if __name__ == "__main__":
                 # probably need to write a mouse handler
                 # ex curses_mouse_handler as mouse
                 mouse_down = True
-                a, px, py, b, c = curses.getmouse()
+                a, px, py, _, mask = curses.getmouse()
 
-                term.addstr(6, 0, f"{a}, {b}, {c}")
                 e = 0
                 for element in Control.elements:
                     if element.covers(point(px, py)):
@@ -244,13 +243,13 @@ if __name__ == "__main__":
                         point_clicked = None
                         break
                 else:
-                    if c == 65536:
+                    if mask == 65536:
                         mouse_scroll = 1
-                    elif c == 2097152:
+                    elif mask == 2097152:
                         mouse_scroll = 2
                     element_clicked = None
                     point_clicked = px, py
-                    other_mouse = a, b, c
+                    other_mouse = a, mask
             else:
                 mouse_down = False
                 element_clicked = None
