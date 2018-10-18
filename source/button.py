@@ -126,7 +126,7 @@ class Button(Control):
         '''
         if self.pivot != pivot:
             self.pivot = pivot
-            p2 = utils.point(pivot.x + self.width - 1, pivot.y + self.height - 1)
+            p2 = utils.point(pivot.x + self.width , pivot.y + self.height)
             self.bounds = pivot, p2
 
         x, y = self.pivot
@@ -167,6 +167,7 @@ if __name__ == "__main__":
     import curses
     from source.utils import initialize_curses_settings
     from source.utils import point
+    from source.mouse import MouseEvent as mouse
     def main(term):
         initialize_curses_settings()
         default = Button()
@@ -226,6 +227,10 @@ if __name__ == "__main__":
             term.addstr(6, 0, str(key))
             if key == ord('q'):
                 break
+
+            # when selecting/unselecting, there is a cursor artifact even
+            # with curses.set_curs(0) ie. no cursor. Maybe calling it
+            # again will fix
             if key == ord('s'):
                 default.select()
             if key == ord('S'):
@@ -236,6 +241,8 @@ if __name__ == "__main__":
                 mouse_down = True
                 a, px, py, _, mask = curses.getmouse()
 
+                # probably only want to make sure that the mouse was
+                # only 'LEFT CLICKED' before choosing clicked method()
                 e = 0
                 for element in Control.elements:
                     if element.covers(point(px, py)):
