@@ -31,7 +31,7 @@ class Control:
     FOCUSED = 1
     SELECTED = 2
     DISABLED = 4
-    BORDERED = 8
+    NOBORDER = 8
     CENTERED = 16
 
     def __init__(self):
@@ -63,13 +63,17 @@ class Button(Control):
         else:
             # these are manually set so assume they are correct
             self.width = box.width
-            self.height = box.height
+            self.height = box.height 
 
         if flags:
             self.focused = False
             self.selected = flags & Control.SELECTED
             self.disabled = False # property changes the border color
-            self.bordered = flags & Control.BORDERED | Control.bordered # (flag & enum | default)
+            self.bordered = Control.bordered
+            if flags & Control.NOBORDER:
+                self.bordered = False # | Control.bordered # (flag & enum | default)
+                if not box:
+                    self.height = 1
             self.centered = flags & Control.CENTERED
 
         self.handlers = dict()
@@ -104,7 +108,14 @@ class Button(Control):
         setattr(self, name, None)
 
     def clicked(self, term):
-        term.addstr(14, 0, f"Box with label '{self.label}' was clicked")
+        '''
+            Define handler for clicked events
+        '''
+        if self.selected:
+            self.unselect()
+        else:
+            self.select()
+        term.addstr(14, 0, f"Box(w={self.width}, h={self.height}) with label '{self.label}' was clicked")
 
     def draw(self, term, pivot):
         '''     
@@ -115,7 +126,7 @@ class Button(Control):
         '''
         if self.pivot != pivot:
             self.pivot = pivot
-            p2 = utils.point(pivot.x + self.width, pivot.y + self.height)
+            p2 = utils.point(pivot.x + self.width - 1, pivot.y + self.height - 1)
             self.bounds = pivot, p2
 
         x, y = self.pivot
@@ -132,7 +143,8 @@ class Button(Control):
             # centered has no relation to y
             px = (self.width - len(self.label)) // 2 + x
         else:
-            px = x + 1
+            width_offset = 1 if self.bordered else 0
+            px = x + width_offset
 
         label = self.label
         if len(self.label) != self.width - 2:
@@ -147,7 +159,9 @@ class Button(Control):
                 # TODO
                 pass
 
-        term.addstr(y+1, px, label, color)
+        height_offset = 1 if self.bordered else 0
+
+        term.addstr(y + height_offset, px, label, color)
 
 if __name__ == "__main__":
     import curses
@@ -167,25 +181,17 @@ if __name__ == "__main__":
                                    flags=Control.SELECTED | Control.CENTERED)
         selected.select() # manual select
 
+        unbordered = Button('NoBorder', flags=Control.NOBORDER) # should be
+
         mouse_down = False
         element_clicked = None
+        point_clicked = None
+        mouse_scroll = 0
         mouse_move = False
         px, py = 0, 0
         while True:
             term.erase()
-            default.draw(term, point(0, 0))
-            selected.draw(term, point(8, 0))
-            large.draw(term, point(16, 0))
-            flagged.draw(term, point(30, 0))
-            centered.draw(term, point(39, 0))
-            selected_centered.draw(term, point(47, 0))
 
-            term.addstr(7, 0, "Default button shows button with all defaults.")
-            term.addstr(8, 0, "Selected button shows button with selected property as true manually.")
-            term.addstr(9, 0, "Large button shows button with a size input. ex. Size=(14, 6).")
-            term.addstr(10, 0, "Flagged button shows button with selected property as true through constructor.")
-            term.addstr(11, 0, "Next button shows button initialized with multiple flags: Selected and Centered.")
-            
             if mouse_down:
                 term.addstr(13, 0, "Mouse click")
 
@@ -195,9 +201,29 @@ if __name__ == "__main__":
             if element_clicked:
                 term.addstr(15, 0, "element")
                 element_clicked.clicked(term)
+            elif point_clicked:
+                term.addstr(15, 0, f"point(x={point_clicked[0]}, y={point_clicked[1]})")
+                term.addstr(16, 0, f"other(a={other_mouse[0]}, b={other_mouse[1]}, c={other_mouse[2]})")
+
+            if mouse_scroll:
+                term.addstr(17, 0, f"scrolling {'up' if mouse_scroll == 1 else 'down'}")
+            
+            default.draw(term, point(0, 0))
+            selected.draw(term, point(8, 0))
+            large.draw(term, point(16, 0))
+            flagged.draw(term, point(30, 0))
+            centered.draw(term, point(39, 0))
+            selected_centered.draw(term, point(47, 0))
+            unbordered.draw(term, point(55, 0))
+            term.addstr(7, 0, "Default button shows button with all defaults.")
+            term.addstr(8, 0, "Selected button shows button with selected property as true manually.")
+            term.addstr(9, 0, "Large button shows button with a size input. ex. Size=(14, 6).")
+            term.addstr(10, 0, "Flagged button shows button with selected property as true through constructor.")
+            term.addstr(11, 0, "Next button shows button initialized with multiple flags: Selected and Centered.")
 
             # term.refresh()
             key = term.getch()
+            term.addstr(6, 0, str(key))
             if key == ord('q'):
                 break
             if key == ord('s'):
@@ -205,13 +231,26 @@ if __name__ == "__main__":
             if key == ord('S'):
                 default.unselect()
             if key == curses.KEY_MOUSE:
+                # probably need to write a mouse handler
+                # ex curses_mouse_handler as mouse
                 mouse_down = True
-                _, px, py, _, _ = curses.getmouse()
+                a, px, py, b, c = curses.getmouse()
+
+                term.addstr(6, 0, f"{a}, {b}, {c}")
                 e = 0
                 for element in Control.elements:
                     if element.covers(point(px, py)):
                         element_clicked = element
+                        point_clicked = None
                         break
+                else:
+                    if c == 65536:
+                        mouse_scroll = 1
+                    elif c == 2097152:
+                        mouse_scroll = 2
+                    element_clicked = None
+                    point_clicked = px, py
+                    other_mouse = a, b, c
             else:
                 mouse_down = False
                 element_clicked = None
