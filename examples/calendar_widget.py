@@ -30,7 +30,7 @@ def iter_months_years(startDate: object, endDate: object) -> tuple:
     """Returns years and months based on given start and end dates. Expected
     date format is YYYY-MM-DD. Ex. 2012-07-15
     """
-    
+
     # TODO: Make the function an iterable
 
     months = []
@@ -56,6 +56,7 @@ def iter_months_years(startDate: object, endDate: object) -> tuple:
         for m in month:
             yield (year, m)
 
+
 def days_in_month_year(startDate, endDate):
     """Returns the day/date tuple combination for each month/year input passed
     into the calendar.TextCalendar class method months2calendar(year, month).
@@ -76,6 +77,7 @@ def days_in_month_year(startDate, endDate):
 
     return days_per_monthyear
 
+
 def parse_date(datestring: str) -> object:
     """Takes in a string object representing a formatted date. If not
     formatted correctly, will raise an error giving description of the correct
@@ -87,9 +89,11 @@ def parse_date(datestring: str) -> object:
 
     return date(*[int(i) for i in datestring.split('-')])
 
+
 def initialize_curses_settings():
     """Curses settings that need to be called before the rest of program"""
     curses.curs_set(0)
+
 
 def main(window):
     """Creates a navigatable calendar widget for the dates passed in. Later on
@@ -128,6 +132,7 @@ def main(window):
     
     window.getch()
     # TODO: implement program loop involving vertical/horiontal scrolling
+
 
 if __name__ == "__main__":
     curses.wrapper(main)
