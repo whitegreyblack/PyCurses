@@ -121,6 +121,7 @@ class Button(Control):
         else:
             self.select()
         term.addstr(14, 0, f"Box(w={self.width}, h={self.height}) with label '{self.label}' was clicked")
+        
 
     def draw(self, term, pivot):
         '''     
@@ -131,8 +132,9 @@ class Button(Control):
         '''
         if self.pivot != pivot:
             self.pivot = pivot
-            p2 = utils.point(pivot.x + self.width , pivot.y + self.height)
-            self.bounds = pivot, p2
+
+        p2 = utils.point(pivot.x + self.width , pivot.y + self.height)
+        self.bounds = pivot, p2
 
         x, y = self.pivot
 
@@ -167,6 +169,18 @@ class Button(Control):
         height_offset = 1 if self.bordered else 0
 
         term.addstr(y + height_offset, px, label, color)
+        # try:
+        #     term.addstr(4, 0, f"P1={self.bounds[0]}")
+        # except:
+        #     pass
+        # try:
+        #     term.addstr(5, 0, f"p2={self.bounds[1]}")
+        # except:
+        #     pass
+        # try:
+        #     term.addstr(6, 0, f"piv={self.pivot}")
+        # except:
+        #     pass
 
 if __name__ == "__main__":
     b = Button()

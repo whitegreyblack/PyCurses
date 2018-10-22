@@ -7,6 +7,7 @@ from source.button import Button, Control
 
 def main(term):
     initialize_curses_settings()
+    height, width = term.getmaxyx()
     default = Button()
     selected = Button('Text')
     centered = Button('Text', flags=Control.CENTERED)
@@ -27,6 +28,7 @@ def main(term):
     mouse_scroll = 0
     mouse_move = False
     px, py = 0, 0
+    i = 0
     while True:
         term.erase()
 
@@ -59,10 +61,14 @@ def main(term):
         term.addstr(10, 0, "Flagged button shows button with selected property as true through constructor.")
         term.addstr(11, 0, "Next button shows button initialized with multiple flags: Selected and Centered.")
 
+        term.addstr(20, 0, f"width={width}, height={height}")
         term.addstr(21, 0, f"Button1 release={curses.BUTTON1_RELEASED}")
         term.addstr(22, 0, f"Button1 pressed={curses.BUTTON1_PRESSED}")
         term.addstr(23, 0, f"Button1 clicked={curses.BUTTON1_CLICKED}")
         
+        term.addstr(24, i % width, 'o')
+        i += 1
+
         # term.refresh()
         term.timeout(60)
         key = term.getch()
