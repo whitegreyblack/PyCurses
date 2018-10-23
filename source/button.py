@@ -148,7 +148,7 @@ class Button(Control):
 
         color = curses.color_pair(1)
         if self.selected:
-            color = curses.color_pair(2)
+            color = curses.color_pair(7)
 
         if self.bordered:
             utils.border(term, x, y, self.width, self.height)
