@@ -192,7 +192,7 @@ def initialize_curses_settings(logger=None):
     if logger:
         logger.info('main(): initializing curses library settings')
     curses.curs_set(0)
-    curses.mousemask(curses.ALL_MOUSE_EVENTS)
+    curses.mousemask(curses.ALL_MOUSE_EVENTS | curses.REPORT_MOUSE_POSITION)
     curses.init_pair(1, curses.COLOR_WHITE, curses.COLOR_BLACK)
     curses.init_pair(2, curses.COLOR_BLACK, curses.COLOR_WHITE)
     curses.init_pair(3, curses.COLOR_BLACK, curses.COLOR_CYAN)

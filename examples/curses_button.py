@@ -67,7 +67,13 @@ def main(term):
         term.addstr(23, 0, f"Button1 clicked={curses.BUTTON1_CLICKED}")
         
         term.addstr(24, i % width, 'o')
-        i += 1
+        # i += 1
+
+        # curses does not support mouse hover -- so button hover state is a no
+        a, mx, my, c, mask = curses.getmouse()
+        # mx, my = term.getyx()
+        term.addstr(25, 0, f"{mx}, {my}")
+        # term.addstr()
 
         # term.refresh()
         term.timeout(60)
