@@ -45,6 +45,14 @@ class Permissions(Enum):
             index = index << 1
 '''
 
+button_appearances = {
+    "default": "", # white 0/8
+    "info": "", # blue 2/4/10/12
+    "success": "", # green 3/11
+    "warning": "", # orange/yellow? 7/15
+    "danger": "", # red? 5/13
+}
+
 default_log_format = "[%(asctime)s] %(currentfile)s: %(message)s"
 default_log_noargs = "[%(asctime)s] %(message)s"
 
@@ -193,10 +201,19 @@ def initialize_curses_settings(logger=None):
         logger.info('main(): initializing curses library settings')
     curses.curs_set(0)
     curses.mousemask(curses.ALL_MOUSE_EVENTS | curses.REPORT_MOUSE_POSITION)
+    curses.start_color()
     curses.init_pair(1, curses.COLOR_WHITE, curses.COLOR_BLACK)
-    curses.init_pair(2, curses.COLOR_BLACK, curses.COLOR_WHITE)
-    curses.init_pair(3, curses.COLOR_BLACK, curses.COLOR_CYAN)
-
+    curses.init_pair(2, curses.COLOR_BLUE, curses.COLOR_BLACK)
+    curses.init_pair(3, curses.COLOR_CYAN, curses.COLOR_BLACK)
+    curses.init_pair(4, curses.COLOR_GREEN, curses.COLOR_BLACK)
+    curses.init_pair(5, curses.COLOR_YELLOW, curses.COLOR_BLACK)
+    curses.init_pair(6, curses.COLOR_RED, curses.COLOR_BLACK)
+    curses.init_pair(7, curses.COLOR_WHITE, curses.COLOR_BLACK)
+    curses.init_pair(8, curses.COLOR_WHITE, curses.COLOR_BLUE)
+    curses.init_pair(9, curses.COLOR_WHITE, curses.COLOR_CYAN)
+    curses.init_pair(10, curses.COLOR_WHITE, curses.COLOR_GREEN)
+    curses.init_pair(11, curses.COLOR_WHITE, curses.COLOR_YELLOW)
+    curses.init_pair(12, curses.COLOR_WHITE, curses.COLOR_RED)
 
 def format_float(number: Union[int, float]) -> float:
     """Returns a formatted float up to 10 spaces and 2 precision places"""

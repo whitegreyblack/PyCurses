@@ -13,6 +13,9 @@ def fn(pre, f, post):
     f()
     post()
 
+def color(state):
+    return utils.button_appearances[state]
+
 # Possibly use metaclass instead.
 # Allows all derived children of Control to be added to the elements list,
 # thus having a single point of access to all children in the application.
@@ -47,7 +50,7 @@ class Button(Control):
     width = 8
     label = "Button"
 
-    def __init__(self, label=None, box=None, flags=None):
+    def __init__(self, label=None, box=None, appearance=None, flags=None):
         super().__init__()
         # the flags would have the properties with boolean?(undeterminded)
         self.label = label if label else Button.label
@@ -65,6 +68,11 @@ class Button(Control):
             # these are manually set so assume they are correct
             self.width = box.width
             self.height = box.height 
+
+        if appearance:
+            self.appearance = color(appearance)
+        else:
+            self.appearance = curses.color_pair(1)
 
         if flags:
             self.focused = False
