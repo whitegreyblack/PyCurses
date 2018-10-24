@@ -1,4 +1,5 @@
 """UI Button component"""
+import json
 import curses
 import source.utils as utils
 # TODO: Create a button with internal handling and external api to add more
@@ -77,15 +78,26 @@ class Button(Control):
         if flags:
             self.focused = False
             self.selected = flags & Control.SELECTED
-            self.disabled = False # property changes the border color
+            # property changes the border color
+            self.disabled = False
             self.bordered = Control.bordered
+            # | Control.bordered # (flag & enum | default)
             if flags & Control.NOBORDER:
-                self.bordered = False # | Control.bordered # (flag & enum | default)
+                self.bordered = False
                 if not size:
                     self.height = 1
             self.centered = flags & Control.CENTERED
 
         self.handlers = dict()
+
+    def to_json(self):
+        return dict()
+
+    def __repr__(self):
+        return "Button(x={}, y={}, h={}, w{}".format(self.pivot.x,
+                                                     self.pivot.y,
+                                                     self.width,
+                                                     self.height)
 
     def covers(self, point):
         if not self.bounds:
@@ -187,7 +199,14 @@ class Button(Control):
                 # TODO
                 pass
 
-        height_offset = 1 if self.bordered else 0
+        # configures height within the box
+        allowable_height = self.height
+        if self.bordered:
+            allowable_height -= 2
+        if allowable_height == 1:
+            height_offset = allowable_height
+        else:
+            height_offset = allowable_height // 2
 
         term.addstr(y + height_offset, px, label, color)
         # try:

@@ -12,6 +12,7 @@ def main(term):
     selected = Button('Text')
     centered = Button('Text', flags=Control.CENTERED)
     large = Button('Large', size=utils.size(14, 6))
+    large_centered = Button('Large', size=utils.size(14, 6), flags=Control.CENTERED)
     
     # selected through constructor flags parameter
     flagged = Button('Flagged', flags=Control.SELECTED)
@@ -20,7 +21,7 @@ def main(term):
                                 flags=Control.SELECTED | Control.CENTERED)
     selected.select() # manual select
 
-    unbordered = Button('NoBorder', flags=Control.NOBORDER) # should be
+    unbordered = Button('<NoBorder>', flags=Control.NOBORDER) # should be
 
     mouse_down = False
     element_clicked = None
@@ -51,10 +52,12 @@ def main(term):
         default.draw(term, point(0, 0))
         selected.draw(term, point(8, 0))
         large.draw(term, point(16, 0))
-        flagged.draw(term, point(30, 0))
-        centered.draw(term, point(39, 0))
-        selected_centered.draw(term, point(47, 0))
-        unbordered.draw(term, point(55, 0))
+        large_centered.draw(term, point(30, 0))
+        flagged.draw(term, point(44, 0))
+        centered.draw(term, point(53, 3))
+        selected_centered.draw(term, point(53, 0))
+        unbordered.draw(term, point(61, 0))
+
         term.addstr(7, 0, "Default button shows button with all defaults.")
         term.addstr(8, 0, "Selected button shows button with selected property as true manually.")
         term.addstr(9, 0, "Large button shows button with a size input. ex. Size=(14, 6).")
