@@ -50,7 +50,7 @@ class Button(Control):
     width = 8
     label = "Button"
 
-    def __init__(self, label=None, box=None, appearance=None, flags=None):
+    def __init__(self, label=None, size=None, appearance=None, flags=None):
         super().__init__()
         # the flags would have the properties with boolean?(undeterminded)
         self.label = label if label else Button.label
@@ -58,7 +58,7 @@ class Button(Control):
         # begin with starting point (0, 0) initially and overwrite on draw
         self.pivot = utils.point(0, 0)
         self.bounds = None # will be a tuple of two points
-        if not box:
+        if not size:
             if len(self.label) < Button.width - 2:
                 self.width = Button.width
             else:
@@ -66,8 +66,8 @@ class Button(Control):
             self.height = Button.height
         else:
             # these are manually set so assume they are correct
-            self.width = box.width
-            self.height = box.height 
+            self.width = size.width
+            self.height = size.height 
 
         if appearance:
             self.appearance = color(appearance)
@@ -81,7 +81,7 @@ class Button(Control):
             self.bordered = Control.bordered
             if flags & Control.NOBORDER:
                 self.bordered = False # | Control.bordered # (flag & enum | default)
-                if not box:
+                if not size:
                     self.height = 1
             self.centered = flags & Control.CENTERED
 
