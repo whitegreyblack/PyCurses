@@ -124,12 +124,25 @@ class Button(Control):
         '''
             Define handler for clicked events
         '''
+
+        # if there is a click handler set then call that,
+        # else call the default handler
+        attr = 'click_handler'
+        if hasattr(self, attr) and getattr(self, attr):
+            self.click_handler()
+            return
+
+        self.default_click_handler(term)
+
+    def add_click_handler(self, handler):
+        self.click_handler = handler
+
+    def default_click_handler(self, term):
         if self.selected:
             self.unselect()
         else:
             self.select()
         term.addstr(14, 0, f"Box(w={self.width}, h={self.height}) with label '{self.label}' was clicked")
-        
 
     def draw(self, term, pivot):
         '''     

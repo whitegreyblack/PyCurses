@@ -11,7 +11,7 @@ def main(term):
     default = Button()
     selected = Button('Text')
     centered = Button('Text', flags=Control.CENTERED)
-    large = Button('Large', box=utils.size(14, 6))
+    large = Button('Large', size=utils.size(14, 6))
     
     # selected through constructor flags parameter
     flagged = Button('Flagged', flags=Control.SELECTED)
