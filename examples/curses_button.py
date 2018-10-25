@@ -19,9 +19,10 @@ def main(term):
     # both selected and centered properties
     selected_centered = Button('Text1', 
                                 flags=Control.SELECTED | Control.CENTERED)
-    selected.select() # manual select
+    # manually select
+    selected.select()
 
-    unbordered = Button('<NoBorder>', flags=Control.NOBORDER) # should be
+    unbordered = Button('NoBorder', flags=Control.NOBORDER)
 
     mouse_down = False
     element_clicked = None

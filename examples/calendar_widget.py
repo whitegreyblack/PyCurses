@@ -1,30 +1,13 @@
-import itertools
-import calendar
+"""Calendar_widget.py"""
 import re
-import random
 import curses
+import random
+import calendar
+import itertools
 import source.config as config
 from collections import namedtuple
 
 date = namedtuple("Date", "Year Month Day")
-
-class CalendarGrid:
-    """Takes in all available dates and builds a graph between each
-    available date
-
-    Ex. first two weeks of Sep 2018 would have a graph:
-       _____________________(1)
-      /   /   /   /   /   /  |
-    (2)-(3)-(4)-(5)-(6)-(7)-(8)
-
-    While all nodes in the second week would only go from left and right,
-    they would also be able to go to node 1 on an up key due to the single
-    node in the second week. However a down key from node 1 would result in
-    going to node 8.
-
-    TODO: implement the class
-    """
-    pass
 
 def iter_months_years(startDate: object, endDate: object) -> tuple:
     """Returns years and months based on given start and end dates. Expected
