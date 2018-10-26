@@ -11,3 +11,7 @@ class MouseEvent:
     NONE = 0
     CLICK = 1
     SCROLLUP = 1
+
+    @staticmethod
+    def last_action(self):
+        return curses.getmouse()
