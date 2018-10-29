@@ -227,7 +227,7 @@ class Button2(Control):
     width = 8
     label = "Button"
 
-    def __init__(self, label=None, size=None, flags=None):
+    def __init__(self, label=None, size=None, flags=None, onpress=None):
         super().__init__()
         # defaults to button label if no label given
         self.label = label if label else Button.label
@@ -252,12 +252,26 @@ class Button2(Control):
             if flags & Control.NOBORDER:
                 self.bordered = False
             self.centered = flags & Control.CENTERED
-        
-    def draw2(self, term, pivot):
+
+        self.onpress_handler = onpress
+
+    def draw(self, term, pivot):
         """Rewrite draw function to use only one line"""
-        # if called for the first time, this will overwrite
-        if self.pivot != pivot:
-            self.pivot = pivot
+        term.addstr(1, 0, f"B2(x={pivot[0]}, y={pivot[1]}, w={self.width}, h={self.height})")
+        term.addstr(*pivot, f"<{self.label}>")
+
+    def onpress(self):
+        attr = 'onpress_handler'
+        if hasattr(self, attr) and getattr(self, attr):
+            getattr(self, attr)()
+            return
+        self.onpress_default()
+
+    def onpress_default(self):
+        if self.selected:
+            self.unselect()
+        else:
+            self.select()
 
 if __name__ == "__main__":
     def main(s):
