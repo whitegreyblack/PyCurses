@@ -223,4 +223,10 @@ class Button(Control):
         #     pass
 
 if __name__ == "__main__":
-    b = Button()
+    def main(s):
+        from source.utils import initialize_curses_settings
+        initialize_curses_settings()
+        b = Button()
+        b.draw(s, utils.point(0, 0))
+        s.getch()
+    curses.wrapper(main)
