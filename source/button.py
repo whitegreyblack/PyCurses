@@ -186,9 +186,9 @@ class Button(Control):
             width_offset = 1 if self.bordered else 0
             px = x + width_offset
 
+        # draw the button label
         label = self.label
         if len(self.label) != self.width - 2:
-            label = self.label
             if px == x + 1:
                 # default label placement, append to end
                 label += " " * (self.width - len(self.label) - 2)
@@ -221,6 +221,43 @@ class Button(Control):
         #     term.addstr(6, 0, f"piv={self.pivot}")
         # except:
         #     pass
+
+class Button2(Control):
+    height = 1
+    width = 8
+    label = "Button"
+
+    def __init__(self, label=None, size=None, flags=None):
+        super().__init__()
+        # defaults to button label if no label given
+        self.label = label if label else Button.label
+
+        # bounds of the screen only range from [0 -> n]
+        # negative units will always be overwritten
+        self.pivot = utils.point(-1, -1)
+
+        if not size:
+            # default to Button width if shorter than default label
+            if len(self.label) < Button.width - 2:
+                self.width = Button.width
+            else:
+                self.width = len(self.label) + 2
+        else:
+            # these are manually set so assume correct input
+            self.width = size.width
+            self.height = size.height
+
+        if flags:
+            self.selected = flags & Control.SELECTED
+            if flags & Control.NOBORDER:
+                self.bordered = False
+            self.centered = flags & Control.CENTERED
+        
+    def draw2(self, term, pivot):
+        """Rewrite draw function to use only one line"""
+        # if called for the first time, this will overwrite
+        if self.pivot != pivot:
+            self.pivot = pivot
 
 if __name__ == "__main__":
     def main(s):
