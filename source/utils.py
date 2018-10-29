@@ -216,6 +216,7 @@ def initialize_curses_settings(logger=None):
     curses.init_pair(11, curses.COLOR_YELLOW, curses.COLOR_WHITE)
     curses.init_pair(12, curses.COLOR_WHITE, curses.COLOR_RED)
 
+
 def format_float(number: Union[int, float]) -> float:
     """Returns a formatted float up to 10 spaces and 2 precision places"""
     return f"{number:10.2f}"
@@ -234,3 +235,16 @@ def format_date(date: list, dateformat: str=None) -> str:
     if dateformat:
         return newdate.strftime(dateformat)
     return newdate.isoformat()
+
+
+def unicode(word):
+    """Only takes in a string without digits"""
+    try:
+        int(word)
+    except ValueError:
+        raise
+    return sum(map(ord, word))
+
+def sort_unicode(words):
+    """Returns a list of words sorted by unicode value of their strings"""
+    return sorted(words, key=labmda x: unicode(x), reverse=True)
