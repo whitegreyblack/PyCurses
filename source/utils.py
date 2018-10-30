@@ -236,15 +236,15 @@ def format_date(date: list, dateformat: str=None) -> str:
         return newdate.strftime(dateformat)
     return newdate.isoformat()
 
-
 def unicode(word):
     """Only takes in a string without digits"""
+    assert type(word) is str
     try:
         int(word)
     except ValueError:
-        raise
-    return sum(map(ord, word))
+        return sum(map(ord, word))
+    raise ValueError(f"Word {word} contains integer(s)")
 
-def sort_unicode(words):
+def sort_unicode(words, keyfunc=lambda x: unicode(x)):
     """Returns a list of words sorted by unicode value of their strings"""
-    return sorted(words, key=labmda x: unicode(x), reverse=True)
+    return sorted(words, key=keyfunc)
