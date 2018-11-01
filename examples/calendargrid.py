@@ -3,8 +3,8 @@
 import calendar
 
 """Notes:
-Takes in all available dates and builds a graph between each
-    available date
+Takes in all available dates and builds a graph between each available date
+This would allow for a interfaceable calendar with interactive dates.
 
     Ex. first two weeks of Sep 2018 would have a graph:
        +---+---+---+---+---+(1)
@@ -45,10 +45,9 @@ possible: the day node
 
 class DateNode:
     # include the year?
-    def __init__(self, date, month):
-        self.date = date
-        self.month = month
-
+    def __init__(self, daydate, weekday):
+        self.daydate = daydate
+        self.weekday = weekday
         # this is a lot of references to other nodes
         # using the image example above, week 1 would have 
         #                    1 |  1
@@ -57,17 +56,63 @@ class DateNode:
         #                        28 references excluding other 4 weeks.
         # unless instead of having the date object be saved as a reference,
         # we only save the date number so it would be 8 bytes instead of 28.
-        self.path_n = None
-        self.path_s = None
-        self.path_e = None
-        self.path_w = None
+        self.n = None
+        self.s = None
+        self.e = None
+        self.w = None
+    def format_path(self, path):
+        r = "__" if not path else f"{path:02}"
+        return r
+    def __str__(self):
+        return f"Date({self.daydate:02}, {self.weekday}, {self.format_path(self.n)})"
+    def __repr__(self):
+        return str(self)
 
-class CalendarGrid:
+class MonthGrid:
     """
     TODO: implement the class
     """
     def __init__(self, month, year):
         self.month = month
         self.year = year
-        self.months = None
-        self.years = None
+        self.__calendar = calendar.Calendar(firstweekday=6)
+        
+    def build(self):
+        self.grid = self.__calendar.monthdays2calendar(self.year, self.month)
+        # convert nodes to datanode objects
+        for j, week in enumerate(self.grid):
+            for i, day in enumerate(week):
+                self.grid[j][i] = DateNode(*day)
+        
+        # they should all be DateNodes now
+        for j, week in enumerate(self.grid):
+            for i, day in enumerate(week):
+                # connect nodes
+                # north
+                try:
+                    self.grid[j-1][i]
+                except IndexError:
+                    pass
+                else:
+                    self.grid[j][i].n = self.grid[j-1][i].daydate
+
+                # south
+                try:
+                    self.grid[j+1][i]
+                except IndexError:
+                    pass
+                else:
+                    self.grid[j][i].s = self.grid[j][i].daydate
+
+    def __str__(self):
+        return "\n".join(", ".join(str(day) for day in week) for week in self.grid)
+
+    def __repr__(self):
+        return str(self)
+
+class CalendarGrid:
+    """
+    TODO: implement the class
+    """
+    def __init__(self, year):
+        pass
