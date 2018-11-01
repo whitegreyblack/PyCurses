@@ -1,4 +1,19 @@
+import random
 from source.utils import unicode
+
+sample_first_male = [
+    "Bob",
+    "Robert",
+    "william",
+    "Bill",
+]
+sample_first_female = []
+sample_middle_male = []
+sample_middle_female = []
+sample_last = [
+    "McGregor",
+    "Telrany",
+]
 
 class Name:
     def __init__(self, name):
@@ -21,6 +36,11 @@ class Name:
         return f"Name(first={f}, middle={m}, last={l})"
     def __lt__(self, other):
         return unicode(self.first) < unicode(other.first)
+    @staticmethod
+    def random(self):
+        if random.randint(0, 1):
+            return random
+
 
 class Contact:
     def __init__(self, name, number, company=None):
@@ -31,3 +51,6 @@ class Contact:
     def __repr__(self):
         # don't really need company info during repr
         return f"Contact(name={self.name}, number={self.number})"
+
+if __name__ == "__main__":
+    from 
