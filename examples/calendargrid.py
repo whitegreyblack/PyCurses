@@ -8,9 +8,9 @@ This would allow for a interfaceable calendar with interactive dates.
 
     Ex. first two weeks of Sep 2018 would have a graph:
        +---+---+---+---+---+(1)
-      /   /   /   /   /   /  |
-    (2)-(3)-(4)-(5)-(6)-(7)-(8)
-     |  /   /   /   /   /   /
+      /   /   /   /   /   /  ||
+    (2)=(3)=(4)=(5)=(6)=(7)=(8)
+    ||  /   /   /   /   /   /
     (9)+---+---+---+---+---+
 
     While all nodes in the second week would only go from left and right,
@@ -41,7 +41,19 @@ This would allow for a interfaceable calendar with interactive dates.
 Would need an architecture allowing us to navigate from month to month for
 a multi-month or even a multi-year calendar. Start from the smallest unit
 possible: the day node
+
+Could use a hashmap using a tuple of (daydate, dayofweek) as a key to a 
+class that holds everything we need. It would be an unordered map that
+would hold links of each path that a day could navigate to using the tuple
+value that each day mapped to.
 """
+
+unicode_arrows = {
+    "n": u'\u2191',
+    "s": u'\u2193',
+    "e": u'\u2192',
+    "w": u'\u2190',
+}
 
 class DateNode:
     # include the year?
@@ -56,15 +68,32 @@ class DateNode:
         #                        28 references excluding other 4 weeks.
         # unless instead of having the date object be saved as a reference,
         # we only save the date number so it would be 8 bytes instead of 28.
-        self.n = None
-        self.s = None
-        self.e = None
-        self.w = None
-    def format_path(self, path):
-        r = "__" if not path else f"{path:02}"
-        return r
+
+        # if no paths then keep paths at 0? use binary flags instead of val?
+        # if had south and east paths then self.paths == 6
+        self.paths = 0
+        self.n = None   # path |= 1
+        self.s = None   # path |= 2
+        self.e = None   # path |= 4
+        self.w = None   # path |= 8
+
+    # def __new__(cls, daydate, weekday):
+    #     print(daydate, weekday)
+    #     if daydate == 0:
+    #         return super(DateNode, cls).__new__(cls, 0, 0)
+    #     return super(DateNode, cls).__new__(cls, daydate, weekday)
+
     def __str__(self):
-        return f"Date({self.daydate:02}, {self.weekday}, {self.format_path(self.n)})"
+        def format_path(path, unicode=False):
+            val = getattr(self, path)
+            if unicode:
+                return "_" if not val else unicode_arrows[path]
+            
+            return "__" if not val else f"{val:02}"
+        paths = ", ".join(map(lambda x: format_path(x, True), 
+                              "n s e w".split()))
+        return f"Date({self.daydate:02}, {self.weekday}, {paths})"
+
     def __repr__(self):
         return str(self)
 
@@ -78,7 +107,8 @@ class MonthGrid:
         self.__calendar = calendar.Calendar(firstweekday=6)
         
     def build(self):
-        self.grid = self.__calendar.monthdays2calendar(self.year, self.month)
+        self.grid = self.__calendar.monthdays2calendar(self.year, 
+                                                       self.month)
         # convert nodes to datanode objects
         for j, week in enumerate(self.grid):
             for i, day in enumerate(week):
@@ -87,25 +117,37 @@ class MonthGrid:
         # they should all be DateNodes now
         for j, week in enumerate(self.grid):
             for i, day in enumerate(week):
-                # connect nodes
+                if day.daydate == 0:
+                    continue
+
+                # connect nodes if within bounds, probably could rewrite this
                 # north
-                try:
-                    self.grid[j-1][i]
-                except IndexError:
-                    pass
-                else:
-                    self.grid[j][i].n = self.grid[j-1][i].daydate
+                prevweek = j - 1
+                if prevweek >= 0:
+                    val = self.grid[prevweek][i].daydate
+                    self.build_link(i, j, "n", self.grid[prevweek][i].daydate)
 
                 # south
-                try:
-                    self.grid[j+1][i]
-                except IndexError:
-                    pass
-                else:
-                    self.grid[j][i].s = self.grid[j][i].daydate
+                nextweek = j + 1
+                if nextweek <= len(self.grid) - 1:
+                    self.build_link(i, j, "s", self.grid[nextweek][i].daydate)
+
+                # east
+                nextday = i + 1
+                if i + 1 <= len(self.grid[0]) - 1:
+                    self.build_link(i, j, "e", self.grid[j][nextday].daydate)
+
+                # west
+                prevday = i - 1
+                if prevday >= 0:
+                    self.build_link(i, j, "w", self.grid[j][prevday].daydate)
+
+    def build_link(self, i, j, path, val):
+        if val > 0:
+            setattr(self.grid[j][i], path, val)
 
     def __str__(self):
-        return "\n".join(", ".join(str(day) for day in week) for week in self.grid)
+        return "\n".join(", ".join(str(d) for d in w) for w in self.grid)
 
     def __repr__(self):
         return str(self)
