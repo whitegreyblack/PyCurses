@@ -84,18 +84,20 @@ class DateNode:
     #     return super(DateNode, cls).__new__(cls, daydate, weekday)
 
     def __str__(self):
+        return f"{'  ' if self.daydate == 0 else self.daydate:2}"
+
+    def __repr__(self):
         def format_path(path, unicode=False):
             val = getattr(self, path)
             if unicode:
                 return "_" if not val else unicode_arrows[path]
             
             return "__" if not val else f"{val:02}"
+        if self.daydate == 0:
+            return f"[{' ' * 18}]"
         paths = ", ".join(map(lambda x: format_path(x, True), 
                               "n s e w".split()))
-        return f"Date({self.daydate:02}, {self.weekday}, {paths})"
-
-    def __repr__(self):
-        return str(self)
+        return f"Date({self.daydate:2}, {paths})"
 
 class MonthGrid:
     """
@@ -103,12 +105,23 @@ class MonthGrid:
     """
     def __init__(self, month, year):
         self.month = month
+        self.month_name = calendar.month_name[month]
         self.year = year
         self.__calendar = calendar.Calendar(firstweekday=6)
-        
+
+        # some UI properties
+        self.focused = False
+        self.selected = None
+
+        self.build()
+
     def build(self):
-        self.grid = self.__calendar.monthdays2calendar(self.year, 
-                                                       self.month)
+        """Takes the calendar function which returns a tuple of daydate and
+        day of the week value for each day in the calendar month into a NxM
+        matrix of DateNodes which will be used to print the same exact
+        calendar as the TextCalendar but with our own datastructure
+        """
+        self.grid = self.__calendar.monthdays2calendar(self.year, self.month)
         # convert nodes to datanode objects
         for j, week in enumerate(self.grid):
             for i, day in enumerate(week):
@@ -147,10 +160,10 @@ class MonthGrid:
             setattr(self.grid[j][i], path, val)
 
     def __str__(self):
-        return "\n".join(", ".join(str(d) for d in w) for w in self.grid)
+        return "\n".join(" ".join(str(d) for d in w) for w in self.grid)
 
     def __repr__(self):
-        return str(self)
+        return "\n".join(", ".join(repr(d) for d in w) for w in self.grid)
 
 class CalendarGrid:
     """

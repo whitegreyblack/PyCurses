@@ -16,8 +16,7 @@ def main(screen):
 
 def termprint():
     m = MonthGrid(11, 2018)
-    m.build()
-    print(m)
+    print(repr(m))
 
 
 def main_curses():
