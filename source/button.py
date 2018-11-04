@@ -257,7 +257,8 @@ class Button2(Control):
 
     def draw(self, term, pivot):
         """Rewrite draw function to use only one line"""
-        term.addstr(1, 0, f"B2(x={pivot[0]}, y={pivot[1]}, w={self.width}, h={self.height})")
+        x, y = pivot
+        term.addstr(1, 0, f"B2(x={x}, y={y}, w={self.width}, h={self.height})")
         term.addstr(*pivot, f"<{self.label}>")
 
     def onpress(self):

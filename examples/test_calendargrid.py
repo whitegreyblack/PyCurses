@@ -30,8 +30,19 @@ def main_curses():
 def main_blt():
     from bearlibterminal import terminal
     terminal.open()
-    terminal.refresh()
-    terminal.read()
+    char = None
+    while True:
+        terminal.clear()
+        terminal.puts(10, 10, "aa")
+        if char:
+            terminal.puts(1, 1, str(char))
+        terminal.refresh()
+        char = terminal.read()
+        if char in [terminal.TK_Q, terminal.TK_ESCAPE, 224]:
+            break
+    # terminal.refresh()
+    # terminal.clear()
+    # terminal.read()
 
 
 if __name__ == "__main__":
