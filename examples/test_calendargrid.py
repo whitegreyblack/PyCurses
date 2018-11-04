@@ -29,11 +29,15 @@ def main_curses():
 
 def main_blt():
     from bearlibterminal import terminal
+
+    m = MonthGrid(11, 2018)
+
     terminal.open()
     char = None
     while True:
         terminal.clear()
-        terminal.puts(10, 10, "aa")
+        terminal.puts(10, 9, m.month_name)
+        terminal.puts(10, 10, m.blt())
         if char:
             terminal.puts(1, 1, str(char))
         terminal.refresh()

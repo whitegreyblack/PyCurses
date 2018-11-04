@@ -77,6 +77,12 @@ class DateNode:
         self.e = None   # path |= 4
         self.w = None   # path |= 8
 
+    def blt(self, selected=False):
+        if selected:
+            return f"[bkcolor=blue][color=red]{self}[/color][/bkcolor]"
+        else:
+            return str(self)
+
     # def __new__(cls, daydate, weekday):
     #     print(daydate, weekday)
     #     if daydate == 0:
@@ -111,7 +117,7 @@ class MonthGrid:
 
         # some UI properties
         self.focused = False
-        self.selected = None
+        self.selected = 3
 
         self.build()
 
@@ -164,6 +170,16 @@ class MonthGrid:
 
     def __repr__(self):
         return "\n".join(", ".join(repr(d) for d in w) for w in self.grid)
+
+    def blt(self):
+        return "\n".join(" ".join(d.blt(self.selected==d.daydate) 
+                                            for d in w) 
+                                                for w in self.grid)
+
+    def draw(self, term, pivot):
+        """Used for drawing the calendar month onto a curses terminal"""
+        term.addstr(*pivot, str(self))
+
 
 class CalendarGrid:
     """
