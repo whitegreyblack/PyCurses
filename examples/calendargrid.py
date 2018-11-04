@@ -118,7 +118,7 @@ class MonthGrid:
         # some UI properties
         self.focused = False
         self.selected = 3
-
+        self.last_day = None
         self.build()
 
     def build(self):
@@ -130,9 +130,11 @@ class MonthGrid:
         self.grid = self.__calendar.monthdays2calendar(self.year, self.month)
         # convert nodes to datanode objects
         for j, week in enumerate(self.grid):
-            for i, day in enumerate(week):
-                self.grid[j][i] = DateNode(*day)
-        
+            for i, (date, weekday) in enumerate(week):
+                if date is not 0:
+                    self.last_day = date
+                self.grid[j][i] = DateNode(date, weekday)
+
         # they should all be DateNodes now
         for j, week in enumerate(self.grid):
             for i, day in enumerate(week):
@@ -180,6 +182,25 @@ class MonthGrid:
         """Used for drawing the calendar month onto a curses terminal"""
         term.addstr(*pivot, str(self))
 
+    def select_prev_week(self):
+        prevweekdate = self.selected - 7
+        if prevweekdate > 0:
+            self.selected = prevweekdate
+
+    def select_next_week(self):
+        nextweekdate = self.selected + 7
+        if nextweekdate < self.last_day + 1:
+            self.selected = nextweekdate
+    
+    def select_prev_day(self):
+        prevdaydate = self.selected - 1
+        if prevdaydate > 0:
+            self.selected = prevdaydate
+
+    def select_next_day(self):
+        nextdaydate = self.selected + 1
+        if nextdaydate < self.last_day + 1:
+            self.selected = nextdaydate
 
 class CalendarGrid:
     """

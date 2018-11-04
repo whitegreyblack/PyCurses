@@ -44,6 +44,14 @@ def main_blt():
         char = terminal.read()
         if char in [terminal.TK_Q, terminal.TK_ESCAPE, 224]:
             break
+        if char == terminal.TK_DOWN:
+            m.select_next_week() 
+        if char == terminal.TK_UP:
+            m.select_prev_week()
+        if char == terminal.TK_LEFT:
+            m.select_prev_day()
+        if char == terminal.TK_RIGHT:
+            m.select_next_day()
     # terminal.refresh()
     # terminal.clear()
     # terminal.read()
