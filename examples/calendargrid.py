@@ -55,22 +55,41 @@ unicode_arrows = {
     "w": u'\u2190',
 }
 
-class DateNode:
-    # include the year?
+class EmptyDateNode:
     def __init__(self, daydate, weekday):
         self.daydate = daydate
         self.weekday = weekday
-        # this is a lot of references to other nodes
-        # using the image example above, week 1 would have 
-        #                    1 |  1
-        #  3  4  4  4  4  4  3 | 26
-        #  1                   |  1
-        #                        28 references excluding other 4 weeks.
-        # unless instead of having the date object be saved as a reference,
-        # we only save the date number so it would be 8 bytes instead of 28.
 
-        # if no paths then keep paths at 0? use binary flags instead of val?
-        # if had south and east paths then self.paths == 6
+    def __str__(self):
+        return '  '
+    
+    def __repr__(self):
+        return f"{' ' * 8}"
+
+    def blt(self, selected=False):
+        return str(self)
+
+class DateNode(EmptyDateNode):
+    """
+    TODO: include the year?
+    TODO: Add empty node
+    TODO: Add unselectable nodes that return [COLOR=Grey] on str return
+    """
+    def __init__(self, daydate, weekday):
+        """
+        this is a lot of references to other nodes
+        using the image example above, week 1 would have 
+                           1 |  1
+         3  4  4  4  4  4  3 | 26
+         1                   |  1
+                               28 references excluding other 4 weeks.
+        unless instead of having the date object be saved as a reference,
+        we only save the date number so it would be 8 bytes instead of 28.
+
+        if no paths then keep paths at 0? use binary flags instead of val?
+        if had south and east paths then self.paths == 6
+        """
+        super().__init__(daydate, weekday)
         self.paths = 0
         self.n = None   # path |= 1
         self.s = None   # path |= 2
@@ -90,7 +109,7 @@ class DateNode:
     #     return super(DateNode, cls).__new__(cls, daydate, weekday)
 
     def __str__(self):
-        return f"{'  ' if self.daydate == 0 else self.daydate:2}"
+        return f"{self.daydate:2}"
 
     def __repr__(self):
         def format_path(path, unicode=False):
@@ -99,15 +118,16 @@ class DateNode:
                 return "_" if not val else unicode_arrows[path]
             
             return "__" if not val else f"{val:02}"
-        if self.daydate == 0:
-            return f"[{' ' * 18}]"
         paths = ", ".join(map(lambda x: format_path(x, True), 
                               "n s e w".split()))
-        return f"Date({self.daydate:2}, {paths})"
+        # return f"Date({self.daydate:2}, {paths})"
+        return f"Date({self.daydate:2})"
 
 class MonthGrid:
     """
     TODO: implement the class
+    TODO: Add nodes outside of the current month
+    TODO: Show outside nodes as grey and unselectable
     """
     def __init__(self, month, year):
         self.month = month
@@ -133,7 +153,9 @@ class MonthGrid:
             for i, (date, weekday) in enumerate(week):
                 if date is not 0:
                     self.last_day = date
-                self.grid[j][i] = DateNode(date, weekday)
+                    self.grid[j][i] = DateNode(date, weekday)
+                else:
+                    self.grid[j][i] = EmptyDateNode(date, weekday)
 
         # they should all be DateNodes now
         for j, week in enumerate(self.grid):
@@ -171,12 +193,23 @@ class MonthGrid:
         return "\n".join(" ".join(str(d) for d in w) for w in self.grid)
 
     def __repr__(self):
-        return "\n".join(", ".join(repr(d) for d in w) for w in self.grid)
+        return "\n".join("  ".join(repr(d) for d in w) for w in self.grid)
 
-    def blt(self):
-        return "\n".join(" ".join(d.blt(self.selected==d.daydate) 
+    def blt(self, month_name=True):
+        header = self.header(month_name=month_name)
+        body = "\n".join(" ".join(d.blt(self.selected==d.daydate)
                                             for d in w) 
                                                 for w in self.grid)
+        return f"{header}\n{body}"
+
+    def header(self, month_name=True, extended=False):
+        month_header = self.month_name if month_name else ""
+        if extended:
+            days = "Sunday Monday Tuesday Wednesday Thursday Friday Saturday"
+            month_header += "\n" + "".join(f"{d: <10}" for d in days.split())
+        else:
+            month_header += "\nSu Mo Tu We Th Fr Sa"
+        return month_header
 
     def draw(self, term, pivot):
         """Used for drawing the calendar month onto a curses terminal"""

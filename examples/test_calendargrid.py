@@ -2,10 +2,11 @@ import click
 from examples.calendargrid import MonthGrid, DateNode
 
 @click.command()
+@click.option("--debug", "debug", is_flag=True)
 @click.option("--screen", "screen", default=None)
-def main(screen):
+def main(debug, screen):
     if not screen:
-        termprint()
+        termprint(debug)
     elif screen == "curses" or screen == "c":
         main_curses()
     elif screen == "bear" or screen == "blt":
@@ -14,9 +15,13 @@ def main(screen):
         print("incorrect args")
 
 
-def termprint():
+def termprint(debug):
     m = MonthGrid(11, 2018)
-    print(repr(m))
+    if debug:
+        mstring = f"{m.header(extended=True)}\n{repr(m)}"
+    else:
+        mstring = f"{m.header()}\n{m}"
+    print(mstring)
 
 
 def main_curses():
@@ -36,7 +41,6 @@ def main_blt():
     char = None
     while True:
         terminal.clear()
-        terminal.puts(10, 9, m.month_name)
         terminal.puts(10, 10, m.blt())
         if char:
             terminal.puts(1, 1, str(char))
@@ -52,9 +56,6 @@ def main_blt():
             m.select_prev_day()
         if char == terminal.TK_RIGHT:
             m.select_next_day()
-    # terminal.refresh()
-    # terminal.clear()
-    # terminal.read()
 
 
 if __name__ == "__main__":
