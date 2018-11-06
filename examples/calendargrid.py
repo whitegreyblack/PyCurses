@@ -178,7 +178,6 @@ class MonthGrid:
                 if nextweek <= len(self.grid) - 1:
                     val = self.grid[nextweek][i].daydate
                     if val < 1:
-                        print(day.daydate, val, self.last_day)
                         val = self.last_day
                     self.build_link(i, j, "s", val)
 
