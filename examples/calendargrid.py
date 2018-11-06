@@ -120,8 +120,8 @@ class DateNode(EmptyDateNode):
             return "__" if not val else f"{val:02}"
         paths = ", ".join(map(lambda x: format_path(x, True), 
                               "n s e w".split()))
-        # return f"Date({self.daydate:2}, {paths})"
-        return f"Date({self.daydate:2})"
+        return f"Date({self.daydate:2}, {paths})"
+        # return f"Date({self.daydate:2})"
 
 class MonthGrid:
     """
@@ -157,9 +157,10 @@ class MonthGrid:
                 else:
                     self.grid[j][i] = EmptyDateNode(date, weekday)
 
-        # they should all be DateNodes now
+        # they should all be DateNodes now or at least using EmptyDateNode as a fallback
         for j, week in enumerate(self.grid):
             for i, day in enumerate(week):
+                # skips non-dates in the calendar
                 if day.daydate == 0:
                     continue
 
@@ -168,12 +169,18 @@ class MonthGrid:
                 prevweek = j - 1
                 if prevweek >= 0:
                     val = self.grid[prevweek][i].daydate
-                    self.build_link(i, j, "n", self.grid[prevweek][i].daydate)
+                    if val < 1:
+                        val = 1
+                    self.build_link(i, j, "n", val)
 
                 # south
                 nextweek = j + 1
                 if nextweek <= len(self.grid) - 1:
-                    self.build_link(i, j, "s", self.grid[nextweek][i].daydate)
+                    val = self.grid[nextweek][i].daydate
+                    if val < 1:
+                        print(day.daydate, val, self.last_day)
+                        val = self.last_day
+                    self.build_link(i, j, "s", val)
 
                 # east
                 nextday = i + 1
@@ -219,10 +226,21 @@ class MonthGrid:
         prevweekdate = self.selected - 7
         if prevweekdate > 0:
             self.selected = prevweekdate
+            return # all is good. exit early
+
+        # try a fallback value
+        prevweekdate = self.select_day_from_date(self.selected, "n")
+        if prevweekdate:
+            self.selected = prevweekdate
 
     def select_next_week(self):
         nextweekdate = self.selected + 7
         if nextweekdate < self.last_day + 1:
+            self.selected = nextweekdate
+            return
+
+        nextweekdate = self.select_day_from_date_reverse(self.selected, "s")
+        if nextweekdate:
             self.selected = nextweekdate
     
     def select_prev_day(self):
@@ -234,6 +252,20 @@ class MonthGrid:
         nextdaydate = self.selected + 1
         if nextdaydate < self.last_day + 1:
             self.selected = nextdaydate
+
+    def select_day_from_date(self, day, select) -> int:
+        for week in self.grid:
+            for date in week:
+                if date.daydate == day:
+                    return getattr(date, select)
+        return 0
+
+    def select_day_from_date_reverse(self, day, select) -> int:
+        for week in self.grid[::-1]:
+            for date in week[::-1]:
+                if date.daydate == day:
+                    return getattr(date, select)
+        return 0
 
 class CalendarGrid:
     """

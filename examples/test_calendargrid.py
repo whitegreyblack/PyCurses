@@ -18,7 +18,7 @@ def main(debug, screen):
 def termprint(debug):
     m = MonthGrid(11, 2018)
     if debug:
-        mstring = f"{m.header(extended=True)}\n{repr(m)}"
+        mstring = f"{repr(m)}"
     else:
         mstring = f"{m.header()}\n{m}"
     print(mstring)
@@ -41,9 +41,9 @@ def main_blt():
     char = None
     while True:
         terminal.clear()
-        terminal.puts(10, 10, m.blt())
+        terminal.puts(1, 1, m.blt())
         if char:
-            terminal.puts(1, 1, str(char))
+            terminal.puts(0, 24, str(char))
         terminal.refresh()
         char = terminal.read()
         if char in [terminal.TK_Q, terminal.TK_ESCAPE, 224]:
