@@ -36,12 +36,16 @@ def main_blt():
     from bearlibterminal import terminal
 
     m = MonthGrid(11, 2018)
+    m.add_event(4, "Birthday")
+    m.add_event(13, "Trip")
+    m.add_events(20, 23, "Holiday")
 
     terminal.open()
     char = None
     while True:
         terminal.clear()
         terminal.puts(1, 1, m.blt())
+        terminal.puts(24, 2, m.events())
         if char:
             terminal.puts(0, 24, str(char))
         terminal.refresh()

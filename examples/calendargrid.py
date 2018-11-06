@@ -69,6 +69,7 @@ class EmptyDateNode:
     def blt(self, selected=False):
         return str(self)
 
+
 class DateNode(EmptyDateNode):
     """
     TODO: include the year?
@@ -95,10 +96,13 @@ class DateNode(EmptyDateNode):
         self.s = None   # path |= 2
         self.e = None   # path |= 4
         self.w = None   # path |= 8
+        self.data = None
 
     def blt(self, selected=False):
         if selected:
-            return f"[bkcolor=blue][color=red]{self}[/color][/bkcolor]"
+            return f"[bkcolor=white][color=black]{self}[/color][/bkcolor]"
+        elif self.data:
+            return f"[bkcolor=gray]{self}[/bkcolor]"
         else:
             return str(self)
 
@@ -122,6 +126,7 @@ class DateNode(EmptyDateNode):
                               "n s e w".split()))
         return f"Date({self.daydate:2}, {paths})"
         # return f"Date({self.daydate:2})"
+
 
 class MonthGrid:
     """
@@ -201,12 +206,25 @@ class MonthGrid:
     def __repr__(self):
         return "\n".join("  ".join(repr(d) for d in w) for w in self.grid)
 
+    def date(self, day):
+        if 0 < day <= self.last_day:
+            for week in self.grid:
+                for date in week:
+                    if date.daydate == day:
+                        return date
+        return None
+
     def blt(self, month_name=True):
         header = self.header(month_name=month_name)
         body = "\n".join(" ".join(d.blt(self.selected==d.daydate)
                                             for d in w) 
                                                 for w in self.grid)
         return f"{header}\n{body}"
+
+    def events(self):
+        date = self.date(self.selected)
+        if date and date.data:
+            return date.data
 
     def header(self, month_name=True, extended=False):
         month_header = self.month_name if month_name else ""
@@ -220,6 +238,15 @@ class MonthGrid:
     def draw(self, term, pivot):
         """Used for drawing the calendar month onto a curses terminal"""
         term.addstr(*pivot, str(self))
+
+    def add_event(self, day, event):
+        date = self.date(day)
+        if date:
+            date.data = event
+
+    def add_events(self, day_begin, day_end, event):
+        for day in range(day_begin, day_end+1):
+            self.add_event(day, event)
 
     def select_prev_week(self):
         prevweekdate = self.selected - 7
