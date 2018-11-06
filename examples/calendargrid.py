@@ -69,11 +69,12 @@ class EmptyDateNode:
     def blt(self, selected=False):
         return str(self)
 
+    # def blt_data(self):
+    #     return " " * 4
 
 class DateNode(EmptyDateNode):
     """
     TODO: include the year?
-    TODO: Add empty node
     TODO: Add unselectable nodes that return [COLOR=Grey] on str return
     """
     def __init__(self, daydate, weekday):
@@ -105,6 +106,12 @@ class DateNode(EmptyDateNode):
             return f"[bkcolor=gray]{self}[/bkcolor]"
         else:
             return str(self)
+
+    # def blt_data(self):
+    #     if self.data:
+    #         return u"\u1F53"
+    #     else:
+    #         return " " * 4
 
     # def __new__(cls, daydate, weekday):
     #     print(daydate, weekday)
@@ -219,6 +226,11 @@ class MonthGrid:
         body = "\n".join(" ".join(d.blt(self.selected==d.daydate)
                                             for d in w) 
                                                 for w in self.grid)
+        return f"{header}\n{body}"
+
+    def blt_data(self):
+        header = ""
+        body = "\n".join(" ".join(d.blt_data() for d in w) for w in self.grid)
         return f"{header}\n{body}"
 
     def events(self):
