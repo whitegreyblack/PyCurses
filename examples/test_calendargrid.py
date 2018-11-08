@@ -48,7 +48,7 @@ def main_blt():
         # terminal.puts(1, 1, m.blt_data())
         terminal.puts(1, 1, m.blt())
         # terminal.composition(False)
-        terminal.puts(24, 2, m.events())
+        terminal.puts(30, 2, m.events())
         if char:
             terminal.puts(0, 24, str(char))
         terminal.refresh()

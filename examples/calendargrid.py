@@ -61,13 +61,20 @@ class EmptyDateNode:
         self.weekday = weekday
 
     def __str__(self):
-        return '  '
+        return "  "
     
     def __repr__(self):
         return f"{' ' * 8}"
 
     def blt(self, selected=False):
-        return str(self)
+        return self.format_before_print()
+
+    def format_before_print(self):
+        if self.weekday == 5:
+            return f" {self}"
+        elif self.weekday == 6:
+            return f"{self} "
+        return f" {self} "
 
     # def blt_data(self):
     #     return " " * 4
@@ -99,26 +106,6 @@ class DateNode(EmptyDateNode):
         self.w = None   # path |= 8
         self.data = None
 
-    def blt(self, selected=False):
-        if selected:
-            return f"[bkcolor=white][color=black]{self}[/color][/bkcolor]"
-        elif self.data:
-            return f"[bkcolor=gray]{self}[/bkcolor]"
-        else:
-            return str(self)
-
-    # def blt_data(self):
-    #     if self.data:
-    #         return u"\u1F53"
-    #     else:
-    #         return " " * 4
-
-    # def __new__(cls, daydate, weekday):
-    #     print(daydate, weekday)
-    #     if daydate == 0:
-    #         return super(DateNode, cls).__new__(cls, 0, 0)
-    #     return super(DateNode, cls).__new__(cls, daydate, weekday)
-
     def __str__(self):
         return f"{self.daydate:2}"
 
@@ -133,6 +120,27 @@ class DateNode(EmptyDateNode):
                               "n s e w".split()))
         return f"Date({self.daydate:2}, {paths})"
         # return f"Date({self.daydate:2})"
+
+    def blt(self, selected=False):
+        formatted_self = self.format_before_print()
+        if selected:
+            return f"[bkcolor=white][color=black]{formatted_self}[/color][/bkcolor]"
+        elif self.data:
+            return f"[bkcolor=gray]{formatted_self}[/bkcolor]"
+        else:
+            return formatted_self
+
+    # def blt_data(self):
+    #     if self.data:
+    #         return u"\u1F53"
+    #     else:
+    #         return " " * 4
+
+    # def __new__(cls, daydate, weekday):
+    #     print(daydate, weekday)
+    #     if daydate == 0:
+    #         return super(DateNode, cls).__new__(cls, 0, 0)
+    #     return super(DateNode, cls).__new__(cls, daydate, weekday)
 
 
 class MonthGrid:
@@ -223,14 +231,14 @@ class MonthGrid:
 
     def blt(self, month_name=True):
         header = self.header(month_name=month_name)
-        body = "\n".join(" ".join(d.blt(self.selected==d.daydate)
+        body = "\n".join("".join(d.blt(self.selected==d.daydate)
                                             for d in w) 
                                                 for w in self.grid)
         return f"{header}\n{body}"
 
     def blt_data(self):
         header = ""
-        body = "\n".join(" ".join(d.blt_data() for d in w) for w in self.grid)
+        body = "\n".join("".join(d.blt_data() for d in w) for w in self.grid)
         return f"{header}\n{body}"
 
     def events(self):
@@ -244,7 +252,8 @@ class MonthGrid:
             days = "Sunday Monday Tuesday Wednesday Thursday Friday Saturday"
             month_header += "\n" + "".join(f"{d: <10}" for d in days.split())
         else:
-            month_header += "\nSu Mo Tu We Th Fr Sa"
+            month_header += "\n" + "  ".join(f"{d}" 
+                                for d in "Su Mo Tu We Th Fr Sa".split())
         return month_header
 
     def draw(self, term, pivot):
