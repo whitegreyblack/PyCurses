@@ -216,7 +216,7 @@ class MonthGrid:
             setattr(self.grid[j][i], path, val)
 
     def __str__(self):
-        return "\n".join(" ".join(str(d) for d in w) for w in self.grid)
+        return "\n".join("  ".join(str(d) for d in w) for w in self.grid)
 
     def __repr__(self):
         return "\n".join("  ".join(repr(d) for d in w) for w in self.grid)
