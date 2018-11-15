@@ -70,10 +70,10 @@ class EmptyDateNode:
         return self.format_before_print()
 
     def format_before_print(self):
-        if self.weekday == 5:
-            return f" {self}"
-        elif self.weekday == 6:
-            return f"{self} "
+        # if self.weekday == 5:
+        #     return f" {self}"
+        # elif self.weekday == 6:
+        #     return f"{self} "
         return f" {self} "
 
     # def blt_data(self):
@@ -247,12 +247,12 @@ class MonthGrid:
             return date.data
 
     def header(self, month_name=True, extended=False):
-        month_header = self.month_name if month_name else ""
+        month_header = " " + self.month_name if month_name else ""
         if extended:
             days = "Sunday Monday Tuesday Wednesday Thursday Friday Saturday"
             month_header += "\n" + "".join(f"{d: <10}" for d in days.split())
         else:
-            month_header += "\n" + "  ".join(f"{d}" 
+            month_header += "\n " + "  ".join(f"{d}"
                                 for d in "Su Mo Tu We Th Fr Sa".split())
         return month_header
 
