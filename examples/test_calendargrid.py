@@ -35,6 +35,8 @@ def main_curses():
 def main_blt():
     from bearlibterminal import terminal
 
+    escape_codes = [terminal.TK_Q, terminal.TK_ESCAPE, 224]
+
     m = MonthGrid(11, 2018)
     m.add_event(4, "Birthday")
     m.add_event(13, "Trip")
@@ -53,7 +55,7 @@ def main_blt():
             terminal.puts(0, 24, str(char))
         terminal.refresh()
         char = terminal.read()
-        if char in [terminal.TK_Q, terminal.TK_ESCAPE, 224]:
+        if char in escape_codes:
             break
         if char == terminal.TK_DOWN:
             m.select_next_week() 

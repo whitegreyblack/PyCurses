@@ -84,7 +84,7 @@ class DateNode(EmptyDateNode):
     TODO: include the year?
     TODO: Add unselectable nodes that return [COLOR=Grey] on str return
     """
-    def __init__(self, daydate, weekday):
+    def __init__(self, daydate, weekday, selectable=True):
         """
         this is a lot of references to other nodes
         using the image example above, week 1 would have 
@@ -105,6 +105,7 @@ class DateNode(EmptyDateNode):
         self.e = None   # path |= 4
         self.w = None   # path |= 8
         self.data = None
+        self.selectable = selectable
 
     def __str__(self):
         return f"{self.daydate:2}"
@@ -123,12 +124,15 @@ class DateNode(EmptyDateNode):
 
     def blt(self, selected=False):
         formatted_self = self.format_before_print()
-        if selected:
-            return f"[bkcolor=white][color=black]{formatted_self}[/color][/bkcolor]"
-        elif self.data:
-            return f"[bkcolor=gray]{formatted_self}[/bkcolor]"
-        else:
-            return formatted_self
+        if self.selectable:
+            if selected:
+                return f"[bkcolor=white][color=black]{formatted_self}[/color][/bkcolor]"
+            elif self.data:
+                return f"[bkcolor=gray]{formatted_self}[/bkcolor]"
+            else:
+                return formatted_self
+        #else:
+        return f"[color=grey]{formatted_self}[/color]"
 
     # def blt_data(self):
     #     if self.data:
@@ -167,6 +171,23 @@ class MonthGrid:
         matrix of DateNodes which will be used to print the same exact
         calendar as the TextCalendar but with our own datastructure
         """
+        year_prev = year_next = self.year
+        month_prev = self.month - 1
+        if self.month == 0:
+            month_prev = 12
+            self.year_prev = self.year - 1
+
+        # could probably use modulus expression
+        month_next = self.month + 1
+        if self.month == 13:
+            month_prev = 1
+            year_next = self.year + 1
+
+        self.grid_prev = self.__calendar.monthdays2calendar(year_prev, 
+                                                            month_prev)
+        print(self.grid_prev)
+        self.grid_next = self.__calendar.monthdays2calendar(year_next, 
+                                                            month_next)
         self.grid = self.__calendar.monthdays2calendar(self.year, self.month)
         # convert nodes to datanode objects
         for j, week in enumerate(self.grid):
@@ -174,6 +195,12 @@ class MonthGrid:
                 if date is not 0:
                     self.last_day = date
                     self.grid[j][i] = DateNode(date, weekday)
+                elif j == 0:
+                    self.grid[j][i] = DateNode(*self.grid_prev[-1][i],
+                                               selectable=False)
+                elif j == len(self.grid) - 1:
+                    self.grid[j][i] = DateNode(*self.grid_next[0][i],
+                                               selectable=False)
                 else:
                     self.grid[j][i] = EmptyDateNode(date, weekday)
 
@@ -181,25 +208,27 @@ class MonthGrid:
         for j, week in enumerate(self.grid):
             for i, day in enumerate(week):
                 # skips non-dates in the calendar
-                if day.daydate == 0:
+                if day.daydate == 0 or not day.selectable:
                     continue
 
                 # connect nodes if within bounds, probably could rewrite this
                 # north
                 prevweek = j - 1
                 if prevweek >= 0:
-                    val = self.grid[prevweek][i].daydate
-                    if val < 1:
-                        val = 1
-                    self.build_link(i, j, "n", val)
+                    calendarday = self.grid[prevweek][i]
+                    date = calendarday.daydate
+                    if not calendarday.selectable:
+                        date = 1
+                    self.build_link(i, j, "n", date)
 
                 # south
                 nextweek = j + 1
                 if nextweek <= len(self.grid) - 1:
-                    val = self.grid[nextweek][i].daydate
-                    if val < 1:
-                        val = self.last_day
-                    self.build_link(i, j, "s", val)
+                    calendarday = self.grid[nextweek][i]
+                    date = calendarday.daydate
+                    if not calendarday.selectable:
+                        date = self.last_day
+                    self.build_link(i, j, "s", date)
 
                 # east
                 nextday = i + 1
@@ -216,7 +245,7 @@ class MonthGrid:
             setattr(self.grid[j][i], path, val)
 
     def __str__(self):
-        return "\n".join("  ".join(str(d) for d in w) for w in self.grid)
+        return "\n ".join("  ".join(str(d) for d in w) for w in self.grid)
 
     def __repr__(self):
         return "\n".join("  ".join(repr(d) for d in w) for w in self.grid)
