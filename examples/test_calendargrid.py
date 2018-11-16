@@ -50,6 +50,9 @@ def main_blt():
     n.add_event(25, "Christmas")
     n.add_event(31, "New Year's Eve")
 
+    options = ['Add', 'Edit', 'Delete', 'Save']
+    footer =   '  '.join(f"[color=red]{o[0]}[/color][color=grey]{o[1:]}[/color]" for o in options)
+
     terminal.open()
     char = None
     while True:
@@ -57,6 +60,8 @@ def main_blt():
         # terminal.composition(True)
         # terminal.puts(1, 1, m.blt_data())
         terminal.puts(0, 0, f"[bkcolor=white]{' '*80}[/bkcolor]")
+        terminal.puts(0, 23, f"[bkcolor=white]{' '*80}[/bkcolor]")
+        terminal.puts(1, 23, footer)
         terminal.puts(1, 0, f"[color=black]{'File  Edit  View  Help'}[/color]")
         terminal.puts(1, 2, m.blt(colored=True))
         terminal.puts(1, 10, n.blt())
