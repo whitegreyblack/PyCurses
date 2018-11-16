@@ -153,7 +153,7 @@ class MonthGrid:
     TODO: Add nodes outside of the current month
     TODO: Show outside nodes as grey and unselectable
     """
-    def __init__(self, month, year):
+    def __init__(self, month, year, events=None):
         self.month = month
         self.month_name = calendar.month_name[month]
         self.year = year
@@ -163,6 +163,7 @@ class MonthGrid:
         self.focused = False
         self.selected = 3
         self.last_day = None
+
         self.build()
 
     def build(self):
@@ -173,21 +174,22 @@ class MonthGrid:
         """
         year_prev = year_next = self.year
         month_prev = self.month - 1
-        if self.month == 0:
+        if month_prev == 0:
             month_prev = 12
             self.year_prev = self.year - 1
 
-        # could probably use modulus expression
-        month_next = self.month + 1
-        if self.month == 13:
-            month_prev = 1
-            year_next = self.year + 1
-
         self.grid_prev = self.__calendar.monthdays2calendar(year_prev, 
                                                             month_prev)
-        print(self.grid_prev)
+
+        # could probably use modulus expression
+        month_next = self.month + 1
+        if month_next == 13:
+            month_next = 1
+            year_next = self.year + 1
+
         self.grid_next = self.__calendar.monthdays2calendar(year_next, 
                                                             month_next)
+
         self.grid = self.__calendar.monthdays2calendar(self.year, self.month)
         # convert nodes to datanode objects
         for j, week in enumerate(self.grid):
