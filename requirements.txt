@@ -1,4 +1,4 @@
 PyYAML==3.12
-click=6.7
-curses=2.2
+click>=7.0
+curses>=2.2
 sqlite3

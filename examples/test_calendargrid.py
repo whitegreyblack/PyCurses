@@ -1,3 +1,6 @@
+"""
+test_calendargrid: driver for the calendar grid class from calendargrid.py
+"""
 import click
 from examples.calendargrid import MonthGrid, DateNode
 
@@ -9,7 +12,7 @@ def main(debug, screen):
         termprint(debug)
     elif screen == "curses" or screen == "c":
         main_curses()
-    elif screen == "bear" or screen == "blt":
+    elif screen == "bear" or screen == "b":
         main_blt()
     else:
         print("incorrect args")
@@ -41,11 +44,13 @@ def main_blt():
     m = MonthGrid(11, 2018)
     n = MonthGrid(12, 2018, events=None)
 
+    # add some events to November
     m.add_event(19, "PTO")
     m.add_event(16, "Turn in library book")
     m.add_event(18, "Game Day")
     m.add_events(22, 23, "Thanksgiving")
 
+    # add some events to December
     n.add_event(24, "Christmas Eve")
     n.add_event(25, "Christmas")
     n.add_event(31, "New Year's Eve")
@@ -76,6 +81,8 @@ def main_blt():
         char = terminal.read()
         if char in escape_codes:
             break
+        if char == terminal.TK_A:
+            print('pressed A')
         if char == terminal.TK_DOWN:
             m.select_next_week() 
         if char == terminal.TK_UP:
