@@ -41,7 +41,7 @@ def main_blt():
     terminal.set("input.filter={keyboard, mouse+}")
     escape_codes = [terminal.TK_Q, terminal.TK_ESCAPE, 224]
 
-    m = MonthGrid(11, 2018)
+    m = MonthGrid(11, 2018, border=False)
     n = MonthGrid(12, 2018, events=None)
 
     # add some events to November

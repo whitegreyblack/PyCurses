@@ -1,8 +1,7 @@
-"""calendargrid.py"""
+"""
+File: calendargrid.py
 
-import calendar
-
-"""Notes:
+Notes:
 Takes in all available dates and builds a graph between each available date
 This would allow for a interfaceable calendar with interactive dates.
 
@@ -47,7 +46,7 @@ class that holds everything we need. It would be an unordered map that
 would hold links of each path that a day could navigate to using the tuple
 value that each day mapped to.
 """
-
+import calendar
 unicode_arrows = {
     "n": u'\u2191',
     "s": u'\u2193',
@@ -153,7 +152,7 @@ class MonthGrid:
     TODO: Add nodes outside of the current month
     TODO: Show outside nodes as grey and unselectable
     """
-    def __init__(self, month, year, events=None):
+    def __init__(self, month, year, border=False, events=None):
         self.month = month
         self.month_name = calendar.month_name[month]
         self.year = year
@@ -163,6 +162,7 @@ class MonthGrid:
         self.focused = False
         self.selected = 3
         self.last_day = None
+        self.border = border
 
         self.build()
 
@@ -261,6 +261,16 @@ class MonthGrid:
         return None
 
     def blt(self, month_name=True, colored=False):
+        # TODO: draw border for body cells
+        # +----------------------------------+
+        # | ## | ## | ## | ## | ## | ## | ## |
+        # +----------------------------------+
+        # | ## | ## | ## | ## | ## | ## | ## |
+        # +----------------------------------+
+        # | ## | ## | ## | ## | ## | ## | ## |
+        # +----------------------------------+
+        # | ## | ## | ## | ## | ## | ## | ## |
+        # +----------------------------------+
         header = self.header(month_name=month_name, colored=colored)
         body = "\n".join("".join(d.blt(self.selected==d.daydate)
                                             for d in w) 
@@ -268,6 +278,8 @@ class MonthGrid:
         return f"{header}\n{body}"
 
     def blt_data(self):
+        # TODO: draw border
+        if self.border: pass
         header = ""
         body = "\n".join("".join(d.blt_data() for d in w) for w in self.grid)
         return f"{header}\n{body}"
@@ -278,6 +290,15 @@ class MonthGrid:
             return date.data
 
     def header(self, month_name=True, extended=False, colored=False):
+        # TODO: draw border for header cells
+        # +----------------------------------+
+        # | ############                     |
+        # +----------------------------------+
+        # | ## | ## | ## | ## | ## | ## | ## |
+        # +----------------------------------+
+        if self.border:
+            pass
+
         month_header = " " + self.month_name if month_name else ""
         if extended:
             days = "Sunday Monday Tuesday Wednesday Thursday Friday Saturday"
