@@ -258,8 +258,8 @@ class MonthGrid:
                         return date
         return None
 
-    def blt(self, month_name=True):
-        header = self.header(month_name=month_name)
+    def blt(self, month_name=True, colored=False):
+        header = self.header(month_name=month_name, colored=colored)
         body = "\n".join("".join(d.blt(self.selected==d.daydate)
                                             for d in w) 
                                                 for w in self.grid)
@@ -275,14 +275,17 @@ class MonthGrid:
         if date and date.data:
             return date.data
 
-    def header(self, month_name=True, extended=False):
+    def header(self, month_name=True, extended=False, colored=False):
         month_header = " " + self.month_name if month_name else ""
         if extended:
             days = "Sunday Monday Tuesday Wednesday Thursday Friday Saturday"
             month_header += "\n" + "".join(f"{d: <10}" for d in days.split())
         else:
-            month_header += "\n " + "  ".join(f"{d}"
+            day_abbrev = "\n " + "  ".join(f"{d}"
                                 for d in "Su Mo Tu We Th Fr Sa".split())
+            if colored:
+                day_abbrev = f"[color=orange]{day_abbrev}[/color]"
+            month_header += day_abbrev
         return month_header
 
     def draw(self, term, pivot):

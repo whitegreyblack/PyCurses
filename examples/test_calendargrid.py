@@ -48,7 +48,9 @@ def main_blt():
         terminal.clear()
         # terminal.composition(True)
         # terminal.puts(1, 1, m.blt_data())
-        terminal.puts(1, 1, m.blt())
+        terminal.puts(0, 0, f"[bkcolor=white]{' '*80}[/bkcolor]")
+        terminal.puts(1, 0, f"[color=black]{'File  Edit  View  Help'}[/color]")
+        terminal.puts(1, 2, m.blt(colored=True))
         # terminal.composition(False)
         terminal.puts(30, 2, m.events())
         if char:
