@@ -45,9 +45,9 @@ def main_blt():
     n = MonthGrid(12, 2018, events=None)
 
     # add some events to November
-    m.add_event(19, "PTO")
-    m.add_event(16, "Turn in library book")
-    m.add_event(18, "Game Day")
+    m.add_event(19, "8:00 AM - 5:00 PM: PTO")
+    m.add_event(16, "3:30 PM: Turn in library book")
+    m.add_event(18, "3:00 PM - 8:00 PM: Game Day")
     m.add_events(22, 23, "Thanksgiving")
 
     # add some events to December

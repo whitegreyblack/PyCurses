@@ -329,7 +329,7 @@ class MonthGrid:
         if prevweekdate > 0:
             self.selected = prevweekdate
             return # all is good. exit early
-
+        print('a')
         # try a fallback value
         prevweekdate = self.select_day_from_date(self.selected, "n")
         if prevweekdate:
