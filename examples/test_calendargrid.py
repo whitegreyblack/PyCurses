@@ -82,7 +82,7 @@ def main_blt():
         if char in escape_codes:
             break
         if char == terminal.TK_A:
-            print('pressed A')
+            m.add_event(m.selected, 'New Event')
         if char == terminal.TK_DOWN:
             m.select_next_week() 
         if char == terminal.TK_UP:
@@ -91,7 +91,6 @@ def main_blt():
             m.select_prev_day()
         if char == terminal.TK_RIGHT:
             m.select_next_day()
-
 
 if __name__ == "__main__":
     main()
