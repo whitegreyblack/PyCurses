@@ -47,6 +47,8 @@ would hold links of each path that a day could navigate to using the tuple
 value that each day mapped to.
 """
 import calendar
+import collections
+
 unicode_arrows = {
     "n": u'\u2191',
     "s": u'\u2193',
@@ -103,7 +105,8 @@ class DateNode(EmptyDateNode):
         self.s = None   # path |= 2
         self.e = None   # path |= 4
         self.w = None   # path |= 8
-        self.data = None
+        self.events = None
+        self.max_event_size = 10
         self.selectable = selectable
 
     def __str__(self):
@@ -126,7 +129,7 @@ class DateNode(EmptyDateNode):
         if self.selectable:
             if selected:
                 return f"[bkcolor=white][color=black]{formatted_self}[/color][/bkcolor]"
-            elif self.data:
+            elif self.events:
                 return f"[bkcolor=gray]{formatted_self}[/bkcolor]"
             else:
                 return formatted_self
@@ -286,8 +289,9 @@ class MonthGrid:
 
     def events(self):
         date = self.date(self.selected)
-        if date and date.data:
-            return date.data
+        # check for object existence, then object property existence
+        if date and date.events:
+            return date.events
 
     def header(self, month_name=True, extended=False, colored=False):
         # TODO: draw border for header cells
@@ -315,10 +319,32 @@ class MonthGrid:
         """Used for drawing the calendar month onto a curses terminal"""
         term.addstr(*pivot, str(self))
 
+    '''we have 4 cases of inputs to handle
+
+    1. 1:1 date to event. Simplest input. Date check, event type check.
+        - self.add_event(date, event) Done.
+    2. 1:N date to multiple events. Date check, event type checks.
+        - for event in events:
+              self.add_event(date, event) Done.
+    3. N:1 multiple dates to event. Date checks, event type check.
+        - for date in dates:
+              self.add_event(date, event) Done.
+    4. N:N multiple date to multiple events. Not going to handle these.
+    '''
+
     def add_event(self, day, event):
         date = self.date(day)
         if date:
-            date.data = event
+            # event already exists. just add on
+            if date.events:
+                date.events.append(event)
+            else:
+                if not isinstance(event, list):
+                    if isinstance(event, str):
+                        event = [event]
+                    else:
+                        event = list(event)
+                date.events = event
 
     def add_events(self, day_begin, day_end, event):
         for day in range(day_begin, day_end+1):

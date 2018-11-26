@@ -37,8 +37,6 @@ def main_curses():
 
 def main_blt():
     from bearlibterminal import terminal
-    terminal.set("window.title='Calendar Grid'")
-    terminal.set("input.filter={keyboard, mouse+}")
     escape_codes = [terminal.TK_Q, terminal.TK_ESCAPE, 224]
 
     m = MonthGrid(11, 2018, border=False)
@@ -59,6 +57,8 @@ def main_blt():
     footer =   '  '.join(f"[color=red]{o[0]}[/color][color=grey]{o[1:]}[/color]" for o in options)
 
     terminal.open()
+    terminal.set("window.title='Calendar Grid'")
+    terminal.set("input.filter={keyboard, mouse+}")
     char = None
     while True:
         terminal.clear()
@@ -74,7 +74,7 @@ def main_blt():
         events = m.events()
         if events:
             terminal.puts(30, 2, "Events:")
-            terminal.puts(30, 3, events)
+            terminal.puts(30, 3, "\n".join(events))
         if char:
             terminal.puts(0, 24, str(char))
         terminal.refresh()
