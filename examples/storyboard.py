@@ -30,7 +30,7 @@ Notes: Firstly use a text file to hold the DB. Possibly use JSON to hold info.
        For db, will need a way to hold the board, story, task data with their
        own separate tables.
 """
-import SQLite
+import sqlite3
 
 class Board(object):
     """Should initialize objects by calling database for story data"""
@@ -42,6 +42,32 @@ class Board(object):
         self.visible_todo = None
         self.visible_work = None
         self.visible_done = None
+
+    def __repr__(self):
+        todos = len(self.column_todo)
+        works = len(self.column_work)
+        dones = len(self.column_done)
+        return f"Board: todo({todos}) work({works}) done({done})"
+
+    @property
+    def board(self):
+        """Returns a string representation of the board"""
+        border_signs = '=' * 8
+        divide_signs = '-' * 8
+        empty_spaces = ' ' * 8
+        todos_header = f"{' '*2}todo{' '*2}"
+        works_header = f"{' '*2}work{' '*2}"
+        dones_header = f"{' '*2}done{' '*2}"
+        return f"""
+Board:
++{border_signs}+{border_signs}+{border_signs}+
+|{todos_header}|{works_header}|{dones_header}|
++{border_signs}+{border_signs}+{border_signs}+
+|{empty_spaces}|{empty_spaces}|{empty_spaces}|
++{divide_signs}+{divide_signs}+{divide_signs}+
+|{empty_spaces}|{empty_spaces}|{empty_spaces}|
++{border_signs}+{border_signs}+{border_signs}+
+"""[1:]
 
     def import_json(self, filename):
         """board example layout
@@ -68,6 +94,13 @@ class Board(object):
         newcolumnlist = sorted(getattr(self, columnname), 
                                key=lambda x: x.created_date)
         setattr(self, columnname.split("_")[1], newcolumnlist)
+
+    def draw_blt(self):
+        """Returns the storyboard as a newline delimited string"""
+    
+    def draw_term(self):
+        """Prints the storyboard using ASCII onto terminal"""
+        pass
 
 class Story(object):
     def __init__(self):
