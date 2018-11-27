@@ -57,6 +57,7 @@ class Board(object):
                 'subtask a': 'z'
             }
         }
+        board[story1][column] = 'done'
         """
         pass
 
