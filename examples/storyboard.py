@@ -31,6 +31,12 @@ Notes: Firstly use a text file to hold the DB. Possibly use JSON to hold info.
        own separate tables.
 """
 import sqlite3
+import 
+
+class DataFormat:
+    SQLite = 1
+    JSON = 2
+    YAML = 4
 
 class Board(object):
     """Should initialize objects by calling database for story data"""
@@ -69,6 +75,16 @@ Board:
 +{border_signs}+{border_signs}+{border_signs}+
 """[1:]
 
+    def import_data(self, dataformat, filename):
+        if dataformat == DataFormat.SQLite:
+            self.import_database(filename)
+        elif dataformat == DataFormat.JSON:
+            self.import_json(filename)
+        elif dataformat == DataFormat.YAML:
+            self.import_yaml(filename)
+        else:
+            raise ValueError("Invalid Dataformat")
+
     def import_json(self, filename):
         """board example layout
         {
@@ -85,6 +101,9 @@ Board:
         }
         board[story1][column] = 'done'
         """
+        pass
+
+    def import_yaml(self, tablename):
         pass
 
     def import_database(self, tablename):
