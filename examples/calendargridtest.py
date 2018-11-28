@@ -1,6 +1,8 @@
 """
-test_calendargrid: driver for the calendar grid class from calendargrid.py
+File: calendargridtest.py
+Runs application for the calendar grid class from calendargrid.py
 """
+
 import click
 from examples.calendargrid import MonthGrid, DateNode
 

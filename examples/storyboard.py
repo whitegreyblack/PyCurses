@@ -1,5 +1,4 @@
-"""Storyboard.py
-
+"""
 Implements a JIRA like board with three major columns:
     Todo: stories/tasks which has been reviewed and in queue to be worked on
     In-Work: stories/tasks which are currently being worked on. Keep it to one
@@ -31,7 +30,7 @@ Notes: Firstly use a text file to hold the DB. Possibly use JSON to hold info.
        own separate tables.
 """
 import sqlite3
-import 
+import json
 
 class DataFormat:
     SQLite = 1
@@ -49,6 +48,8 @@ class Board(object):
         self.visible_work = None
         self.visible_done = None
 
+        self.stories = None
+
     def __repr__(self):
         todos = len(self.column_todo)
         works = len(self.column_work)
@@ -58,24 +59,45 @@ class Board(object):
     @property
     def board(self):
         """Returns a string representation of the board"""
+        # max_cell_size = 22
+        # base cells
         border_signs = '=' * 8
         divide_signs = '-' * 8
         empty_spaces = ' ' * 8
-        todos_header = f"{' '*2}todo{' '*2}"
-        works_header = f"{' '*2}work{' '*2}"
-        dones_header = f"{' '*2}done{' '*2}"
+
+        # (max_cell_space - len(string)) // 2 
+        todos_header = f"{' '*((8-4)//2)}todo{' '*((8-4)//2)}"
+        works_header = f"{' '*((8-4)//2)}work{' '*((8-4)//2)}"
+        dones_header = f"{' '*((8-4)//2)}done{' '*((8-4)//2)}"
+
+        inner_cells = f"""
+|{empty_spaces}|{empty_spaces}|{empty_spaces}|
++{divide_signs}+{divide_signs}+{divide_signs}+
+"""[1:]
+
         return f"""
 Board:
 +{border_signs}+{border_signs}+{border_signs}+
 |{todos_header}|{works_header}|{dones_header}|
 +{border_signs}+{border_signs}+{border_signs}+
-|{empty_spaces}|{empty_spaces}|{empty_spaces}|
-+{divide_signs}+{divide_signs}+{divide_signs}+
+{(inner_cells * 5)[:-1]}
 |{empty_spaces}|{empty_spaces}|{empty_spaces}|
 +{border_signs}+{border_signs}+{border_signs}+
 """[1:]
 
-    def import_data(self, dataformat, filename):
+    def build_board_json(self, data):
+        # try:
+        #     for story, info in data.items():
+        #         print(story)
+        # except:
+        #     raise ValueError("json is invalid")
+        if bool(self.stories):
+            self.stories.update(data)
+        else:
+            self.stories = data
+        print(self.stories.keys())
+
+    def import_using(self, dataformat, filename):
         if dataformat == DataFormat.SQLite:
             self.import_database(filename)
         elif dataformat == DataFormat.JSON:
@@ -86,22 +108,14 @@ Board:
             raise ValueError("Invalid Dataformat")
 
     def import_json(self, filename):
-        """board example layout
-        {
-            {
-            'story 1': {
-                'column': 'work',
-                'subtask a': 'x',
-                'subtask b': 'y'
-            },
-            'story 2': {
-                'column': 'done',
-                'subtask a': 'z'
-            }
-        }
-        board[story1][column] = 'done'
+        """Handles retrieving of data from reading json file and
+        raises any errors during this process.
         """
-        pass
+        with open(filename, 'r') as f:
+            data = json.loads(f.read())
+
+        print(data)
+        self.build_board_json(data)
 
     def import_yaml(self, tablename):
         pass
