@@ -3,7 +3,7 @@
 Tests the storyboard application with mock data
 """
 import click
-from examples.storyboard import Board
+from examples.storyboard import Board, DataFormat
 
 @click.command()
 @click.option("--debug", "debug", is_flag=True)
@@ -21,6 +21,8 @@ def main(debug, screen):
 def termprint(debug):
     b = Board()
     print(b.board)
+    b.import_using(DataFormat.JSON, "examples/storyboard.json")
+    b.import_using(DataFormat.JSON, "examples/storyboard2.json")
 
 def main_curses():
     def wrapped(t):
