@@ -1,5 +1,4 @@
-"""Storyboard.py
-
+"""
 Implements a JIRA like board with three major columns:
     Todo: stories/tasks which has been reviewed and in queue to be worked on
     In-Work: stories/tasks which are currently being worked on. Keep it to one

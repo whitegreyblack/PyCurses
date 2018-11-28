@@ -1,7 +1,8 @@
-"""Storyboard Test
-
+"""
+File: storyboardtest.py
 Tests the storyboard application with mock data
 """
+
 import click
 from examples.storyboard import Board, DataFormat
 
