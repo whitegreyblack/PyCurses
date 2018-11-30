@@ -56,6 +56,19 @@ unicode_arrows = {
     "w": u'\u2190',
 }
 
+# just found out this is already implemented by str.center(width)
+class String:
+    @staticmethod
+    def center(word, width):
+        if len(word) >= width:
+            return word
+        padding = width - len(word)
+        left = right = padding // 2
+        # odd padding
+        if padding % 2 == 1:
+            right += 1
+        return f"{' ' * left}{word}{' ' * right}"
+
 class EmptyDateNode:
     def __init__(self, daydate, weekday):
         self.daydate = daydate
@@ -263,7 +276,7 @@ class MonthGrid:
                         return date
         return None
 
-    def blt(self, month_name=True, colored=False):
+    def blt(self, month_name=True, colored=False, border=False):
         # TODO: draw border for body cells
         # +----------------------------------+
         # | ## | ## | ## | ## | ## | ## | ## |
@@ -293,7 +306,7 @@ class MonthGrid:
         if date and date.events:
             return date.events
 
-    def header(self, month_name=True, extended=False, colored=False):
+    def header(self, month_name=True, extended=False, colored=False, border=False):
         # TODO: draw border for header cells
         # +----------------------------------+
         # | ############                     |
@@ -301,7 +314,10 @@ class MonthGrid:
         # | ## | ## | ## | ## | ## | ## | ## |
         # +----------------------------------+
         if self.border:
-            pass
+
+            return f"""
++----------------------------------+
+|{self.month_name}
 
         month_header = " " + self.month_name if month_name else ""
         if extended:
