@@ -69,6 +69,22 @@ class String:
             right += 1
         return f"{' ' * left}{word}{' ' * right}"
 
+class Days(object):
+    days = "Sunday Monday Tuesday Wednesday Thursday Friday Saturday"
+    @staticmethod
+    def abbrv(l=2):
+        return [d[:l] for d in Days.days.split()]
+
+    @staticmethod
+    def names():
+        return Days.days.split()
+
+class HeaderOptions:
+    NoHeaders = 0x0
+    MonthHeader = 0x1
+    DayHeader = 0x2
+    MonthDayHeader = 0x3
+
 class EmptyDateNode:
     def __init__(self, daydate, weekday):
         self.daydate = daydate
@@ -160,7 +176,6 @@ class DateNode(EmptyDateNode):
     #     if daydate == 0:
     #         return super(DateNode, cls).__new__(cls, 0, 0)
     #     return super(DateNode, cls).__new__(cls, daydate, weekday)
-
 
 class MonthGrid:
     """
@@ -306,30 +321,33 @@ class MonthGrid:
         if date and date.events:
             return date.events
 
-    def header(self, month_name=True, extended=False, colored=False, border=False):
+    # def header(self, month_name=True, extended=False, colored=False, border=False):
+    def header(self, options=True, colored=False, border=False):
+        # EDIT: DONE 11/30
+        # TODO: header options
+        # 2bit value:
+        #   0x0 => no month or day header
+        #   0x1 => month header only
+        #   0x2 => day header only
+        #   0x3 => both month and day header
+        #
         # TODO: draw border for header cells
         # +----------------------------------+
         # | ############                     |
         # +----------------------------------+
         # | ## | ## | ## | ## | ## | ## | ## |
         # +----------------------------------+
-        if self.border:
-
-            return f"""
-+----------------------------------+
-|{self.month_name}
-
-        month_header = " " + self.month_name if month_name else ""
-        if extended:
-            days = "Sunday Monday Tuesday Wednesday Thursday Friday Saturday"
-            month_header += "\n" + "".join(f"{d: <10}" for d in days.split())
-        else:
-            day_abbrev = "\n " + "  ".join(f"{d}"
-                                for d in "Su Mo Tu We Th Fr Sa".split())
-            if colored:
-                day_abbrev = f"[color=orange]{day_abbrev}[/color]"
-            month_header += day_abbrev
-        return month_header
+        month = ""
+        if options & HeaderOptions.MonthHeader == HeaderOptions.MonthHeader:
+            month += f"{self.month_name} {self.year}"
+        if options & HeaderOptions.DayHeader == HeaderOptions.DayHeader:
+            if bool(month):
+                month += "\n"
+            month += "  ".join(Days.abbrv())
+        # if colored:
+        #     day_abbrev = f"[color=orange]{day_abbrev}[/color]"
+        # month_header += day_abbrev
+        return month
 
     def draw(self, term, pivot):
         """Used for drawing the calendar month onto a curses terminal"""

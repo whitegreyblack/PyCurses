@@ -39,6 +39,11 @@ def main_curses():
 
 def main_blt():
     from bearlibterminal import terminal
+
+    terminal.open()
+    terminal.set("window.title='Calendar Grid'")
+    terminal.set("input.filter={keyboard, mouse+}")
+
     escape_codes = [terminal.TK_Q, terminal.TK_ESCAPE, 224]
 
     m = MonthGrid(11, 2018, border=False)
@@ -56,11 +61,9 @@ def main_blt():
     n.add_event(31, "New Year's Eve")
 
     options = ['Add', 'Edit', 'Delete', 'Save']
-    footer =   '  '.join(f"[color=red]{o[0]}[/color][color=grey]{o[1:]}[/color]" for o in options)
+    footer = '  '.join(f"[color=red]{o[0]}[/color][color=grey]{o[1:]}[/color]" 
+                            for o in options)
 
-    terminal.open()
-    terminal.set("window.title='Calendar Grid'")
-    terminal.set("input.filter={keyboard, mouse+}")
     char = None
     while True:
         terminal.clear()
