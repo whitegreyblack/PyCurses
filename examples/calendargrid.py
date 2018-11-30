@@ -86,6 +86,7 @@ class HeaderOptions:
     MonthDayHeader = 0x3
     ColoredHeader = 0x4
     BorderdHeader = 0x8
+    DebugOption = 0x16
 
     @staticmethod
     def check(options:int, option:int):
@@ -307,22 +308,20 @@ class MonthGrid:
     def term(self, options:int=0x0):
         month = self.term_header(options=options)
         month += "\n" if month else ""
-        month = "\n".join("".join(d.term(self.selected==d.daydate)
+        month += "\n".join("".join(d.term(self.selected==d.daydate)
                                             for d in w) 
                                                 for w in self.grid)
         return month
 
     def term_header(self, options:int=0x0):
+        """No color for WIN10 term."""
         month = ""
         if HeaderOptions.check(options, HeaderOptions.MonthHeader):
             month += f"{self.month_name} {self.year}"
         if HeaderOptions.check(options, HeaderOptions.DayHeader):
             if bool(month):
                 month += "\n"
-            days = "  ".join(Days.abbrv())
-            if HeaderOptions.check(options, HeaderOptions.ColoredHeader):
-                days = f"\033[43m{days}\033[0m"
-            month += days
+            month += "  ".join(Days.abbrv())
         return month
 
     def blt(self, options:int=0x0):

@@ -4,14 +4,15 @@ Runs application for the calendar grid class from calendargrid.py
 """
 
 import click
-from examples.calendargrid import MonthGrid, DateNode
+from examples.calendargrid import MonthGrid, DateNode, HeaderOptions
 
 @click.command()
-@click.option("--debug", "debug", is_flag=True)
+@click.option("--debug", "debug")
+@click.option("--options", "options", default=0)
 @click.option("--screen", "screen", default=None)
-def main(debug, screen):
+def main(debug, options, screen):
     if not screen:
-        termprint(debug)
+        termprint(debug, options)
     elif screen == "curses" or screen == "c":
         main_curses()
     elif screen == "bear" or screen == "b":
@@ -20,14 +21,13 @@ def main(debug, screen):
         print("incorrect args")
 
 
-def termprint(debug):
+def termprint(debug, options):
     m = MonthGrid(11, 2018)
     if debug:
         mstring = f"{repr(m)}"
     else:
-        mstring = m.term()
+        mstring = m.term(options)
     print(mstring)
-
 
 def main_curses():
     def wrapped(t):
