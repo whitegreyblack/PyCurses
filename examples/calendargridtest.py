@@ -25,7 +25,7 @@ def termprint(debug):
     if debug:
         mstring = f"{repr(m)}"
     else:
-        mstring = f"{m.header()}\n{m}"
+        mstring = m.term()
     print(mstring)
 
 

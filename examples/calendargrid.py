@@ -84,6 +84,12 @@ class HeaderOptions:
     MonthHeader = 0x1
     DayHeader = 0x2
     MonthDayHeader = 0x3
+    ColoredHeader = 0x4
+    BorderdHeader = 0x8
+
+    @staticmethod
+    def check(options:int, option:int):
+        return options & option == option
 
 class EmptyDateNode:
     def __init__(self, daydate, weekday):
@@ -164,6 +170,13 @@ class DateNode(EmptyDateNode):
                 return formatted_self
         #else:
         return f"[color=grey]{formatted_self}[/color]"
+
+    def term(self, selected=False):
+        """No colors for WIN10 terminal. Womp Womp"""
+        formatted_self = self.format_before_print()
+        if self.selectable:
+            return formatted_self
+        return f"{''.join(' ' for i in formatted_self)}"
 
     # def blt_data(self):
     #     if self.data:
@@ -291,22 +304,44 @@ class MonthGrid:
                         return date
         return None
 
-    def blt(self, month_name=True, colored=False, border=False):
-        # TODO: draw border for body cells
-        # +----------------------------------+
-        # | ## | ## | ## | ## | ## | ## | ## |
-        # +----------------------------------+
-        # | ## | ## | ## | ## | ## | ## | ## |
-        # +----------------------------------+
-        # | ## | ## | ## | ## | ## | ## | ## |
-        # +----------------------------------+
-        # | ## | ## | ## | ## | ## | ## | ## |
-        # +----------------------------------+
-        header = self.header(month_name=month_name, colored=colored)
-        body = "\n".join("".join(d.blt(self.selected==d.daydate)
+    def term(self, options:int=0x0):
+        month = self.term_header(options=options)
+        month += "\n" if month else ""
+        month = "\n".join("".join(d.term(self.selected==d.daydate)
                                             for d in w) 
                                                 for w in self.grid)
-        return f"{header}\n{body}"
+        return month
+
+    def term_header(self, options:int=0x0):
+        month = ""
+        if HeaderOptions.check(options, HeaderOptions.MonthHeader):
+            month += f"{self.month_name} {self.year}"
+        if HeaderOptions.check(options, HeaderOptions.DayHeader):
+            if bool(month):
+                month += "\n"
+            days = "  ".join(Days.abbrv())
+            if HeaderOptions.check(options, HeaderOptions.ColoredHeader):
+                days = f"\033[43m{days}\033[0m"
+            month += days
+        return month
+
+    def blt(self, options:int=0x0):
+        # TODO: draw border for body cells on border?
+        # +----------------------------------+
+        # | ## | ## | ## | ## | ## | ## | ## |
+        # +----------------------------------+
+        # | ## | ## | ## | ## | ## | ## | ## |
+        # +----------------------------------+
+        # | ## | ## | ## | ## | ## | ## | ## |
+        # +----------------------------------+
+        # | ## | ## | ## | ## | ## | ## | ## |
+        # +----------------------------------+
+        month = self.blt_header(options=options)
+        month += "\n" if month else ""
+        month = "\n".join("".join(d.blt(self.selected==d.daydate)
+                                            for d in w) 
+                                                for w in self.grid)
+        return month
 
     def blt_data(self):
         # TODO: draw border
@@ -321,32 +356,17 @@ class MonthGrid:
         if date and date.events:
             return date.events
 
-    # def header(self, month_name=True, extended=False, colored=False, border=False):
-    def header(self, options=True, colored=False, border=False):
-        # EDIT: DONE 11/30
-        # TODO: header options
-        # 2bit value:
-        #   0x0 => no month or day header
-        #   0x1 => month header only
-        #   0x2 => day header only
-        #   0x3 => both month and day header
-        #
-        # TODO: draw border for header cells
-        # +----------------------------------+
-        # | ############                     |
-        # +----------------------------------+
-        # | ## | ## | ## | ## | ## | ## | ## |
-        # +----------------------------------+
+    def blt_header(self, options:int=0x0):
         month = ""
-        if options & HeaderOptions.MonthHeader == HeaderOptions.MonthHeader:
+        if HeaderOptions.check(options, HeaderOptions.MonthHeader):
             month += f"{self.month_name} {self.year}"
-        if options & HeaderOptions.DayHeader == HeaderOptions.DayHeader:
+        if HeaderOptions.check(options, HeaderOptions.DayHeader):
             if bool(month):
                 month += "\n"
-            month += "  ".join(Days.abbrv())
-        # if colored:
-        #     day_abbrev = f"[color=orange]{day_abbrev}[/color]"
-        # month_header += day_abbrev
+            days = "  ".join(Days.abbrv())
+            if HeaderOptions.check(options, HeaderOptions.ColoredHeader):
+                days = f"[color=orange]{days}[/color]"
+            month += days
         return month
 
     def draw(self, term, pivot):
