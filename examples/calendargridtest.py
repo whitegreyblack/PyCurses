@@ -7,21 +7,21 @@ import click
 from examples.calendargrid import MonthGrid, DateNode, HeaderOptions
 
 @click.command()
-@click.option("--debug", "debug")
+@click.option("--debug", "debug", default=False)
 @click.option("--options", "options", default=0)
 @click.option("--screen", "screen", default=None)
 def main(debug, options, screen):
     if not screen:
-        termprint(debug, options)
+        termprint(options, debug)
     elif screen == "curses" or screen == "c":
         main_curses()
     elif screen == "bear" or screen == "b":
-        main_blt()
+        main_blt(options, debug)
     else:
         print("incorrect args")
 
 
-def termprint(debug, options):
+def termprint(options, debug=False):
     m = MonthGrid(11, 2018)
     if debug:
         mstring = f"{repr(m)}"
@@ -37,7 +37,7 @@ def main_curses():
     curses.wrapper(wrapped)
 
 
-def main_blt():
+def main_blt(options, debug):
     from bearlibterminal import terminal
 
     terminal.open()
@@ -60,9 +60,12 @@ def main_blt():
     n.add_event(25, "Christmas")
     n.add_event(31, "New Year's Eve")
 
-    options = ['Add', 'Edit', 'Delete', 'Save']
+    footer_options = ['Add', 'Edit', 'Delete', 'Save']
     footer = '  '.join(f"[color=red]{o[0]}[/color][color=grey]{o[1:]}[/color]" 
-                            for o in options)
+                            for o in footer_options)
+
+    if debug:
+        print(HeaderOptions.options(options))
 
     char = None
     while True:
@@ -73,8 +76,8 @@ def main_blt():
         terminal.puts(0, 23, f"[bkcolor=white]{' '*80}[/bkcolor]")
         terminal.puts(1, 23, footer)
         terminal.puts(1, 0, f"[color=black]{'File  Edit  View  Help'}[/color]")
-        terminal.puts(1, 2, m.blt(colored=True))
-        terminal.puts(1, 10, n.blt())
+        terminal.puts(1, 2, m.blt(options=options))
+        terminal.puts(1, 10, n.blt(options=options))
         # terminal.composition(False)
         events = m.events()
         if events:
