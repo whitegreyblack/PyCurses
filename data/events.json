@@ -1,0 +1,17 @@
+{
+    "new year's": {
+        "month": 1,
+        "day": 1,
+        "dayoff": true
+    },
+    "christmas eve": {
+        "month": 12,
+        "day": 24,
+        "dayoff": false
+    },
+    "christmas": {
+        "month": 12,
+        "day": 25,
+        "dayoff": true
+    }
+}

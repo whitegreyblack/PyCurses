@@ -4,11 +4,11 @@ Runs application for the calendar grid class from calendargrid.py
 """
 
 import click
-from examples.calendargrid import MonthGrid, DateNode, HeaderOptions
+from examples.calendargrid import CalendarGrid, MonthGrid, DateNode, Options, YearMonthDay
 
 @click.command()
 @click.option("--debug", "debug", default=False)
-@click.option("--options", "options", default=0)
+@click.option("--options", "options", default=0x3)
 @click.option("--screen", "screen", default=None)
 def main(debug, options, screen):
     if not screen:
@@ -46,26 +46,28 @@ def main_blt(options, debug):
 
     escape_codes = [terminal.TK_Q, terminal.TK_ESCAPE, 224]
 
-    m = MonthGrid(11, 2018, border=False)
-    n = MonthGrid(12, 2018, events=None)
+    year = CalendarGrid(2018, startdate=YearMonthDay(2018, 12))
 
-    # add some events to November
-    m.add_event(19, "8:00 AM - 5:00 PM: PTO")
-    m.add_event(16, "3:30 PM: Turn in library book")
-    m.add_event(18, "3:00 PM - 8:00 PM: Game Day")
-    m.add_events(22, 23, "Thanksgiving")
+    # m = MonthGrid(11, 2018, border=False)
+    # n = MonthGrid(12, 2018, events=None)
 
-    # add some events to December
-    n.add_event(24, "Christmas Eve")
-    n.add_event(25, "Christmas")
-    n.add_event(31, "New Year's Eve")
+    # # add some events to November
+    # m.add_event(19, "8:00 AM - 5:00 PM: PTO")
+    # m.add_event(16, "3:30 PM: Turn in library book")
+    # m.add_event(18, "3:00 PM - 8:00 PM: Game Day")
+    # m.add_events(22, 23, "Thanksgiving")
+
+    # # add some events to December
+    # n.add_event(24, "Christmas Eve")
+    # n.add_event(25, "Christmas")
+    # n.add_event(31, "New Year's Eve")
 
     footer_options = ['Add', 'Edit', 'Delete', 'Save']
     footer = '  '.join(f"[color=red]{o[0]}[/color][color=grey]{o[1:]}[/color]" 
                             for o in footer_options)
 
     if debug:
-        print(HeaderOptions.options(options))
+        print(Options.options(options))
 
     char = None
     while True:
@@ -76,10 +78,11 @@ def main_blt(options, debug):
         terminal.puts(0, 23, f"[bkcolor=white]{' '*80}[/bkcolor]")
         terminal.puts(1, 23, footer)
         terminal.puts(1, 0, f"[color=black]{'File  Edit  View  Help'}[/color]")
-        terminal.puts(1, 2, m.blt(options=options))
-        terminal.puts(1, 10, n.blt(options=options))
+        terminal.puts(1, 2, year.term(options=options, blt=True, bymonth=True))
+        # terminal.puts(1, 10, n.blt(options=options))
         # terminal.composition(False)
-        events = m.events()
+        # events = m.events()
+        events = None
         if events:
             terminal.puts(30, 2, "Events:")
             terminal.puts(30, 3, "\n".join(events))
@@ -90,15 +93,15 @@ def main_blt(options, debug):
         if char in escape_codes:
             break
         if char == terminal.TK_A:
-            m.add_event(m.selected, 'New Event')
+            year.month.add_event(m.selected, 'New Event')
         if char == terminal.TK_DOWN:
-            m.select_next_week() 
+            year.month.select_next_week() 
         if char == terminal.TK_UP:
-            m.select_prev_week()
+            year.month.select_prev_week()
         if char == terminal.TK_LEFT:
-            m.select_prev_day()
+            year.month.select_prev_day()
         if char == terminal.TK_RIGHT:
-            m.select_next_day()
+            year.month.select_next_day()
 
 if __name__ == "__main__":
     main()

@@ -31,15 +31,49 @@ Notes: Firstly use a text file to hold the DB. Possibly use JSON to hold info.
 """
 import sqlite3
 import json
+import abc
+from examples.calendargrid import YearMonthDay
+import itertools
+
+class BoardOptions:
+    BoardOff = 0
+    TodoOnly = 1
+    WorkOnly = 2
+    TodoWorkOnly = 3
+    DoneOnly = 4
+    TodoDoneOnly = 5
+    WorkDoneOnly = 6
+    TodoWorkDone = 7
+    ColorOn = 8
 
 class DataFormat:
     SQLite = 1
     JSON = 2
     YAML = 4
 
+class Status:
+    Pipe = 0
+    Unassigned = 1
+    InDev = 2
+    Developed = 3
+
+    states = {
+        Pipe: "Todo",
+        InDev: "Work",
+        Developed: "Done",
+    }
+
+    def __init__(self, code):
+        self.code = code
+        self.name = Status.states[code]
+    def __str__(self):
+        return f"Status({self.name})"
+    def __repr__(self):
+        return f"Status(status={self.code}:{self.name})"
+
 class Board(object):
     """Should initialize objects by calling database for story data"""
-    def __init__(self):
+    def __init__(self, options):
         self.column_todo = [] # these columns will be ordered by:
         self.column_work = [] #     issue number asc;
         self.column_done = [] #     date issued asc;
@@ -48,7 +82,8 @@ class Board(object):
         self.visible_work = None
         self.visible_done = None
 
-        self.stories = None
+        self.options = options
+        self.stories = dict()
 
     def __repr__(self):
         todos = len(self.column_todo)
@@ -57,46 +92,73 @@ class Board(object):
         return f"Board: todo({todos}) work({works}) done({done})"
 
     @property
+    def stories(self):
+        return self.__stories
+
+    @stories.setter
+    def stories(self, value):
+        self.__stories = value
+
+    def stories_by_status(self, code):
+        return [s for s in self.stories.values() if s.status.code == code]
+
+    @property
     def board(self):
         """Returns a string representation of the board"""
-        # max_cell_size = 22
+        cell_size = 25
         # base cells
-        border_signs = '=' * 8
-        divide_signs = '-' * 8
-        empty_spaces = ' ' * 8
+        border_signs = '=' * cell_size
+        divide_signs = '-' * cell_size
+        empty_spaces = ' ' * cell_size
 
-        # (max_cell_space - len(string)) // 2 
-        todos_header = f"{' '*((8-4)//2)}todo{' '*((8-4)//2)}"
-        works_header = f"{' '*((8-4)//2)}work{' '*((8-4)//2)}"
-        dones_header = f"{' '*((8-4)//2)}done{' '*((8-4)//2)}"
+        todos_header = "TODO".center(cell_size + 1)
+        works_header = "WORK".center(cell_size + 3)
+        dones_header = "DONE".center(cell_size + 1)
 
-        inner_cells = f"""
-|{empty_spaces}|{empty_spaces}|{empty_spaces}|
-+{divide_signs}+{divide_signs}+{divide_signs}+
+        col_div = " "
+
+        if self.options & BoardOptions.ColorOn == BoardOptions.ColorOn:
+            todos_header = f"[bkcolor=#0052cc]{todos_header}[/bkcolor]"
+            works_header = f"[bkcolor=#594300]{works_header}[/bkcolor]"
+            dones_header = f"[bkcolor=#14892c]{dones_header}[/bkcolor]"        
+            col_div = "[bkcolor=black] [/bkcolor]"
+
+        todos = self.stories_by_status(Status.Pipe)
+        longest_col = max(len(todos), 0)
+
+        """
+        COLOR:
+            "#2472c8": blue
+            "#cd3131": red
+            "#e5e510": yellow
+            "#0dbc79": green
+        """
+
+        combine = list(itertools.zip_longest(todos, [], []))
+        # populate cells now
+        inner_cells = []
+        for i, (t, w, d) in enumerate(itertools.zip_longest(todos, [], [])):
+            todo = t.description[:26].strip().center(cell_size + 1)
+            signs = divide_signs
+            extra = '-'
+            if i == longest_col - 1:
+                signs = border_signs
+                extra = '='
+            row = [todo, f"{empty_spaces}   ", f"{empty_spaces} "]
+            if self.options & BoardOptions.ColorOn == BoardOptions.ColorOn:
+                for i, (col, color) in enumerate(zip(row, ["#dfe1e6","#ffd351", "#b2d8b9"])):
+                    row[i] = f"[bkcolor={color}]{col}[/bkcolor]"
+            inner_cells.append(''.join(row))
+        inner_cells = ''.join(inner_cells)
+
+        if self.options & BoardOptions.ColorOn == BoardOptions.ColorOn:
+            return f"""
++{border_signs}+{border_signs}{'='}+{border_signs}+
+{todos_header}{works_header}{dones_header}
+{inner_cells}
 """[1:]
-
-        return f"""
-Board:
-+{border_signs}+{border_signs}+{border_signs}+
-|{todos_header}|{works_header}|{dones_header}|
-+{border_signs}+{border_signs}+{border_signs}+
-{(inner_cells * 5)[:-1]}
-|{empty_spaces}|{empty_spaces}|{empty_spaces}|
-+{border_signs}+{border_signs}+{border_signs}+
-"""[1:]
-
-    def build_board_json(self, data):
-        # try:
-        #     for story, info in data.items():
-        #         print(story)
-        # except:
-        #     raise ValueError("json is invalid")
-        if bool(self.stories):
-            self.stories.update(data)
         else:
-            self.stories = data
-        print(self.stories.keys())
-
+            return inner_cells
     def import_using(self, dataformat, filename):
         if dataformat == DataFormat.SQLite:
             self.import_database(filename)
@@ -113,9 +175,9 @@ Board:
         """
         with open(filename, 'r') as f:
             data = json.loads(f.read())
-
-        print(data)
-        self.build_board_json(data)
+        for name, info in data.items():
+            s = Story.from_json(name, info)
+            self.stories.update({name: s})
 
     def import_yaml(self, tablename):
         pass
@@ -135,13 +197,73 @@ Board:
         """Prints the storyboard using ASCII onto terminal"""
         pass
 
-class Story(object):
-    def __init__(self):
+class BoardItem:
+    def __init__(            
+        self,
+        story_name:str,
+        created_date:YearMonthDay, 
+        status:int, 
+        description:str
+    ):
+        self.story_name = story_name
+        self.created_date = created_date
+        self.status = status
+        self.description = description
+    @abc.abstractmethod
+    def from_json(self):
         pass
+    def __str__(self):
+        story = f"{self.description}, {self.status.name}"
+        return f"{self.__class__.__name__}({story})"
+    def __str__(self):
+        story = f"{self.description}, {self.status.name}"
+        return f"{self.__class__.__name__}({story})"
 
-class SubStory(Story):
-    def __init__(self):
-        pass
+class Story(BoardItem):
+    def __init__(self,
+                 story_name:str,
+                 created_date:YearMonthDay, 
+                 status:int, 
+                 description:str, 
+                 tasks:dict=dict()):
+        super().__init__(story_name, 
+                         created_date, 
+                         status,
+                         description)
+        self.tasks = tasks
+    @classmethod
+    def from_json(self, name, info):
+        n = name
+        c = YearMonthDay.from_json(info['created_date'])
+        s = Status(info['status'])
+        d = info['description']
+        t = {
+            Task.from_json(name, info)
+                for name, info in info['tasks'].items()
+        }
+        return Story(n, c, s, d, t)
+    def add_task(self, task):
+        self.tasks.update(task)
+
+class Task(BoardItem):
+    def __init__(
+            self, 
+            task_name:str,
+            created_date:YearMonthDay, 
+            status:int, 
+            description:str, 
+        ):
+        super().__init__(task_name,
+                         created_date,
+                         status,
+                         description)
+    @classmethod
+    def from_json(self, name, info):
+        n = name
+        c = YearMonthDay.from_json(info['created_date'])
+        s = info['status']
+        d = info['description']
+        return Task(n, c, s, d)
 
 class Database(object):
     '''Singleton database object design?'''

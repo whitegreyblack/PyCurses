@@ -79,7 +79,7 @@ class Days(object):
     def names():
         return Days.days.split()
 
-class HeaderOptions:
+class Options:
     NoHeaders = 0x0
     MonthHeader = 0x1
     DayHeader = 0x2
@@ -90,14 +90,14 @@ class HeaderOptions:
     def options(options:int) -> str:
         optionstring = []
         optionslist = [
-            [HeaderOptions.NoHeaders, "NoHeaders"],
-            [HeaderOptions.MonthHeader, "MonthHeader"],
-            [HeaderOptions.DayHeader, "DayHeader"],
-            [HeaderOptions.ColoredHeader, "ColoredHeader"],
-            [HeaderOptions.BorderedHeader, "Bordered"],
+            [Options.NoHeaders, "NoHeaders"],
+            [Options.MonthHeader, "MonthHeader"],
+            [Options.DayHeader, "DayHeader"],
+            [Options.ColoredHeader, "ColoredHeader"],
+            [Options.BorderedHeader, "Bordered"],
         ]
         for opt, optstr in optionslist:
-            if HeaderOptions.check(options, opt):
+            if Options.check(options, opt):
                 optionstring.append(optstr)
         return "\n".join(optionstring)
 
@@ -173,23 +173,17 @@ class DateNode(EmptyDateNode):
         return f"Date({self.daydate:2}, {paths})"
         # return f"Date({self.daydate:2})"
 
-    def blt(self, selected=False) -> str:
-        formatted_self = self.format_before_print()
-        if self.selectable:
-            if selected:
-                return f"[bkcolor=white][color=black]{formatted_self}[/color][/bkcolor]"
-            elif self.events:
-                return f"[bkcolor=gray]{formatted_self}[/bkcolor]"
-            else:
-                return formatted_self
-        #else:
-        return f"[color=grey]{formatted_self}[/color]"
-
-    def term(self, selected=False):
+    def term(self, selected=False, blt=False) -> str:
         """No colors for WIN10 terminal. Womp Womp"""
         formatted_self = self.format_before_print()
         if self.selectable:
+            if blt and selected:
+                return f"[bkcolor=white][color=black]{formatted_self}[/color][/bkcolor]"
+            elif blt and self.events:
+                return f"[bkcolor=gray]{formatted_self}[/bkcolor]"
             return formatted_self
+        if blt:
+            return f"[color=grey]{formatted_self}[/color]"
         return f"{''.join(' ' for i in formatted_self)}"
 
     # def blt_data(self):
@@ -223,6 +217,15 @@ class MonthGrid:
         self.border = border
 
         self.build()
+
+    def __str__(self):
+        month = "\n ".join("  ".join(str(d) for d in w) for w in self.grid)
+        return f" {month}"
+
+    def __repr__(self):
+        header = self.month_header()
+        month = "\n".join("  ".join(repr(d) for d in w) for w in self.grid)
+        return f"{header}\n{month}"
 
     def build(self):
         """Takes the calendar function which returns a tuple of daydate and
@@ -261,7 +264,7 @@ class MonthGrid:
                 elif j == len(self.grid) - 1:
                     self.grid[j][i] = DateNode(*self.grid_next[0][i],
                                                selectable=False)
-                else:
+                else: # any other case
                     self.grid[j][i] = EmptyDateNode(date, weekday)
 
         # they should all be DateNodes now or at least using EmptyDateNode as a fallback
@@ -304,12 +307,6 @@ class MonthGrid:
         if val > 0:
             setattr(self.grid[j][i], path, val)
 
-    def __str__(self):
-        return "\n ".join("  ".join(str(d) for d in w) for w in self.grid)
-
-    def __repr__(self):
-        return "\n".join("  ".join(repr(d) for d in w) for w in self.grid)
-
     def date(self, day):
         if 0 < day <= self.last_day:
             for week in self.grid:
@@ -318,26 +315,7 @@ class MonthGrid:
                         return date
         return None
 
-    def term(self, options:int=0x0):
-        month = self.term_header(options=options)
-        month += "\n" if month else ""
-        month += "\n".join("".join(d.term(self.selected==d.daydate)
-                                            for d in w) 
-                                                for w in self.grid)
-        return month
-
-    def term_header(self, options:int=0x0):
-        """No color for WIN10 term."""
-        month = ""
-        if HeaderOptions.check(options, HeaderOptions.MonthHeader):
-            month += f"{self.month_name} {self.year}"
-        if HeaderOptions.check(options, HeaderOptions.DayHeader):
-            if bool(month):
-                month += "\n"
-            month += "  ".join(Days.abbrv())
-        return month
-
-    def blt(self, options:int=0x0):
+    def term(self, options:int=0x0, blt=False):
         # TODO: draw border for body cells on border?
         # +----------------------------------+
         # | ## | ## | ## | ## | ## | ## | ## |
@@ -348,22 +326,26 @@ class MonthGrid:
         # +----------------------------------+
         # | ## | ## | ## | ## | ## | ## | ## |
         # +----------------------------------+
-        month = self.blt_header(options=options)
+        month = self.term_header(options=options)
         month += "\n" if month else ""
-        month += "\n".join("".join(d.blt(self.selected==d.daydate)
+        month += "\n".join("".join(d.term(self.selected==d.daydate, blt=blt)
                                             for d in w) 
                                                 for w in self.grid)
         return month
 
-    def blt_header(self, options:int=0x0):
+    def month_header(self):
+        return f"{self.month_name} {self.year}"
+
+    def term_header(self, options:int=0x0):
+        """No color for WIN10 term. Color only for blt screen"""
         month = ""
-        if HeaderOptions.check(options, HeaderOptions.MonthHeader):
-            month += f" {self.month_name} {self.year}"
-        if HeaderOptions.check(options, HeaderOptions.DayHeader):
+        if Options.check(options, Options.MonthHeader):
+            month += f" {self.month_header()}"
+        if Options.check(options, Options.DayHeader):
             if bool(month):
                 month += "\n"
             days = "  ".join(Days.abbrv())
-            if HeaderOptions.check(options, HeaderOptions.ColoredHeader):
+            if Options.check(options, Options.ColoredHeader):
                 days = f"[color=orange]{days}[/color]"
             month += f" {days}"
         return month
@@ -416,13 +398,24 @@ class MonthGrid:
         for day in range(day_begin, day_end+1):
             self.add_event(day, event)
 
+    def add_events_json(self, filename:str):
+        pass
+    
+    def add_events_yaml(self, filename:str):
+        pass
+
+    def export_events_json(self, filename:str):
+        pass
+
+    def export_events_yaml(self, filename:str):
+        pass
+
     def select_prev_week(self):
         prevweekdate = self.selected - 7
         if prevweekdate > 0:
             self.selected = prevweekdate
             return # all is good. exit early
-        print('a')
-        # try a fallback value
+
         prevweekdate = self.select_day_from_date(self.selected, "n")
         if prevweekdate:
             self.selected = prevweekdate
@@ -461,9 +454,86 @@ class MonthGrid:
                     return getattr(date, select)
         return 0
 
+class YearMonthDay(object):
+    def __init__(self, year, month, day=1):
+        self.year = year
+        self.month = month
+        self.day = day
+        self.month_name = calendar.month_name[month]
+    def __str__(self):
+        return f"MonthYear({self.day} {self.month_name} {self.year})"
+    def __repr__(self):
+        return f"MonthYear(year={self.year}, month={self.year}, day={self.day})"
+    def __iter__(self):
+        return iter((self.year, self.month, self.day))
+    @classmethod
+    def from_json(cls, data):
+        """
+        Returns a class instance with json data as attributes as long as the
+        data is well-formed
+        """
+        try:
+            return cls(data['year'], data['month'], data['day'])
+        except:
+            raise
+
 class CalendarGrid:
     """
     TODO: implement the class
     """
-    def __init__(self, year):
-        pass
+    def __init__(self, year:(int, int), startdate=None):
+        if isinstance(year, int):
+            self.year_beg = self.year_end = year
+        elif isinstance(year, tuple):
+            try:
+                self.year_beg, self.year_end = year
+            except ValueError:
+                self.year_beg = self.year_end = year[0]
+        else:
+            raise ValueError("""Invalid input for year: Format [year:int] || ([year:int], [year:int])""")
+        self.init_build_months()
+
+        if startdate:
+            self.year, self.month, self.day = startdate
+        else:
+            self.year, self.month, self.day = self.year_beg, 1, 1
+
+    @property
+    def month(self):
+        return self.months[self.year][self.__month-1]
+    @month.setter
+    def month(self, value):
+        self.__month = value
+
+    def init_build_months(self) -> None:
+        self.months = {year:[] for year in range(self.year_beg, self.year_end + 1)}
+        for year, months in self.months.items():
+            for month in range(12):
+                months.append(MonthGrid(month + 1, year))
+
+    def format_months(self) -> str:
+        data = ""
+        for year, months in self.months.items():
+            for month in months:
+                data += repr(month)
+                data += "\n"
+        return data
+
+    def term(self, options:int=0x0, blt:bool=False, bymonth=False) -> str:
+        if not bymonth:
+            data = ""
+            for year, months in self.months.items():
+                data += "\n\n".join(month.term(options=options, blt=blt) 
+                                    for month in months)
+            return data
+        return self.month.term(options=options, blt=blt)
+
+if __name__ == "__main__":
+    cg = CalendarGrid((2018,))
+    print(f"(beginning year={cg.year_beg}, end year={cg.year_end})")
+    # print(cg.format_months())
+    # print(cg.term(options=0x3))
+
+    print(cg.term(options=0x3, bymonth=True))
+
+    m = MonthGrid(12, 2018)
