@@ -85,6 +85,7 @@ class Options:
     DayHeader = 0x2
     ColoredHeader = 0x4
     BorderedHeader = 0x8
+    SingleMonth = 0x16
 
     @staticmethod
     def options(options:int) -> str:
@@ -461,9 +462,9 @@ class YearMonthDay(object):
         self.day = day
         self.month_name = calendar.month_name[month]
     def __str__(self):
-        return f"MonthYear({self.day} {self.month_name} {self.year})"
+        return f"YearMonthDay({self.day} {self.month_name} {self.year})"
     def __repr__(self):
-        return f"MonthYear(year={self.year}, month={self.year}, day={self.day})"
+        return f"YearMonthDay(year={self.year}, month={self.year}, day={self.day})"
     def __iter__(self):
         return iter((self.year, self.month, self.day))
     @classmethod
@@ -501,6 +502,7 @@ class CalendarGrid:
     @property
     def month(self):
         return self.months[self.year][self.__month-1]
+
     @month.setter
     def month(self, value):
         self.__month = value
@@ -519,8 +521,8 @@ class CalendarGrid:
                 data += "\n"
         return data
 
-    def term(self, options:int=0x0, blt:bool=False, bymonth=False) -> str:
-        if not bymonth:
+    def term(self, options:int=0x0, blt:bool=False) -> str:
+        if Options.check(options, Options.SingleMonth):
             data = ""
             for year, months in self.months.items():
                 data += "\n\n".join(month.term(options=options, blt=blt) 
@@ -528,12 +530,189 @@ class CalendarGrid:
             return data
         return self.month.term(options=options, blt=blt)
 
+class Node:
+    def __init__(self, year, month, day, dayofweek, selectable=True):
+        self.year = year
+        self.month = month
+        self.day = day
+        self.dayofweek = dayofweek
+        self.events = None
+        self.max_event_size = 10
+        self.selectable = selectable
+    def __str__(self):
+        return f"{self.day:2}"
+    def __eq__(self, val):
+        if isinstance(val, Node):
+            val = (val.year, val.month, val.day)
+        yeq = self.year == val[0]
+        meq = self.month == val[1]
+        deq = self.day == val[2]
+        return yeq and meq and deq
+    def blt(self, selected, month):
+        s = str(self)
+        if self.selectable:
+            if selected:
+                return f"[bkcolor=white][color=black] {self} [/color][/bkcolor]"
+            if self.month == month:
+                return f"[color=white] {self} [/color]"
+        return f"[color=grey] {self} [/color]"
+
+class ScrollableCalendar:
+    """
+    Goal is to make a continuous calendar grid from startdate to enddate
+    """
+    def __init__(self, begdate, enddate, start=None):
+        self.begdate = begdate
+        self.enddate = enddate
+        self.months = set()
+        self.calendar = calendar.Calendar(firstweekday=6)
+        self.init_build_months()
+        self.assign_indices(start if start else begdate)
+
+    @property
+    def month(self):
+        return self.months[self.year][self.__month-1]
+
+    @month.setter
+    def month(self, value):
+        self.__month = value
+
+    def iteryearmonths(self):
+        """
+        Uses calendar.nextmonth to get all (year, month) pairs between
+        the start date and end date inclusive.
+        """
+        months = []
+        current = (self.begdate.year, self.begdate.month)
+        enddate = calendar.nextmonth(self.enddate.year, self.enddate.month)
+        while current != enddate:
+            months.append(current)
+            current = calendar.nextmonth(*current)
+        return months
+
+    def dates_from_yearmonths(self, yearmonths):
+        """
+        Takes in a list of (year, month) tuples and returns them as 
+        (year, month, day, dayofweek) tuples using calendar.itermonthdays4
+        """
+        dates = set()
+        for year, month in yearmonths:
+            vals = set(self.calendar.itermonthdays4(year, month))
+            dates = dates.union(vals)
+        dates = sorted(list(dates), key=lambda x: (x[0], x[1], x[2]))
+        return dates
+
+    def build_week_matrix(self, dates):
+        """
+        Returns a n x 7 matrix of date tuples from a list of unique date tuples
+        """
+        grid = []
+        for w in range(0, len(dates), 7):
+            grid.append(dates[w:w+7])
+        return grid
+
+    def days_to_nodes(self, grid):
+        """
+        Returns a n x 7 matrix of Node objects from a list of unique date tuples
+        """
+        graph = []
+        print(self.months)
+        for week in grid:
+            nodeweek = []
+            for date in week:
+                y, m, d, w = date
+                selectable = (y, m) in self.months
+                n = Node(y, m, d, w, selectable)
+                nodeweek.append(n)
+            graph.append(nodeweek)
+        return graph
+
+    def init_build_months(self) -> None:
+        """
+        Using the (year, month, day, dayofweek) tuples, builds a continuous
+        calendar of datenodes with no breaks between months or years.
+        """
+        yearmonths = self.iteryearmonths()
+        self.months = yearmonths
+        dates = self.dates_from_yearmonths(yearmonths)
+        grid = self.build_week_matrix(dates)
+        self.graph = self.days_to_nodes(grid)
+
+    def assign_indices(self, date):
+        """
+        Sets the i, j pointers to the current day of the month and year
+        """
+        self.i = self.j = -1
+        y, m, d = date.year, date.month, date.day
+        for j, week in enumerate(self.graph):
+            for i, day in enumerate(week):
+                if (y, m, d) == day:
+                    self.j = j
+                    self.i = i
+        if self.i + self.j == -2:
+            raise ValueError("No indices with start date")
+
+    def select_prev_week(self):
+        self.j = max(self.j - 1, 0)
+
+    def select_next_week(self):
+        self.j = min(self.j + 1, len(self.graph) - 1)
+
+    def select_next_day(self):
+        self.i += 1
+        if self.i > 6:
+            self.i = 0
+            self.select_next_week()
+
+    def select_prev_day(self):
+        self.i -= 1
+
+    def format_blt_header(self, colored=False):
+        """No color for WIN10 term. Color only for blt screen"""
+        days = "  ".join(Days.abbrv())
+        if colored:
+            days = f"[color=orange]{days}[/color]"
+        return days
+
+    def format_print(self, options=0x0, blt=False) -> str:
+        """Returns the weeks based on the options input"""
+        if Options.check(options, Options.SingleMonth):
+            curnode = self.graph[self.j][self.i]
+            year, month, select = curnode.year, curnode.month, curnode.day
+            monthstring = []
+            for week in self.graph:
+                include = any((day.year, day.month) == (year, month) 
+                                for day in week)
+                if include and not blt:
+                    monthstring.append(" ".join(str(day) for day in week))
+                elif include and blt:
+                    for day in week:
+                        if day.day == select:
+                            print(True)
+                    monthstring.append("".join(day.blt(day==curnode, month) for day in week))
+            return "\n".join(monthstring)
+
+        if not blt:
+            return "\n".join(" ".join(str(day) for day in week) 
+                                for week in self.graph)
+        return "\n".join("".join(day.blt) for day in week
+                            for week in self.graph)
+
 if __name__ == "__main__":
     cg = CalendarGrid((2018,))
     print(f"(beginning year={cg.year_beg}, end year={cg.year_end})")
     # print(cg.format_months())
     # print(cg.term(options=0x3))
 
-    print(cg.term(options=0x3, bymonth=True))
+    # print(cg.term(options=0x3))
 
-    m = MonthGrid(12, 2018)
+    # m = MonthGrid(12, 2018)
+
+    sg = ScrollableCalendar(YearMonthDay(2018, 10), YearMonthDay(2018, 12))
+    print(sg.format_print(0))
+    print()
+    sg = ScrollableCalendar(YearMonthDay(2018, 10), YearMonthDay(2018, 12), YearMonthDay(2018, 11, 13))
+    print(sg.format_print(0x16))
+    # sg = ScrollableCalendar(YearMonthDay(2018, 10), YearMonthDay(2018, 12), YearMonthDay(2018, 9))
+    # sg = ScrollableCalendar(YearMonthDay(2017, 12), YearMonthDay(2018, 1))
+    # sg = ScrollableCalendar(YearMonthDay(2016, 12), YearMonthDay(2018, 1))

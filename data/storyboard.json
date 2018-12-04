@@ -1,5 +1,6 @@
 {
     "1": {
+        "name": "story 1",
         "created_date": {
             "year": 2018,
             "month": 1,
@@ -9,6 +10,7 @@
         "description": "first example story",
         "tasks": {
             "11": {
+                "name": "task 11",
                 "created_date": {
                     "year": 2018,
                     "month": 1,
@@ -18,6 +20,7 @@
                 "description": "first task for story 1"
             },
             "12": {
+                "name": "task 12",
                 "created_date": {
                     "year": 2018,
                     "month": 1,

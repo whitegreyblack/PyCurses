@@ -35,14 +35,20 @@ import abc
 from examples.calendargrid import YearMonthDay
 import itertools
 
+class TermColor:
+    BLUE = "#2472c8"
+    RED = "#cd3131"
+    YELLOW = "#e5e510"
+    GREEN = "#0dbc79"
+
 class BoardOptions:
     BoardOff = 0
     TodoOnly = 1
     WorkOnly = 2
-    TodoWorkOnly = 3
+    # TodoWorkOnly = 3
     DoneOnly = 4
-    TodoDoneOnly = 5
-    WorkDoneOnly = 6
+    # TodoDoneOnly = 5
+    # WorkDoneOnly = 6
     TodoWorkDone = 7
     ColorOn = 8
 
@@ -118,9 +124,9 @@ class Board(object):
         col_div = " "
 
         if self.options & BoardOptions.ColorOn == BoardOptions.ColorOn:
-            todos_header = f"[bkcolor=#0052cc]{todos_header}[/bkcolor]"
-            works_header = f"[bkcolor=#594300]{works_header}[/bkcolor]"
-            dones_header = f"[bkcolor=#14892c]{dones_header}[/bkcolor]"        
+            todos_header = f"[bkcolor={TermColor.RED}]{todos_header}[/bkcolor]"
+            works_header = f"[bkcolor={TermColor.BLUE}]{works_header}[/bkcolor]"
+            dones_header = f"[bkcolor={TermColor.GREEN}]{dones_header}[/bkcolor]"        
             col_div = "[bkcolor=black] [/bkcolor]"
 
         todos = self.stories_by_status(Status.Pipe)
@@ -132,6 +138,8 @@ class Board(object):
             "#cd3131": red
             "#e5e510": yellow
             "#0dbc79": green
+            BLUE        YEL         GREEN
+            "#dfe1e6","#ffd351", "#b2d8b9"
         """
 
         combine = list(itertools.zip_longest(todos, [], []))
@@ -146,14 +154,13 @@ class Board(object):
                 extra = '='
             row = [todo, f"{empty_spaces}   ", f"{empty_spaces} "]
             if self.options & BoardOptions.ColorOn == BoardOptions.ColorOn:
-                for i, (col, color) in enumerate(zip(row, ["#dfe1e6","#ffd351", "#b2d8b9"])):
+                for i, (col, color) in enumerate(zip(row, [TermColor.RED, TermColor.BLUE, TermColor.GREEN])):
                     row[i] = f"[bkcolor={color}]{col}[/bkcolor]"
             inner_cells.append(''.join(row))
         inner_cells = ''.join(inner_cells)
 
         if self.options & BoardOptions.ColorOn == BoardOptions.ColorOn:
             return f"""
-+{border_signs}+{border_signs}{'='}+{border_signs}+
 {todos_header}{works_header}{dones_header}
 {inner_cells}
 """[1:]
@@ -176,6 +183,7 @@ class Board(object):
         with open(filename, 'r') as f:
             data = json.loads(f.read())
         for name, info in data.items():
+            print(name, info)
             s = Story.from_json(name, info)
             self.stories.update({name: s})
 
@@ -198,13 +206,13 @@ class Board(object):
         pass
 
 class BoardItem:
-    def __init__(            
-        self,
-        story_name:str,
-        created_date:YearMonthDay, 
-        status:int, 
-        description:str
-    ):
+    def __init__(self,
+                 number:int,
+                 story_name:str,
+                 created_date:YearMonthDay, 
+                 status:int, 
+                 description:str
+                ):
         self.story_name = story_name
         self.created_date = created_date
         self.status = status
@@ -221,19 +229,23 @@ class BoardItem:
 
 class Story(BoardItem):
     def __init__(self,
+                 number:int,
                  story_name:str,
                  created_date:YearMonthDay, 
                  status:int, 
                  description:str, 
-                 tasks:dict=dict()):
-        super().__init__(story_name, 
+                 tasks:dict=dict()
+                ):
+        super().__init__(number,
+                         story_name, 
                          created_date, 
                          status,
                          description)
         self.tasks = tasks
     @classmethod
-    def from_json(self, name, info):
-        n = name
+    def from_json(self, number, info):
+        nu = number
+        na = info['name']
         c = YearMonthDay.from_json(info['created_date'])
         s = Status(info['status'])
         d = info['description']
@@ -241,29 +253,31 @@ class Story(BoardItem):
             Task.from_json(name, info)
                 for name, info in info['tasks'].items()
         }
-        return Story(n, c, s, d, t)
+        return Story(nu, na, c, s, d, t)
     def add_task(self, task):
         self.tasks.update(task)
 
 class Task(BoardItem):
-    def __init__(
-            self, 
-            task_name:str,
-            created_date:YearMonthDay, 
-            status:int, 
-            description:str, 
-        ):
-        super().__init__(task_name,
+    def __init__(self,
+                 number:int, 
+                 task_name:str,
+                 created_date:YearMonthDay, 
+                 status:int, 
+                 description:str, 
+                ):  
+        super().__init__(number,
+                         task_name,
                          created_date,
                          status,
                          description)
     @classmethod
-    def from_json(self, name, info):
-        n = name
+    def from_json(self, number, info):
+        nu = number
+        na = info['name']
         c = YearMonthDay.from_json(info['created_date'])
         s = info['status']
         d = info['description']
-        return Task(n, c, s, d)
+        return Task(nu, na, c, s, d)
 
 class Database(object):
     '''Singleton database object design?'''
