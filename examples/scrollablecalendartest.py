@@ -13,7 +13,7 @@ from examples.calendargrid import ScrollableCalendar, MonthGrid, DateNode, Optio
 def main(debug, options, screen):
     if not screen:
         termprint(options, debug)
-    elif screen.lower() in ["bear", "blt", "b"]:
+    elif screen.lower() in ("bear", "blt", "b"):
         main_blt(options, debug)
     else:
         print("incorrect args")
@@ -34,7 +34,7 @@ def main_blt(options, debug):
 
     escape_codes = [terminal.TK_Q, terminal.TK_ESCAPE, 224]
 
-    c = ScrollableCalendar(YearMonthDay(2018, 10), YearMonthDay(2018, 11))
+    c = ScrollableCalendar(YearMonthDay(2018, 7), YearMonthDay(2019, 8))
 
     footer_options = ['Add', 'Edit', 'Delete', 'Save']
     footer = '  '.join(f"[color=red]{o[0]}[/color][color=grey]{o[1:]}[/color]" 
@@ -46,14 +46,29 @@ def main_blt(options, debug):
     char = None
     while True:
         terminal.clear()
+
+        monthstring = c.format_print(Options.SingleMonth, blt=True)
+
+        # add events form
+        for y in range(24):
+            terminal.puts(39, y, "[bkcolor=grey] [/bkcolor]")
+        for x in range(40):
+            terminal.puts(x, 4 + len(monthstring.split('\n')), "[bkcolor=grey] [/bkcolor]")
+        terminal.puts(41, 2, "Form")
+
         terminal.puts(0, 0, f"[bkcolor=white]{' '*80}[/bkcolor]")
         terminal.puts(0, 23, f"[bkcolor=white]{' '*80}[/bkcolor]")
         terminal.puts(1, 23, footer)
         terminal.puts(1, 0, f"[color=black]{'File  Edit  View  Help'}[/color]")
-        terminal.puts(11, 2, c.format_blt_header(Options.check(options, Options.ColoredHeader))) # day header
+
+        # col 1
         terminal.puts(1, 2, f"{c.graph[c.j][c.i].year}") # year
         terminal.puts(1, 3, f"{calendar.month_name[c.graph[c.j][c.i].month]}") # month
+
+        # col 2
+        terminal.puts(11, 2, c.format_blt_header(Options.check(options, Options.ColoredHeader))) # day header
         terminal.puts(10, 3, c.format_print(Options.SingleMonth, blt=True)) # days
+
         events = None
         if events:
             terminal.puts(30, 2, "Events:")

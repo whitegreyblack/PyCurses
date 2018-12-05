@@ -668,7 +668,11 @@ class ScrollableCalendar:
         if self.i > 6:
             self.i = 0
             self.select_next_week()
+            # same week, so entire week belongs to the month
+            if self.j == temp[1]:
+                self.i, self.j = temp
 
+        # went forward onde day but it was not selectable
         if not self.graph[self.j][self.i].selectable:
             self.i, self.j = temp
 
@@ -678,13 +682,16 @@ class ScrollableCalendar:
         if self.i < 0:
             self.i = 6
             self.select_prev_week()
+            # same week, so entire week belongs to the month
+            if self.j == temp[1]:
+                self.i, self.j = temp
         
+        # went back one day but it was not selectable
         if not self.graph[self.j][self.i].selectable:
             self.i, self.j = temp
 
     def format_blt_header(self, colored=False):
         """No color for WIN10 term. Color only for blt screen"""
-        print(colored)
         days = "  ".join(Days.abbrv())
         if colored:
             days = f"[color=orange]{days}[/color]"
@@ -702,7 +709,8 @@ class ScrollableCalendar:
                 if include and not blt:
                     monthstring.append(" ".join(str(day) for day in week))
                 elif include and blt:
-                    monthstring.append("".join(day.blt(day==curnode, month) for day in week))
+                    monthstring.append("".join(day.blt(day==curnode, month) 
+                                        for day in week))
             return "\n".join(monthstring)
 
         if not blt:
@@ -724,8 +732,7 @@ if __name__ == "__main__":
     sg = ScrollableCalendar(YearMonthDay(2018, 10), YearMonthDay(2018, 12))
     print(sg.format_print(0))
     print()
-    sg = ScrollableCalendar(YearMonthDay(2018, 10), YearMonthDay(2018, 12), YearMonthDay(2018, 11, 13))
+    sg = ScrollableCalendar(YearMonthDay(2018, 10), 
+                            YearMonthDay(2018, 12), 
+                            YearMonthDay(2018, 11, 13))
     print(sg.format_print(0x16))
-    # sg = ScrollableCalendar(YearMonthDay(2018, 10), YearMonthDay(2018, 12), YearMonthDay(2018, 9))
-    # sg = ScrollableCalendar(YearMonthDay(2017, 12), YearMonthDay(2018, 1))
-    # sg = ScrollableCalendar(YearMonthDay(2016, 12), YearMonthDay(2018, 1))
