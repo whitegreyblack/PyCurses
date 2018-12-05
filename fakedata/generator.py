@@ -121,12 +121,13 @@ class DataGenerator:
             with open(self.export_folder + filename, 'w') as yamlfile:
                 yamlfile.write(yaml.dump(reciept))
 
-    def generate_grocery_data(self):
-        filenames = self.generate_filenames("2017-3-1", 
-                                            "2018-3-1", 
-                                            (8, 22), 
+    def generate_grocery_data(self, output=False):
+        filenames = self.generate_filenames("2017-3-1",
+                                            "2018-3-1",
+                                            (8, 22),
                                             ("groceries",))
-
+        if output:
+            print(f"generator: Grocery data written to:")
         for datetup, filename in filenames.items():
             reciept = Reciept('Grocery',
                               'Food',
@@ -137,8 +138,11 @@ class DataGenerator:
                               0.0,
                               24.99,
                               24.99)
-            with open(self.export_folder + filename, 'w') as yamlfile:
+            fullpath = self.export_folder + filename
+            with open(fullpath, 'w') as yamlfile:
                 yamlfile.write(yaml.dump(reciept))
+            if output:
+                print(f"  {filename}")
 
     def generate_fast_food_data(self):
         pass
@@ -171,7 +175,7 @@ class DataGenerator:
 def main(folder):
     dg = DataGenerator(folder)
     # dg.generate_internet_data()
-    dg.generate_grocery_data()
+    dg.generate_grocery_data(output=True)
 
 if __name__ == "__main__":
     main()
