@@ -34,7 +34,7 @@ def main_blt(options, debug):
 
     escape_codes = [terminal.TK_Q, terminal.TK_ESCAPE, 224]
 
-    c = ScrollableCalendar(YearMonthDay(2018, 10), YearMonthDay(2018, 12))
+    c = ScrollableCalendar(YearMonthDay(2018, 10), YearMonthDay(2018, 11))
 
     footer_options = ['Add', 'Edit', 'Delete', 'Save']
     footer = '  '.join(f"[color=red]{o[0]}[/color][color=grey]{o[1:]}[/color]" 
@@ -51,8 +51,8 @@ def main_blt(options, debug):
         terminal.puts(1, 23, footer)
         terminal.puts(1, 0, f"[color=black]{'File  Edit  View  Help'}[/color]")
         terminal.puts(11, 2, c.format_blt_header(Options.check(options, Options.ColoredHeader))) # day header
-        terminal.puts(1, 2, f"{calendar.month_name[c.graph[c.j][c.i].month]}") # month
-        terminal.puts(1, 3, f"{c.graph[c.j][c.i].year}") # year
+        terminal.puts(1, 2, f"{c.graph[c.j][c.i].year}") # year
+        terminal.puts(1, 3, f"{calendar.month_name[c.graph[c.j][c.i].month]}") # month
         terminal.puts(10, 3, c.format_print(Options.SingleMonth, blt=True)) # days
         events = None
         if events:
