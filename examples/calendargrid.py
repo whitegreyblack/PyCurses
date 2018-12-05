@@ -77,11 +77,32 @@ class Days(object):
     def names():
         return Days.days.split()
 
-class HeaderOptions:
+class Options:
     NoHeaders = 0x0
     MonthHeader = 0x1
     DayHeader = 0x2
-    MonthDayHeader = 0x3
+    ColoredHeader = 0x4
+    BorderedHeader = 0x8
+    SingleMonth = 0x16
+
+    @staticmethod
+    def options(options:int) -> str:
+        optionstring = []
+        optionslist = [
+            [Options.NoHeaders, "NoHeaders"],
+            [Options.MonthHeader, "MonthHeader"],
+            [Options.DayHeader, "DayHeader"],
+            [Options.ColoredHeader, "ColoredHeader"],
+            [Options.BorderedHeader, "Bordered"],
+        ]
+        for opt, optstr in optionslist:
+            if Options.check(options, opt):
+                optionstring.append(optstr)
+        return "\n".join(optionstring)
+
+    @staticmethod
+    def check(options:int, option:int) -> bool:
+        return options & option == option
 
 class EmptyDateNode:
     def __init__(self, daydate, weekday):
@@ -151,17 +172,18 @@ class DateNode(EmptyDateNode):
         return f"Date({self.daydate:2}, {paths})"
         # return f"Date({self.daydate:2})"
 
-    def blt(self, selected=False):
+    def term(self, selected=False, blt=False) -> str:
+        """No colors for WIN10 terminal. Womp Womp"""
         formatted_self = self.format_before_print()
         if self.selectable:
-            if selected:
+            if blt and selected:
                 return f"[bkcolor=white][color=black]{formatted_self}[/color][/bkcolor]"
-            elif self.events:
+            elif blt and self.events:
                 return f"[bkcolor=gray]{formatted_self}[/bkcolor]"
-            else:
-                return formatted_self
-        #else:
-        return f"[color=grey]{formatted_self}[/color]"
+            return formatted_self
+        if blt:
+            return f"[color=grey]{formatted_self}[/color]"
+        return f"{''.join(' ' for i in formatted_self)}"
 
     # def blt_data(self):
     #     if self.data:
@@ -194,6 +216,15 @@ class MonthGrid:
         self.border = border
 
         self.build()
+
+    def __str__(self):
+        month = "\n ".join("  ".join(str(d) for d in w) for w in self.grid)
+        return f" {month}"
+
+    def __repr__(self):
+        header = self.month_header()
+        month = "\n".join("  ".join(repr(d) for d in w) for w in self.grid)
+        return f"{header}\n{month}"
 
     def build(self):
         """Takes the calendar function which returns a tuple of daydate and
@@ -232,7 +263,7 @@ class MonthGrid:
                 elif j == len(self.grid) - 1:
                     self.grid[j][i] = DateNode(*self.grid_next[0][i],
                                                selectable=False)
-                else:
+                else: # any other case
                     self.grid[j][i] = EmptyDateNode(date, weekday)
 
         # they should all be DateNodes now or at least using EmptyDateNode as a fallback
@@ -275,12 +306,6 @@ class MonthGrid:
         if val > 0:
             setattr(self.grid[j][i], path, val)
 
-    def __str__(self):
-        return "\n ".join("  ".join(str(d) for d in w) for w in self.grid)
-
-    def __repr__(self):
-        return "\n".join("  ".join(repr(d) for d in w) for w in self.grid)
-
     def date(self, day):
         if 0 < day <= self.last_day:
             for week in self.grid:
@@ -289,8 +314,8 @@ class MonthGrid:
                         return date
         return None
 
-    def blt(self, month_name=True, colored=False, border=False):
-        # TODO: draw border for body cells
+    def term(self, options:int=0x0, blt=False):
+        # TODO: draw border for body cells on border?
         # +----------------------------------+
         # | ## | ## | ## | ## | ## | ## | ## |
         # +----------------------------------+
@@ -300,11 +325,29 @@ class MonthGrid:
         # +----------------------------------+
         # | ## | ## | ## | ## | ## | ## | ## |
         # +----------------------------------+
-        header = self.header(month_name=month_name, colored=colored)
-        body = "\n".join("".join(d.blt(self.selected==d.daydate)
+        month = self.term_header(options=options)
+        month += "\n" if month else ""
+        month += "\n".join("".join(d.term(self.selected==d.daydate, blt=blt)
                                             for d in w) 
                                                 for w in self.grid)
-        return f"{header}\n{body}"
+        return month
+
+    def month_header(self):
+        return f"{self.month_name} {self.year}"
+
+    def term_header(self, options:int=0x0):
+        """No color for WIN10 term. Color only for blt screen"""
+        month = ""
+        if Options.check(options, Options.MonthHeader):
+            month += f" {self.month_header()}"
+        if Options.check(options, Options.DayHeader):
+            if bool(month):
+                month += "\n"
+            days = "  ".join(Days.abbrv())
+            if Options.check(options, Options.ColoredHeader):
+                days = f"[color=orange]{days}[/color]"
+            month += f" {days}"
+        return month
 
     def blt_data(self):
         # TODO: draw border
@@ -318,34 +361,6 @@ class MonthGrid:
         # check for object existence, then object property existence
         if date and date.events:
             return date.events
-
-    # def header(self, month_name=True, extended=False, colored=False, border=False):
-    def header(self, options=True, colored=False, border=False):
-        # EDIT: DONE 11/30
-        # TODO: header options
-        # 2bit value:
-        #   0x0 => no month or day header
-        #   0x1 => month header only
-        #   0x2 => day header only
-        #   0x3 => both month and day header
-        #
-        # TODO: draw border for header cells
-        # +----------------------------------+
-        # | ############                     |
-        # +----------------------------------+
-        # | ## | ## | ## | ## | ## | ## | ## |
-        # +----------------------------------+
-        month = ""
-        if options & HeaderOptions.MonthHeader == HeaderOptions.MonthHeader:
-            month += f"{self.month_name} {self.year}"
-        if options & HeaderOptions.DayHeader == HeaderOptions.DayHeader:
-            if bool(month):
-                month += "\n"
-            month += "  ".join(Days.abbrv())
-        # if colored:
-        #     day_abbrev = f"[color=orange]{day_abbrev}[/color]"
-        # month_header += day_abbrev
-        return month
 
     def draw(self, term, pivot):
         """Used for drawing the calendar month onto a curses terminal"""
@@ -382,13 +397,24 @@ class MonthGrid:
         for day in range(day_begin, day_end+1):
             self.add_event(day, event)
 
+    def add_events_json(self, filename:str):
+        pass
+    
+    def add_events_yaml(self, filename:str):
+        pass
+
+    def export_events_json(self, filename:str):
+        pass
+
+    def export_events_yaml(self, filename:str):
+        pass
+
     def select_prev_week(self):
         prevweekdate = self.selected - 7
         if prevweekdate > 0:
             self.selected = prevweekdate
             return # all is good. exit early
-        print('a')
-        # try a fallback value
+
         prevweekdate = self.select_day_from_date(self.selected, "n")
         if prevweekdate:
             self.selected = prevweekdate
@@ -427,9 +453,264 @@ class MonthGrid:
                     return getattr(date, select)
         return 0
 
+class YearMonthDay(object):
+    def __init__(self, year, month, day=1):
+        self.year = year
+        self.month = month
+        self.day = day
+        self.month_name = calendar.month_name[month]
+    def __str__(self):
+        return f"YearMonthDay({self.day} {self.month_name} {self.year})"
+    def __repr__(self):
+        return f"YearMonthDay(year={self.year}, month={self.year}, day={self.day})"
+    def __iter__(self):
+        return iter((self.year, self.month, self.day))
+    @classmethod
+    def from_json(cls, data):
+        """
+        Returns a class instance with json data as attributes as long as the
+        data is well-formed
+        """
+        try:
+            return cls(data['year'], data['month'], data['day'])
+        except:
+            raise
+
 class CalendarGrid:
     """
     TODO: implement the class
     """
-    def __init__(self, year):
-        pass
+    def __init__(self, year:(int, int), startdate=None):
+        if isinstance(year, int):
+            self.year_beg = self.year_end = year
+        elif isinstance(year, tuple):
+            try:
+                self.year_beg, self.year_end = year
+            except ValueError:
+                self.year_beg = self.year_end = year[0]
+        else:
+            raise ValueError("""Invalid input for year: Format [year:int] || ([year:int], [year:int])""")
+        self.init_build_months()
+
+        if startdate:
+            self.year, self.month, self.day = startdate
+        else:
+            self.year, self.month, self.day = self.year_beg, 1, 1
+
+    @property
+    def month(self):
+        return self.months[self.year][self.__month-1]
+
+    @month.setter
+    def month(self, value):
+        self.__month = value
+
+    def init_build_months(self) -> None:
+        self.months = {year:[] for year in range(self.year_beg, self.year_end + 1)}
+        for year, months in self.months.items():
+            for month in range(12):
+                months.append(MonthGrid(month + 1, year))
+
+    def format_months(self) -> str:
+        data = ""
+        for year, months in self.months.items():
+            for month in months:
+                data += repr(month)
+                data += "\n"
+        return data
+
+    def term(self, options:int=0x0, blt:bool=False) -> str:
+        if Options.check(options, Options.SingleMonth):
+            data = ""
+            for year, months in self.months.items():
+                data += "\n\n".join(month.term(options=options, blt=blt) 
+                                    for month in months)
+            return data
+        return self.month.term(options=options, blt=blt)
+
+class Node:
+    def __init__(self, year, month, day, dayofweek, selectable=True):
+        self.year = year
+        self.month = month
+        self.day = day
+        self.dayofweek = dayofweek
+        self.events = None
+        self.max_event_size = 10
+        self.selectable = selectable
+    def __str__(self):
+        return f"{self.day:2}"
+    def __eq__(self, val):
+        if isinstance(val, Node):
+            val = (val.year, val.month, val.day)
+        yeq = self.year == val[0]
+        meq = self.month == val[1]
+        deq = self.day == val[2]
+        return yeq and meq and deq
+    def blt(self, selected, month):
+        s = str(self)
+        if self.selectable:
+            if selected:
+                return f"[bkcolor=white][color=black] {self} [/color][/bkcolor]"
+            if self.month == month:
+                return f"[color=white] {self} [/color]"
+        return f"[color=grey] {self} [/color]"
+
+class ScrollableCalendar:
+    """
+    Goal is to make a continuous calendar grid from startdate to enddate
+    """
+    def __init__(self, begdate, enddate, start=None):
+        self.begdate = begdate
+        self.enddate = enddate
+        self.months = set()
+        self.calendar = calendar.Calendar(firstweekday=6)
+        self.init_build_months()
+        self.assign_indices(start if start else begdate)
+
+    @property
+    def month(self):
+        return self.months[self.year][self.__month-1]
+
+    @month.setter
+    def month(self, value):
+        self.__month = value
+
+    def iteryearmonths(self):
+        """
+        Uses calendar.nextmonth to get all (year, month) pairs between
+        the start date and end date inclusive.
+        """
+        months = []
+        current = (self.begdate.year, self.begdate.month)
+        enddate = calendar.nextmonth(self.enddate.year, self.enddate.month)
+        while current != enddate:
+            months.append(current)
+            current = calendar.nextmonth(*current)
+        return months
+
+    def dates_from_yearmonths(self, yearmonths):
+        """
+        Takes in a list of (year, month) tuples and returns them as 
+        (year, month, day, dayofweek) tuples using calendar.itermonthdays4
+        """
+        dates = set()
+        for year, month in yearmonths:
+            vals = set(self.calendar.itermonthdays4(year, month))
+            dates = dates.union(vals)
+        dates = sorted(list(dates), key=lambda x: (x[0], x[1], x[2]))
+        return dates
+
+    def build_week_matrix(self, dates):
+        """
+        Returns a n x 7 matrix of date tuples from a list of unique date tuples
+        """
+        grid = []
+        for w in range(0, len(dates), 7):
+            grid.append(dates[w:w+7])
+        return grid
+
+    def days_to_nodes(self, grid):
+        """
+        Returns a n x 7 matrix of Node objects from a list of unique date tuples
+        """
+        graph = []
+        print(self.months)
+        for week in grid:
+            nodeweek = []
+            for date in week:
+                y, m, d, w = date
+                selectable = (y, m) in self.months
+                n = Node(y, m, d, w, selectable)
+                nodeweek.append(n)
+            graph.append(nodeweek)
+        return graph
+
+    def init_build_months(self) -> None:
+        """
+        Using the (year, month, day, dayofweek) tuples, builds a continuous
+        calendar of datenodes with no breaks between months or years.
+        """
+        yearmonths = self.iteryearmonths()
+        self.months = yearmonths
+        dates = self.dates_from_yearmonths(yearmonths)
+        grid = self.build_week_matrix(dates)
+        self.graph = self.days_to_nodes(grid)
+
+    def assign_indices(self, date):
+        """
+        Sets the i, j pointers to the current day of the month and year
+        """
+        self.i = self.j = -1
+        y, m, d = date.year, date.month, date.day
+        for j, week in enumerate(self.graph):
+            for i, day in enumerate(week):
+                if (y, m, d) == day:
+                    self.j = j
+                    self.i = i
+        if self.i + self.j == -2:
+            raise ValueError("No indices with start date")
+
+    def select_prev_week(self):
+        self.j = max(self.j - 1, 0)
+
+    def select_next_week(self):
+        self.j = min(self.j + 1, len(self.graph) - 1)
+
+    def select_next_day(self):
+        self.i += 1
+        if self.i > 6:
+            self.i = 0
+            self.select_next_week()
+
+    def select_prev_day(self):
+        self.i -= 1
+
+    def format_blt_header(self, colored=False):
+        """No color for WIN10 term. Color only for blt screen"""
+        days = "  ".join(Days.abbrv())
+        if colored:
+            days = f"[color=orange]{days}[/color]"
+        return days
+
+    def format_print(self, options=0x0, blt=False) -> str:
+        """Returns the weeks based on the options input"""
+        if Options.check(options, Options.SingleMonth):
+            curnode = self.graph[self.j][self.i]
+            year, month, select = curnode.year, curnode.month, curnode.day
+            monthstring = []
+            for week in self.graph:
+                include = any((day.year, day.month) == (year, month) 
+                                for day in week)
+                if include and not blt:
+                    monthstring.append(" ".join(str(day) for day in week))
+                elif include and blt:
+                    for day in week:
+                        if day.day == select:
+                            print(True)
+                    monthstring.append("".join(day.blt(day==curnode, month) for day in week))
+            return "\n".join(monthstring)
+
+        if not blt:
+            return "\n".join(" ".join(str(day) for day in week) 
+                                for week in self.graph)
+        return "\n".join("".join(day.blt) for day in week
+                            for week in self.graph)
+
+if __name__ == "__main__":
+    cg = CalendarGrid((2018,))
+    print(f"(beginning year={cg.year_beg}, end year={cg.year_end})")
+    # print(cg.format_months())
+    # print(cg.term(options=0x3))
+
+    # print(cg.term(options=0x3))
+
+    # m = MonthGrid(12, 2018)
+
+    sg = ScrollableCalendar(YearMonthDay(2018, 10), YearMonthDay(2018, 12))
+    print(sg.format_print(0))
+    print()
+    sg = ScrollableCalendar(YearMonthDay(2018, 10), YearMonthDay(2018, 12), YearMonthDay(2018, 11, 13))
+    print(sg.format_print(0x16))
+    # sg = ScrollableCalendar(YearMonthDay(2018, 10), YearMonthDay(2018, 12), YearMonthDay(2018, 9))
+    # sg = ScrollableCalendar(YearMonthDay(2017, 12), YearMonthDay(2018, 1))
+    # sg = ScrollableCalendar(YearMonthDay(2016, 12), YearMonthDay(2018, 1))

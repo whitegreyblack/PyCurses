@@ -1,0 +1,12 @@
+new year's:
+  month: 1
+  year: 1
+  dayoff: True
+christmas eve:
+    month: 12
+    day: 24
+    dayoff: False
+christmas:
+    month: 12
+    day: 25
+    dayoff: True
