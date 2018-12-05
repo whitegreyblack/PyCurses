@@ -64,9 +64,7 @@ class String:
             return word
         padding = width - len(word)
         left = right = padding // 2
-        # odd padding
-        if padding % 2 == 1:
-            right += 1
+        right += (padding % 2 == 1)
         return f"{' ' * left}{word}{' ' * right}"
 
 class Days(object):
