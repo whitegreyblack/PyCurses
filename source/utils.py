@@ -12,6 +12,7 @@ import logging
 import datetime
 from typing import Union, Tuple
 from collections import namedtuple
+from itertools import chain
 
 Currency = Union[int, float]
 
@@ -19,6 +20,52 @@ point = namedtuple('Point', 'x y')
 size = namedtuple('Size', 'width height')
 box = namedtuple('Box', 'x y width height')
 
+class Box:
+    TLC = "\u250C"
+    HBR = "\u2500"
+    VBR = "\u2502"
+    TBR = "\u252C"
+    TRC = "\u2510"
+    BRC = "\u2518"
+    BLC = "\u2514"
+
+    def __init__(self, p, width, height):
+        self.a = p
+        self.b = point(p.x + width - 1, p.y + height - 1)
+        self.l, self.r = None, None
+    @property
+    def width(self):
+        return self.b.x - self.a.x + 1
+    @property
+    def height(self):
+        return self.b.y - self.a.y + 1
+    def split_x(self):
+        x = self.width
+        lx = rx = x // 2
+        if x % 2 == 1:
+            rx += 1
+        c = point(self.a.x + lx, self.a.y)
+        self.l = Box(self.a, lx, self.height)
+        self.r = Box(c, rx, self.height)
+    def blt_border(self):
+        chmap = [[" " for _ in range(self.width)] for _ in range(self.height)]
+        if self.l and self.r:
+            return list(chain.from_iterable([self.l.blt_border(), self.r.blt_border()]))
+        for y in range(self.height):
+            for x in range(self.width):
+                if x == 0 or x == self.width - 1:
+                    chmap[y][x] = self.VBR
+                if y == 0 or y == self.height - 1:
+                    chmap[y][x] = self.HBR
+                if (x, y) == (0, 0):
+                    chmap[y][x] = self.TLC
+                if (x, y) == (0, self.height - 1):
+                    chmap[y][x] = self.BLC
+                if (x, y) == (self.width - 1, self.height - 1):
+                    chmap[y][x] = self.BRC
+                if (x, y) == (self.width - 1, 0):
+                    chmap[y][x] = self.TRC
+        return [(self.a.x, self.a.y , "\n".join("".join(row) for row in chmap)),]
 
 EventArg = namedtuple('EventArg', 'sender msg')
 
