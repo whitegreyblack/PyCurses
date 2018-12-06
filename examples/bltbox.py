@@ -9,7 +9,7 @@ def main():
 
     b = Box(point(0, 0), 80, 25)
     b.split_x()
-    b.l.split_x()
+    b.l.split_y()
     c = None
     while True:
         terminal.clear()

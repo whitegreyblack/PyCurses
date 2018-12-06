@@ -47,6 +47,14 @@ class Box:
         c = point(self.a.x + lx, self.a.y)
         self.l = Box(self.a, lx, self.height)
         self.r = Box(c, rx, self.height)
+    def split_y(self):
+        y = self.height
+        ly = ry = y // 2
+        if y % 2 == 1:
+            ry += 1
+        c = point(self.a.x, self.a.y + ly)
+        self.l = Box(self.a, self.width, ly)
+        self.r = Box(c, self.width, ry)
     def blt_border(self):
         chmap = [[" " for _ in range(self.width)] for _ in range(self.height)]
         if self.l and self.r:
