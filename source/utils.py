@@ -51,20 +51,29 @@ class Box:
         chmap = [[" " for _ in range(self.width)] for _ in range(self.height)]
         if self.l and self.r:
             return list(chain.from_iterable([self.l.blt_border(), self.r.blt_border()]))
-        for y in range(self.height):
+        
+        for y in (0, self.height - 1):
             for x in range(self.width):
-                if x == 0 or x == self.width - 1:
-                    chmap[y][x] = self.VBR
-                if y == 0 or y == self.height - 1:
-                    chmap[y][x] = self.HBR
-                if (x, y) == (0, 0):
-                    chmap[y][x] = self.TLC
-                if (x, y) == (0, self.height - 1):
-                    chmap[y][x] = self.BLC
-                if (x, y) == (self.width - 1, self.height - 1):
-                    chmap[y][x] = self.BRC
-                if (x, y) == (self.width - 1, 0):
-                    chmap[y][x] = self.TRC
+                chmap[y][x] = self.HBR
+        
+        for x in (0, self.width - 1):
+            for y in range(self.height):
+                chmap[y][x] = self.VBR 
+
+        coords = [
+            (0, 0), 
+            (0, self.height-1), 
+            (self.width-1, self.height-1), 
+            (self.width-1, 0)
+        ]
+        corners = [
+            self.TLC, 
+            self.BLC, 
+            self.BRC, 
+            self.TRC
+        ]
+        for (x, y), ch in zip(coords, corners):
+            chmap[y][x] = ch
         return [(self.a.x, self.a.y , "\n".join("".join(row) for row in chmap)),]
 
 EventArg = namedtuple('EventArg', 'sender msg')
