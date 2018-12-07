@@ -223,7 +223,7 @@ class YamlChecker(Loggable):
                 "UNVERIFIED": unverified,
                 }
 
-    #!DEPRACATED CODE! TODO: REMOVE CODE
+    # !DEPRACATED CODE! TODO: REMOVE CODE ONCE ALL FUNCTIONS HAVE BEEN MOVED
     # def files_safe(self, loaded_files=None):
     #     """Iterate through each file in directory to verify if the file is
     #     safe to load into the database.

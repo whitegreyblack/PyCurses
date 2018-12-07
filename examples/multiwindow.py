@@ -19,6 +19,10 @@ def main(screen):
     a.erase()
     a.refresh()
     screen.getch()
+    a.erase()
+    a.border()
+    a.refresh()
+    screen.getch()
 
 if __name__ == "__main__":
     curses.wrapper(main)

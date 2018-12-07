@@ -10,6 +10,7 @@ import os
 import curses
 import logging
 import datetime
+import textwrap
 from typing import Union, Tuple
 from collections import namedtuple
 from itertools import chain
@@ -19,70 +20,6 @@ Currency = Union[int, float]
 point = namedtuple('Point', 'x y')
 size = namedtuple('Size', 'width height')
 box = namedtuple('Box', 'x y width height')
-
-class Box:
-    TLC = "\u250C"
-    HBR = "\u2500"
-    VBR = "\u2502"
-    TBR = "\u252C"
-    TRC = "\u2510"
-    BRC = "\u2518"
-    BLC = "\u2514"
-
-    def __init__(self, p, width, height):
-        self.a = p
-        self.b = point(p.x + width - 1, p.y + height - 1)
-        self.l, self.r = None, None
-    @property
-    def width(self):
-        return self.b.x - self.a.x + 1
-    @property
-    def height(self):
-        return self.b.y - self.a.y + 1
-    def split_x(self):
-        x = self.width
-        lx = rx = x // 2
-        if x % 2 == 1:
-            rx += 1
-        c = point(self.a.x + lx, self.a.y)
-        self.l = Box(self.a, lx, self.height)
-        self.r = Box(c, rx, self.height)
-    def split_y(self):
-        y = self.height
-        ly = ry = y // 2
-        if y % 2 == 1:
-            ry += 1
-        c = point(self.a.x, self.a.y + ly)
-        self.l = Box(self.a, self.width, ly)
-        self.r = Box(c, self.width, ry)
-    def blt_border(self):
-        chmap = [[" " for _ in range(self.width)] for _ in range(self.height)]
-        if self.l and self.r:
-            return list(chain.from_iterable([self.l.blt_border(), self.r.blt_border()]))
-        
-        for y in (0, self.height - 1):
-            for x in range(self.width):
-                chmap[y][x] = self.HBR
-        
-        for x in (0, self.width - 1):
-            for y in range(self.height):
-                chmap[y][x] = self.VBR 
-
-        coords = [
-            (0, 0), 
-            (0, self.height-1), 
-            (self.width-1, self.height-1), 
-            (self.width-1, 0)
-        ]
-        corners = [
-            self.TLC, 
-            self.BLC, 
-            self.BRC, 
-            self.TRC
-        ]
-        for (x, y), ch in zip(coords, corners):
-            chmap[y][x] = ch
-        return [(self.a.x, self.a.y , "\n".join("".join(row) for row in chmap)),]
 
 EventArg = namedtuple('EventArg', 'sender msg')
 
