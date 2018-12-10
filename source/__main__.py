@@ -49,7 +49,7 @@ def application(screen, folderpath, rebuild, logger=None):
     # should we create a new function that calls all 4 functions?
     app.setup()
     #app.build_windows(screen)
-    app.build_windows3(screen)
+    app.build_windows2(screen)
     app.draw()
     app.run()
 

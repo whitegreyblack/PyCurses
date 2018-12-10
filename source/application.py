@@ -22,6 +22,7 @@ from source.YamlObjects import Reciept as YamlReciept
 from source.controls import (
     Window, ScrollList, Card, RecieptForm, Prompt, Button, View, OptionsBar,
 )
+import source.controls2 as ui
 
 def setup_test_cards():
     """List of example product cards used in testing"""
@@ -148,6 +149,9 @@ class Application(Loggable):
         """
         pass
 
+    def build_windows4(self, screen):
+        pass
+
     def build_windows3(self, screen):
         height, width = screen.getmaxyx()
         self.screen = screen
@@ -202,8 +206,8 @@ class Application(Loggable):
         scroller = ScrollList(1, 1,
                               self.window.width // 4,
                               self.window.height,
-                              'Reciepts',
-                              selected = True)
+                              title='Reciepts',
+                              selected=True)
 
         reciept_cards = [ Card(r) for r in self.build_reciepts() ]
         scroller.add_items(reciept_cards)
@@ -261,7 +265,8 @@ class Application(Loggable):
         # self.screen.addstr(2, self.window.width // 8, "[Reciepts]")
         # self.screen.addstr(2, self.window.width // 8 + 11, "[Products]")
         # self.screen.addstr(2, self.window.width // 8 + 22, "[Stores]")
-        self.window.draw(self.screen)
+        # self.window.draw(self.screen)
+        self.window.draw()
 
     def send_signal(self, signal):
         return self.window.send_signal(signal)

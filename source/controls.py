@@ -32,6 +32,7 @@ def intersect(this, other):
     return False
 
 
+
 # -- Curses-independent classes --
 class UIControl:
     def __init__(self, x, y, width, height, title=None):
@@ -222,7 +223,7 @@ class OptionsBar:
 
     def __init__(self, screen, options=None):
         # should create the subwin internally
-        h, w = screen.getmaxyx()
+        h, w = screen
         self.x = 0
         self.y = 0
         self.width = w
