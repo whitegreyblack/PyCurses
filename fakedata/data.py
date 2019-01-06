@@ -7,6 +7,7 @@ class Product(object):
     product_name = "Placeholder Product Name"
     def __init__(self, product_name, product_info=None):
         self.product_name = product_name
+
 class Company(object):
     company_name = "Placeholder Company Name"
     def __init__(self, company_name, products=None):
