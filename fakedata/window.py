@@ -9,7 +9,7 @@ DEF_Y = 0
 MAX_X = 80
 MAX_Y = 24
 
-class ScrollFormModel:
+class ScrollListModel:
     def __init__(self, topic, info):
         self.topic = topic
         self.info = info
@@ -31,20 +31,21 @@ class Window(object):
         self.ey = my - 1
 
         # object box properties
-        self.width = self.mx - self.x
-        self.height = self.my - self.y
+        self.width = self.mx
+        self.height = self.my
         
         # view/visual properties
         self.showing = showing
 
         # child objects
         self.texts = []
+        self.children = []
 
     def __repr__(self):
-        return f"Window({self.width}, {self.height})"
+        return f"Window({self.x}, {self.y}, {self.width}, {self.height})"
 
     @property
-    def form(self):
+    def rows(self):
         mx = self.mx - 2
         # character map
         rows = []
@@ -62,8 +63,16 @@ class Window(object):
         return '\n'.join(rows)
 
     @property
-    def forms(self):
-        yield self.x, self.y, self.form
+    def windows(self):
+        yield self.x, self.y, self.rows
+
+        for c in self.children:
+            print(c)
+            for x, y, rows in c.windows:
+                yield x, y, rows
+
+    def add_window(self, window):
+        self.children.append(window)
 
 class Form(object):
     def __init__(self, x=DEF_X, y=DEF_Y, mx=MAX_X, my=MAX_Y, showing=True):
@@ -78,8 +87,8 @@ class Form(object):
         self.ex = mx - 1
         self.ey = my - 1
         
-        self.width = self.mx - self.x
-        self.height = self.my - self.y
+        self.width = self.mx
+        self.height = self.my
         
         self.showing = showing
         self.texts = []
@@ -119,11 +128,11 @@ class Text(Window):
     def forms(self):
         self.x, self.y, self.form
 
-class ScrollForm(Window):
-    def __init__(self, x=DEF_X, y=DEF_Y, mx=MAX_X, my=MAX_Y, rows=None):
+class ScrollList(Window):
+    def __init__(self, x=DEF_X, y=DEF_Y, mx=MAX_X, my=MAX_Y, data=None):
         super().__init__(x, y, mx, my)
         self.index = 0
-        self.rows = rows if rows else []
+        self.data = data if data else []
         self.showing = True
         self.subwin = None
         self.texts = []
@@ -149,7 +158,7 @@ class ScrollForm(Window):
     def sub_row(self, index=-1):
         """
         >>> import forms
-        >>> f = forms.ScrollForm()
+        >>> f = forms.ScrollList()
         >>> f.sub_row()
         >>> f.subwin.showing
         False
@@ -181,47 +190,43 @@ class ScrollForm(Window):
             self.subwin.texts = [(3, 1, self.rows[self.index].info)]
 
     @property
-    def form(self):
+    def rows(self):
         mx = self.mx - 2
         rows = []
-        for y in range(self.mx+1):
+
+        print(self.x+self.mx-1)
+
+        for y in range(self.x+self.mx-1):
             e, d = "|", " " * mx
             if y in (0, self.my):
                 e, d = "+", "-" * mx
             rows.append(f"{e}{d}{e}")
+
         rows_in_view = None
         s, e = 0, self.height - 1
         halfscreen = self.height // 2
-        if len(self.rows) > self.height - 1:
+        if len(self.data) > self.height - 1:
             if self.index < halfscreen:
                 pass
-            elif self.index > len(self.rows) - halfscreen:
-                s = len(self.rows) - self.height + 1
+            elif self.index > len(self.data) - halfscreen:
+                s = len(self.data) - self.height + 1
                 e = s + self.height - 1
             else:
                 s = self.index - halfscreen
                 e = s + self.height - 1
-            rows_in_view = self.rows[s:e]        
+            rows_in_view = self.data[s:e]        
         else:
             s = 0
-            rows_in_view = self.rows
+            rows_in_view = self.data
         for i, r in enumerate(rows_in_view):
             rows[i+1] = f"|{str(r).ljust(mx)}|"
             if self.index == s + i:
                 rows[i+1] = f"|[color=orange]{str(r).ljust(mx)}[/color]|"
 
-        for x, y, text in self.texts:
-            rows[y] = f"|{text.rjust(x + len(text)).ljust(mx)}|"
+        # for x, y, text in self.texts:
+        #     rows[y] = f"|{text.rjust(x + len(text)).ljust(mx)}|"
 
         return '\n'.join(rows)
-
-    @property
-    def forms(self):
-        yield self.x, self.y, self.form
-
-        if self.rows and self.subwin.showing:
-            for x, y, form in self.subwin.forms:
-                yield x, y, form
 
 if __name__ == "__main__":
     f = Form()
