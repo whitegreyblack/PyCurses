@@ -36,16 +36,22 @@ class Person:
     names_last = names_last_ordered
     names_males = names_males_ordered
     names_females = names_females_ordered
-    names_females_prefix = ('Mrs.', 'Miss')
+    names_females_prefix = ('Dr.', 'Mrs.', 'Miss', 'Ms.')
+    names_females_suffix = ('M.D.', 'Phd.')
     formats = (
         # ('male', ('prefix', 'first', 'last', 'suffix')),
         # ('male', ('prefix', 'first', 'last')),
         # ('male', ('first', 'last', 'suffix')),
         # ('male', ('first', 'last')),
-        ('female', ('prefix', 'first', 'last', 'suffix')),
-        ('female', ('prefix', 'first', 'last')),
-        ('female', ('first', 'last', 'suffix')),
-        ('female', ('first', 'last'))
+        ('female', 'prefix first last suffix'),
+        ('female', 'prefix first last'),
+        ('female', 'prefix first last'),
+        ('female', 'prefix first last'),
+        ('female', 'first last suffix'),
+        ('female', 'first last'),
+        ('female', 'first last'),
+        ('female', 'first last'),
+        ('female', 'first last'),
     )
     def __init__(self, first=None, last=None, prefix=None, suffix=None):
         self.name_first = first if first else ''
@@ -86,8 +92,8 @@ class Person:
         return ''
 
     def female_prefix(self):
-        if hasattr(self, 'female_prefixes'):
-            return random.choice(self.female_prefixes)
+        if hasattr(self, 'names_females_prefix'):
+            return random.choice(self.names_females_prefix)
         return ''
 
     def female_first(self):
@@ -101,29 +107,20 @@ class Person:
         return random.choice(self.names_last)
     
     def female_suffix(self):
-        if hasattr(self, 'female_suffix'):
-            return random.choice(self.female_suffix)
+        if hasattr(self, 'names_females_suffix'):
+            return random.choice(self.names_females_suffix)
         return ''
 
     @classmethod
-    def random(cls):
-        # TODO: Name.Random(), Age.Random(), Phone.Random(), address.Random()
-        #       A random person is still faraway from where the generator is
-        #       currently at. We would need at least random name, age and 
-        #       phone number to create a basic person object.
-        # TODO: Could also rename to generate()
+    def random(cls, formats=None):
         p = Person()
-        gender, choices = random.choice(Person.formats)
-        for choice in choices:
-            print(choice, gender)
+        if not formats:
+            formats = Person.formats
+        gender, choices = random.choice(formats)
+        for choice in choices.split():
             attr = getattr(p, choice)(gender)
-            print(attr)
-            setattr(p, 'name_'+choice, attr)
+            setattr(p, 'name_' + choice, attr)
         return p
 
 if __name__ == "__main__":
-    print(names_last)
-    print(names_males)
-    print(names_females)
-    print(Person.formats)
-    print(Person.random())
+    print(Person.random((('female', 'first last'),)))
