@@ -32,7 +32,7 @@ names_females_ordered, names_females = read_file('NAMES_FEMALE')
 #     for line in names_l.readlines():
 #         names_last.add(line.strip())
 
-class Person:
+class Name:
     names_last = names_last_ordered
     names_males = names_males_ordered
     names_females = names_females_ordered
@@ -113,9 +113,9 @@ class Person:
 
     @classmethod
     def random(cls, formats=None):
-        p = Person()
+        p = cls()
         if not formats:
-            formats = Person.formats
+            formats = cls.formats
         gender, choices = random.choice(formats)
         for choice in choices.split():
             attr = getattr(p, choice)(gender)
@@ -123,4 +123,4 @@ class Person:
         return p
 
 if __name__ == "__main__":
-    print(Person.random((('female', 'first last'),)))
+    print(Name.random((('female', 'first last'),)))
