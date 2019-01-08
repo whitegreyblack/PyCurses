@@ -52,22 +52,24 @@ class Window(object):
 
         # border map
         for y in range(self.my+1):
-            e, d = "|", " "
-            if y in (0, self.my):
-                e, d = "+", "-"
-            rows.append(f"{e}{d*mx}{e}")
+            e, d, f = "\u2502", " " * mx, "\u2502"
+            if y == 0:
+                e, d, f = "\u250c", "\u2500" * mx, "\u2510"
+            elif y == self.my:
+                e, d, f = "\u2514", "\u2500" * mx, "\u2518"
+            rows.append(f"{e}{d}{f}")
     
-        for x, y, text in self.texts:
-            rows[y] = f"|{text.rjust(x+len(text)).ljust(mx)}|"
+        # for x, y, text in self.texts:
+        #     rows[y] = f"|{text.rjust(x+len(text)).ljust(mx)}|"
 
         return '\n'.join(rows)
 
     @property
     def windows(self):
-        yield self.x, self.y, self.rows
+        if self.showing:
+            yield self.x, self.y, self.rows
 
         for c in self.children:
-            print(c)
             for x, y, rows in c.windows:
                 yield x, y, rows
 
@@ -194,13 +196,13 @@ class ScrollList(Window):
         mx = self.mx - 2
         rows = []
 
-        print(self.x+self.mx-1)
-
-        for y in range(self.x+self.mx-1):
-            e, d = "|", " " * mx
-            if y in (0, self.my):
-                e, d = "+", "-" * mx
-            rows.append(f"{e}{d}{e}")
+        for y in range(self.x + self.mx):
+            e, d = "\u2502", " " * mx
+            if y == 0:
+                e, d, f = "\u250c", "\u2500" * mx, "\u2510"
+            elif y == self.my:
+                e, d, f = "\u2514", "\u2500" * mx, "\u2518"
+            rows.append(f"{e}{d}{f}")
 
         rows_in_view = None
         s, e = 0, self.height - 1
@@ -219,9 +221,9 @@ class ScrollList(Window):
             s = 0
             rows_in_view = self.data
         for i, r in enumerate(rows_in_view):
-            rows[i+1] = f"|{str(r).ljust(mx)}|"
+            rows[i+1] = f"\u2502{str(r).ljust(mx)}\u2502"
             if self.index == s + i:
-                rows[i+1] = f"|[color=orange]{str(r).ljust(mx)}[/color]|"
+                rows[i+1] = f"\u2502[bkcolor=grey][color=white]{str(r).ljust(mx)}[/color][/bkcolor]\u2502"
 
         # for x, y, text in self.texts:
         #     rows[y] = f"|{text.rjust(x + len(text)).ljust(mx)}|"
