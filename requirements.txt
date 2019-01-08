@@ -2,3 +2,4 @@ PyYAML >= 4.2b1
 click>=7.0
 curses>=2.2
 sqlite3
+cerberus

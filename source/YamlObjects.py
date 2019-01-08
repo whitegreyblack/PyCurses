@@ -53,3 +53,9 @@ class Reciept(yaml.YAMLObject):
         self.tax = args[6]
         self.total = args[7]
         self.payment = args[8]
+    
+    def serialized(self):
+        return {
+            k: getattr(self, k)
+                for k in self.properties.keys()
+        }

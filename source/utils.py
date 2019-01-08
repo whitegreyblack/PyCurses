@@ -7,10 +7,13 @@ drawer, and variable formatting.
 __author__ = "Samuel Whang"
 
 import os
+import yaml
 import curses
 import logging
 import datetime
 import textwrap
+import cerberus
+from source.YamlObjects import Reciept
 from typing import Union, Tuple
 from collections import namedtuple
 from itertools import chain
@@ -249,3 +252,21 @@ def unicode(word):
 def sort_unicode(words, keyfunc=lambda x: unicode(x)):
     """Returns a list of words sorted by unicode value of their strings"""
     return sorted(words, key=keyfunc)
+
+def load_yaml_object(path, doc=False):
+    with open(path, 'r') as f:
+        lines = f.read()
+        o = yaml.load(lines)
+        if doc:
+            o = o.serialized()
+    return o
+
+
+def validate(document, schema):
+    v = cerberus.Validator()
+    return v.validate(document, schema)
+
+def validate_from_path(doc_path, schema_path):
+    document = load_yaml_object(doc_path, doc=True)
+    schema = load_yaml_object(schema_path)
+    return validate(document, schema)
