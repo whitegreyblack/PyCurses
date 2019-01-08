@@ -40,7 +40,7 @@ class YamlTester(unittest.TestCase):
                 if regex.match(file):
                     with open(self.folder + file) as f:
                         try:
-                            yobj = yaml.load(f.read())
+                            yobj = yaml.safe_load(f.read())
                             self.assertEqual(file.split('.')[0].split('-')[1],
                                              yobj.store.replace(' ','').lower())
                         except:

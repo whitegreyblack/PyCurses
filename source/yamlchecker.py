@@ -118,7 +118,7 @@ class YamlChecker(Loggable):
                     continue
 
                 try:
-                    yamlobj = yaml.load(lines)
+                    yamlobj = yaml.safe_load(lines)
                 except Exception as e:
                     self.log(e, level=Logging.WARNING)
                     unverified.append(e)
@@ -305,7 +305,7 @@ class YamlChecker(Loggable):
     #         lines = yamlfile.read()
     #         self.log("Finished reading lines")
     #         self.log("Loading lines into yaml loader")
-    #         yamlobj = yaml.load(lines)
+    #         yamlobj = yaml.safe_load(lines)
     #         self.log("Loaded yaml object")
     #         valid_yaml = isinstance(yamlobj, yaml.YAMLObject)
     #         self.log(f"Valid YamlObject: {valid_yaml}")
@@ -314,7 +314,7 @@ class YamlChecker(Loggable):
     def yaml_read(self, file):
         """Creates and returns yaml object"""
         with open(self.folder + file) as f:
-            obj = yaml.load(f.read())
+            obj = yaml.safe_load(f.read())
         return obj
 
     # def yaml_safe(self, filepath):

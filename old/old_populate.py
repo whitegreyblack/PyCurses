@@ -15,7 +15,7 @@ def conn_func(*args):
 
 @logger(log.pop['yml_load'])
 def load_func(file, data):
-    return yaml.load(data)
+    return yaml.safe_load(data)
 
 @logger(log.pop['sys_read'])
 def read_func(file, fin):
