@@ -24,85 +24,88 @@ class Example:
         return f"Example (a={self.a}, b={self.b})"
 
 class Validator:
-    def __init__(self, **kwargs):
-        self.__dict__.update(kwargs)
+    attributes = dict()
+    def __init__(self, exceptions=False, **kwargs):
+        self.exceptions = exceptions
+        self.attributes.update(kwargs)
 
-    def __repr__(self):
-        d = ', '.join(f'{k}: {v}' for k, v in self.__dict__.items())
+    def __repr__(self) -> str:
+        d = ', '.join(f'{k}: {v}' for k, v in self.attributes.items())
         return f"Validator({d})"
 
-    def __call__(self, other):
+    def __call__(self, other) -> bool:
         is_obj = False
         if not isinstance(other, dict) and not hasattr(other, '__dict__'):
-            raise BaseException(InvalidObjectTypeError)
+            if self.exceptions:
+                raise BaseException(InvalidObjectTypeError)
+            return False
         
         d = other
         if not isinstance(d, dict):
             is_obj = True
             d = d.__dict__
 
-        for attr, atype in self.__dict__.items():
+        for attr, atype in self.attributes.items():
             if not attr in d.keys():
-                raise BaseException(NonExistantAttributeError.format(d, attr, atype))
+                if self.exceptions:
+                    raise BaseException(
+                        NonExistantAttributeError.format(
+                            d, 
+                            attr, 
+                            atype
+                        ))
+                return False
             
             ottr = d[attr]
             otype = type(ottr)
             
             if not isinstance(ottr, atype):
-                try:
-                    converted = atype(ottr)
-                except:
-                    raise BaseException(ImproperTypeError.format(d, attr, otype, atype))
-                else:
-                    if is_obj:
-                        setattr(other, attr, converted)
-                    else:
-                        other[attr] = converted
+                if self.exceptions:
+                    raise BaseException(
+                        ImproperTypeError.format(
+                            d, 
+                            attr, 
+                            otype, 
+                            atype
+                        ))
+                return False
+        return True
 
 if __name__ == "__main__":
     # small tests
     
     # create a validator v with some attributes
     v = Validator(a=int, b=int)
-    print(v)
+    u = Validator(a=int, b=int, exceptions=True)
+    print(v, u)
 
     # option 1: pass in as dict
-    v({'a':3, 'b':4})
+    print("v({'a':3, 'b':4}):", v({'a':3, 'b':4}))
+    print("v({'a':3, 'b':'a'}):", v({'a':3, 'b':'a'}))
     # using class with attributes pulled with __dict__
-    v(Example())
-    # raises error due to wrong type
-    bypass(v, Example(2, 'a'))
+    print("v(Example()):", v(Example()))
+    print("v(Example(3, 'a')):", v(Example(3, 'a')))
 
+    # Exception cases
     # skips args but raises error on nonmatching attribute
-    bypass(v, 3)
+    bypass(u, 3)
     # adds kwargs to validator but missing other attributes
-    bypass(v, {'c':5})
+    bypass(u, {'c':5})
 
     # create a validator v with different definitions than v
     w = Validator(a=int, b=str)
     print(w)
 
     # given an (int, int) validated by an (int, str)
-    # the validator should check if the second attribute is
-    # convertable to a str type. If so, then no exceptions
-    # are raised and the object attr has a new value and type.
+    # the validator should check the second attribute
     e = Example(2, 2)
-    print(e.b, type(e.b))
-    w(e)       
-    print(e.b, type(e.b))
+    print("w(e):", w(e))
 
     # try the same example again but with a dictionary object
-    # instead of a class object. Should modify the reference
-    # passed in and change the type of the attribute that is 
-    # different than the validator definition.
-    # try changing it back to the original definition using 
-    # the first validator and checking the attribute type.
+    # instead of a class object. Using w returns false, v returns true.
     d = {'a':3, 'b':4}
-    print(d['b'], type(d['b']))
-    w(d)
-    print(d['b'], type(d['b']))
-    v(d)
-    print(d['b'], type(d['b']))
+    print("w(d):", w(d))
+    print("v(d):", v(d))
 
     # TODO: nested objects using iterables
     print(list() is Iterable)
