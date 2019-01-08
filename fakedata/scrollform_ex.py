@@ -1,6 +1,6 @@
 """ScrollList example"""
 from bearlibterminal import terminal as t
-from forms import ScrollList, ScrollListModel, Form, Window
+from window import ScrollList, ScrollListModel, Form, Window
 from itertools import chain
 from name import Name
 
@@ -21,6 +21,7 @@ printable_directions = "\n".join(directions)
 
 # the main screen object
 w = Window()
+# w.showing = False
 # w.add_mapping()
 w.add_window(ScrollList(mx=25, data=[Name.random((('female', 'first last'),)) for i in range(100)]))
 w.add_window(Window(x=25, mx=55))
