@@ -1,6 +1,9 @@
-"""validator.py"""
+"""validator.py
+Discontinued since Cerberus already exists.
+May revisit later.
+"""
 import typing
-from collections.abc import Iterable
+from collections.abc import Iterable, Sequence
 
 InvalidObjectTypeError = """
 InvalidObjectTypeError: Object argument must be of type dict or have an attribute dict."""[1:]
@@ -24,10 +27,16 @@ class Example:
         return f"Example (a={self.a}, b={self.b})"
 
 class Validator:
-    attributes = dict()
-    def __init__(self, exceptions=False, **kwargs):
+    types = {
+        'int': int,
+        'str': str,
+        'list': list,
+    }
+    def __init__(self, model=None, exceptions=False):
+        self.attributes = dict()
         self.exceptions = exceptions
-        self.attributes.update(kwargs)
+        if model:
+            self.attributes.update(model)
 
     def __repr__(self) -> str:
         d = ', '.join(f'{k}: {v}' for k, v in self.attributes.items())
@@ -45,7 +54,10 @@ class Validator:
             is_obj = True
             d = d.__dict__
 
-        for attr, atype in self.attributes.items():
+        for attr, adef in self.attributes.items():
+            # explicit keys required by other object
+            # TODO: remove this so we chan check for all missing keys
+            #       and return them as an exception list
             if not attr in d.keys():
                 if self.exceptions:
                     raise BaseException(
@@ -55,59 +67,45 @@ class Validator:
                             atype
                         ))
                 return False
-            
+
             ottr = d[attr]
-            otype = type(ottr)
-            
-            if not isinstance(ottr, atype):
+            atype = adef['type']
+
+            # top level element is true (int, str, list)
+            if not isinstance(ottr, self.types[atype]):
                 if self.exceptions:
                     raise BaseException(
                         ImproperTypeError.format(
                             d, 
                             attr, 
-                            otype, 
+                            type(ottr),
                             atype
                         ))
                 return False
+
+            # singular types ('int', 'str') are single level. skip them
+            if isinstance(ottr, Sequence):
+                etype = adef['el']['type']
+                for el in ottr:
+                    if not isinstance(el, self.types[etype]):
+                        raise BaseException(
+                            ImproperTypeError.format(
+                                d,
+                                attr,
+                                type(ottr[0]),
+                                etype
+                            ))
         return True
 
 if __name__ == "__main__":
     # small tests
-    
-    # create a validator v with some attributes
-    v = Validator(a=int, b=int)
-    u = Validator(a=int, b=int, exceptions=True)
-    print(v, u)
-
-    # option 1: pass in as dict
-    print("v({'a':3, 'b':4}):", v({'a':3, 'b':4}))
-    print("v({'a':3, 'b':'a'}):", v({'a':3, 'b':'a'}))
-    # using class with attributes pulled with __dict__
-    print("v(Example()):", v(Example()))
-    print("v(Example(3, 'a')):", v(Example(3, 'a')))
-
-    # Exception cases
-    # skips args but raises error on nonmatching attribute
-    bypass(u, 3)
-    # adds kwargs to validator but missing other attributes
-    bypass(u, {'c':5})
-
-    # create a validator v with different definitions than v
-    w = Validator(a=int, b=str)
-    print(w)
-
-    # given an (int, int) validated by an (int, str)
-    # the validator should check the second attribute
-    e = Example(2, 2)
-    print("w(e):", w(e))
-
-    # try the same example again but with a dictionary object
-    # instead of a class object. Using w returns false, v returns true.
-    d = {'a':3, 'b':4}
-    print("w(d):", w(d))
-    print("v(d):", v(d))
+    v = Validator({'a': {'type': 'int'}})
+    print(v({'a':3}))
 
     # TODO: nested objects using iterables
-    print(list() is Iterable)
-    print(isinstance(list(), Iterable))
-    print(isinstance(list.__call__(), Iterable))
+    x = Validator({'a': {'type': 'list', 'el': {'type': 'int'}}})
+    print(x)
+    x({'a': [1,2,3]})
+    x({'a': [1,2,'a']})
+
+    # TODO: nested objects after two levels
