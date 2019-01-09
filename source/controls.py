@@ -26,7 +26,6 @@ from collections import namedtuple
 from source.utils import border
 from source.utils import format_float as Money
 
-
 line = namedtuple("Line", "x y line")
 
 
@@ -115,13 +114,14 @@ class View:
         self.window.border()
 
 class Window:
-    def __init__(self, window, title=None):
+    window_ids = 0
+    def __init__(self, window, title=None, focused=False):
         self.title = title
         y, x = window.getmaxyx()
-
         self.term_width = x
         self.term_height = y
         self.window = window
+        self.showing = True
         self.parent = None
         self.child = False
         self.border = False
@@ -131,6 +131,11 @@ class Window:
         self.windows = []
         self.views = []
         self.index = 0
+        self.focused = focused
+
+        # Window.window_ids[2**w] = self
+        self.wid = 2**Window.window_ids
+        Window.window_ids += 1
 
     def add_component(self, component):
         self.components.append(component)
@@ -168,38 +173,19 @@ class Window:
             if window.wid == window_id:
                 return window
 
-    def send_signal(self, command, debug=False):
-        if (command, self.window.wid) in self.keymap:
-            retval = self.window.get_signal(command)
-            
-            if retval is False:
-                return retval
-
-            if self.window.wid == 'ScrollList':
-                self.get_window('Form').model = self.window.model
-
-            next_window_id = self.keymap[(command, self.window.wid)]
-
-            if next_window_id is None:
-                return False
-           
-            if next_window_id is not self.window.wid:
-                next_window = self.get_window(next_window_id)
-                self.window.selected = False
-                next_window.selected = True
-                if next_window.wid == 'Prompt':
-                    next_window.visible = True
-        return True
-
     def draw(self):
+        self.erase()
         self.draw_border()
 
         if self.title:
-            self.window.addstr(0, 2, self.title[:self.term_width//2])
+            x, y, s = 0, 2, self.title[:self.term_width//2]
+            if self.parent:
+                y = self.term_width//2+len(s)//2-1
+            self.window.addstr(x, y, s)
 
         if not self.parent:
             dimensions = f"{self.term_width}, {self.term_height}"
-            self.window.addstr(0, self.term_width - len(dimensions) - 1, dimensions)
+            self.window.addstr(self.term_height-1, self.term_width - len(dimensions) - 1, dimensions)
             # self.window.addstr(0, 2, dimensions + f'{self.term_width - len(dimensions)-1}')
 
         for window in self.windows:
@@ -210,6 +196,9 @@ class Window:
 
         # for comp in self.components:
         #     comp.draw()
+
+    def erase(self):
+        self.window.erase()
 
     def clear(self):
         for view in self.views:
@@ -383,6 +372,29 @@ class Prompt(UIControl):
             if button.selected:
                 return button
 
+    def send_signal(self, command, debug=False):
+        if (command, self.window.wid) in self.keymap:
+            retval = self.window.get_signal(command)
+            
+            if retval is False:
+                return retval
+
+            if self.window.wid == 'ScrollList':
+                self.get_window('Form').model = self.window.model
+
+            next_window_id = self.keymap[(command, self.window.wid)]
+
+            if next_window_id is None:
+                return False
+           
+            if next_window_id is not self.window.wid:
+                next_window = self.get_window(next_window_id)
+                self.window.selected = False
+                next_window.selected = True
+                if next_window.wid == 'Prompt':
+                    next_window.visible = True
+        return True
+
     def get_signal(self, command, debug=False):
         # unselect first then select in all cases
         if command == 10 or command == curses.KEY_ENTER:
@@ -447,6 +459,35 @@ class Scroller:
     def draw(self):
         if not hasattr(self, 'subwin'):
             self.subwin = self.view.subwin(self.columnspan, self.rowspan)
+
+class PromptWindow(Window):
+    def __init__(self, window, title=None, focused=False):
+        super().__init__(window, title, focused)
+
+    def draw(self):
+        super().draw()
+        y, x = self.window.getbegyx()
+        curses.curs_set(2)
+        self.window.addch(1, 1, ' ')
+        self.window.refresh()
+    
+    def erase(self):
+        super().erase()
+        curses.curs_set(0)
+
+class ScrollableWindow(Window):
+    def __init__(self, window, title=None, data=None, focused=False):
+        super().__init__(window, title, focused)
+        self.data = data
+        self.selected = -1
+        self.index = 0 if self.data else -1
+
+    def draw(self):
+        super().draw()
+        for i, d in enumerate(self.data[self.index:self.index+self.height]):
+            s = d[:self.width].ljust(self.width)
+            c = curses.color_pair((i == 0) * 2)
+            self.window.addstr(1 + i, 1, s, c)
 
 class ScrollList:
     """ScrollList should be able to take in any model type that is wrapped in

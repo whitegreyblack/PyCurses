@@ -25,7 +25,9 @@ from source.models.models import Reciept, Transaction
 from source.models.product import Product
 from source.YamlObjects import Reciept as YamlReciept
 from source.controls import (
-    Window, 
+    Window,
+    ScrollableWindow,
+    PromptWindow,
     ScrollList, 
     Card, 
     RecieptForm, 
@@ -35,6 +37,7 @@ from source.controls import (
     OptionsBar,
 )
 import source.controls2 as ui
+from fakedata.name import Name
 
 def setup_test_cards():
     """List of example product cards used in testing"""
@@ -78,9 +81,9 @@ class Application(Loggable):
         # TODO: need a way to format paths before creating other objects
         self.formatted_import_paths = None
         self.formatted_export_path = None
-        self.setup_datebase()
+        self.setup_database()
 
-    def setup_datebase(self):
+    def setup_database(self):
         self.database.rebuild_tables()
         inserted = self.database.previously_inserted_files()
 
@@ -96,6 +99,8 @@ class Application(Loggable):
 
     def check_files(self, skip=None):
         filestates = []
+        if not self.folder:
+            return filestates
         for _, _, files in os.walk(self.folder):
             self.log(f"Validating {len(files)} files")
             
@@ -145,6 +150,7 @@ class Application(Loggable):
                     break
             self.screen.erase()
             self.draw()
+            self.screen.addstr(2, 2, key)
 
     def keyhandler(self, key):
         self.keymap[key]()
@@ -271,10 +277,40 @@ class Application(Loggable):
         """Work on window recursion and tree"""
         screen = self.screen
         height, width = screen.getmaxyx()
+
+        self.data = [Name.random() for _ in range(100)]
+
         self.window = Window(screen, title='Application Example 1')
+        scroller = ScrollableWindow(
+            screen.subwin(
+                height-2, 
+                utils.partition(width, 5, 2), 
+                1, 
+                0
+            ),
+            title="/Directory/",
+            data=[str(n) for n in self.data],
+            focused=True
+        )
         self.window.add_windows([
-            Window(screen.subwin(height, width//2, 0, 0), title='verylongtitlescree'),
-            Window(screen.subwin(height, width//2, 0, width//2))
+            scroller,
+            # Window(screen.subwin(height, width//2, 0, 0), title='verylongtitlescree'),
+            Window(
+                screen.subwin(
+                    height-2, 
+                    utils.partition(width, 5, 3),
+                    1, 
+                    utils.partition(width, 5, 2)
+                )
+            ),
+            # PromptWindow(
+            #     screen.subwin(
+            #         3,
+            #         width,
+            #         height-4,
+            #         0
+            #     )
+            # )
         ])
         # v1 = View(screen.subwin(height - 1, width, 1, 0), columns=2, rows=2)
         # self.window.add_view(v1)
@@ -313,6 +349,8 @@ class Application(Loggable):
         # self.window.add_windows([scroller, form, exitprompt])
 
         keymap = dict()
+        keymap[(curses.KEY_DOWN, 1)] = 1
+        # keymap[(curses.CTL_ENTER)] -- prompt control CTRLEnter: show/hide, ENTER: command
         # keymap[(curses.KEY_UP, scroller.wid)] = scroller.wid
         # keymap[(curses.KEY_DOWN, scroller.wid)] = scroller.wid
         # keymap[(curses.KEY_ENTER, scroller.wid)] = form.wid

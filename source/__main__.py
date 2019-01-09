@@ -64,7 +64,7 @@ def application(screen, folderpath, rebuild, logger=None):
 # TODO: need a way to run main with multiple folders
 # TODO: need a way to run main with export folder specified
 @click.command()
-@click.option('-f', "folder", nargs=1, required=True,
+@click.option('-f', "folder", nargs=1,
               help="Folder containing yaml data files")
 @click.option('--rb', "rebuild", is_flag=True, default=False,
               help="Rebuild tables before inserting files")
@@ -83,10 +83,12 @@ def main(folder, rebuild):
     # Format the given path for the correct path delimiter and the check if
     # that path exists as a directory within the filesystem. Exit early if
     # false.
-    filepath = utils.format_directory_path(folder)
-    if not utils.check_directory_path(filepath):
-        print("Folder argument is not a directory")
-        return 
+    filepath = None
+    if folder:
+        filepath = utils.format_directory_path(folder)
+        if not utils.check_directory_path(filepath):
+            print("Folder argument is not a directory")
+            return 
 
     initialize_environment_settings()
 
