@@ -4,15 +4,20 @@ Main class that builds all other objects and runs the curses loop
 
 __author__ = "Samuel Whang"
 
+import os
 import yaml
 import curses
 import logging
 import datetime
+import cerberus
 import source.utils as utils
 import source.config as config
 from source.logger import Loggable
 from source.schema import (
-    Table, SQLType, build_products_table, build_reciepts_table
+    Table, 
+    SQLType, 
+    build_products_table,
+    build_reciepts_table
 )
 from source.yamlchecker import YamlChecker
 from source.database import Connection
@@ -20,16 +25,26 @@ from source.models.models import Reciept, Transaction
 from source.models.product import Product
 from source.YamlObjects import Reciept as YamlReciept
 from source.controls import (
-    Window, ScrollList, Card, RecieptForm, Prompt, Button, View, OptionsBar,
+    Window, 
+    ScrollList, 
+    Card, 
+    RecieptForm, 
+    Prompt, 
+    Button, 
+    View, 
+    OptionsBar,
 )
 import source.controls2 as ui
 
 def setup_test_cards():
     """List of example product cards used in testing"""
-    return [Card(Product(fruit, price))
+    return [
+        Card(Product(fruit, price))
             for fruit, price in zip(
                 ['Apples', 'Oranges', 'Pears', 'Watermelons', 'Peaches'],
-                [3, 5, 888, 24, 55])]
+                [3, 5, 888, 24, 55]
+            )
+    ]
 
 class Application(Loggable):
     """Overview:
@@ -47,8 +62,8 @@ class Application(Loggable):
     def __init__(self, folder, logger=None, rebuild=False):
         super().__init__(self, logger=logger)
         self.folder = folder
-        self.export = "export/"
-        self.checker = YamlChecker(folder, logger=logger)
+        self.export = "./export/"
+        # self.checker = YamlChecker(folder, logger=logger)
 
         self.keymap = dict()
         self.keymap[ord('e')] = self.export_reciepts
@@ -60,19 +75,59 @@ class Application(Loggable):
     def setup(self):
         # TODO: need a setting to determine behavior of previously loaded data
         # TODO: need a way to format paths before creating other objects
-        self.formatted_import_paths = None        
+        self.formatted_import_paths = None
         self.formatted_export_path = None
 
         self.database.rebuild_tables()
-        inserted = self.database.inserted_files()
+        inserted = self.database.previously_inserted_files()
 
-        self.checker.verify_file_states(loaded_files=inserted)
-        files = self.checker.verified_files
+        files = self.check_files(skip=inserted)
+        yobjs = self.load_files(files)
+        # self.checker.verify_file_states(loaded_files=inserted)
+        # files = self.checker.verified_files
 
-        self.database.insert_files(files)
+        self.database.insert_files(yobjs)
         self.log(f"Committed:")
         for commit in files:
             self.log(f"+ {commit}")
+
+    def check_files(self, skip=None):
+        filestates = []
+        for _, _, files in os.walk(self.folder):
+            self.log(f"Validating {len(files)} files")
+            
+            for file_name in files:
+                if skip and file_name in skip:
+                    continue
+                filename, extension = utils.filename_and_extension(file_name)
+                self.check_file_name(filename)
+                self.check_file_data(file_name)
+                filestates.append(file_name)
+        return filestates
+
+    def check_file_name(self, filename):
+        schema = {
+            'filename': {
+                'type': 'string', 
+                'regex': config.YAML_FILE_NAME_REGEX
+            }
+        }
+        v = cerberus.Validator(schema)
+        if not v.validate({'filename': filename}):
+            raise BaseException(f'Yaml Filename {filename} is invalid')
+        print(f'Yaml Filename is valid {filename}')
+
+    def check_file_data(self, filename):
+        v = utils.validate_from_path(self.folder+filename, './data/schema.yaml')
+        if not v:
+            raise BaseException(f"File data for {filename} invalid")
+
+    def load_files(self, files):
+        yobjs = {}
+        for f in files:
+            with open(self.folder+f, 'r') as o:
+                yobjs[f] = yaml.load(o.read())
+        return yobjs
 
     def run(self):
         while True:
@@ -96,16 +151,21 @@ class Application(Loggable):
         for rdata in self.database.select_reciepts():
             reciept = rdata.filename
             rproducts = list(self.database.select_reciept_products(reciept))
-            t = Transaction(rdata.total, rdata.payment, 
-                            rdata.subtotal, rdata.tax)
-
+            t = Transaction(
+                rdata.total, 
+                rdata.payment, 
+                rdata.subtotal, 
+                rdata.tax
+            )
             d = utils.parse_date_from_database(rdata.date)
-            r = Reciept(rdata.store,
-                        rdata.short,
-                        utils.format_date(d, config.DATE_FORMAT['L']),
-                        utils.format_date(d, config.DATE_FORMAT['S']),
-                        rdata.category,
-                        [Product(p.product, p.price) for p in rproducts], t)
+            r = Reciept(
+                rdata.store,
+                rdata.short,
+                utils.format_date(d, config.DATE_FORMAT['L']),
+                utils.format_date(d, config.DATE_FORMAT['S']),
+                rdata.category,
+                [Product(p.product, p.price) for p in rproducts], t
+            )
             yield r
 
     def build_reciepts_for_export(self):
@@ -120,9 +180,17 @@ class Application(Loggable):
             datelist = utils.parse_date_from_database(r.date)
 
             # reuse yaml object to export
-            reciept = YamlReciept(r.store, r.short, datelist, r.category, 
-                                  products, r.subtotal, r.tax, r.total,
-                                  r.payment)
+            reciept = YamlReciept(
+                r.store, 
+                r.short, 
+                datelist, 
+                r.category, 
+                products, 
+                r.subtotal, 
+                r.tax, 
+                r.total,
+                r.payment
+            )
             yield (r.filename, reciept)
 
     def export_reciepts(self):
@@ -147,9 +215,6 @@ class Application(Loggable):
         data comparisons. Could use a handler to generate all the reports
         specific to the database being used.
         """
-        pass
-
-    def build_windows4(self, screen):
         pass
 
     def build_windows3(self, screen):
@@ -179,10 +244,12 @@ class Application(Loggable):
         scroller = ScrollList(v1.x, v1.y, v1.width // 4, v1.height)
         scroller.add_items(reciept_cards)
 
-        form = RecieptForm(v1.width // 4,
-                           v1.y,
-                           (v1.width // 4) * 3,
-                           v1.height, scroller.model)
+        form = RecieptForm(
+            v1.width // 4,
+            v1.y,
+            (v1.width // 4) * 3,
+            v1.height, scroller.model
+        )
 
         v1.add_element(scroller)
         v1.add_element(form)
@@ -211,18 +278,28 @@ class Application(Loggable):
 
         reciept_cards = [ Card(r) for r in self.build_reciepts() ]
         scroller.add_items(reciept_cards)
-        form = RecieptForm((self.window.width // 4) + 1, # add 1 for offset
-                           1,
-                           self.window.width - (self.window.width // 4) - 1, 
-                           self.window.height,
-                           scroller.model)
-    
-        promptwin = screen.subwin(self.window.height // 3, 
-                                  self.window.width // 2, 
-                                  self.window.height // 3,
-                                  self.window.width // 4)
+        form = RecieptForm(
+            (self.window.width // 4) + 1, # add 1 for offset
+            1,
+            self.window.width - (self.window.width // 4) - 1, 
+            self.window.height,
+            scroller.model
+        )
 
-        exitprompt = Prompt(promptwin, 'Exit Prompt', 'Confirm', 'Cancel', logger=self.logger)
+        promptwin = screen.subwin(
+            self.window.height // 3, 
+            self.window.width // 2, 
+            self.window.height // 3,
+            self.window.width // 4
+        )
+
+        exitprompt = Prompt(
+            promptwin, 
+            'Exit Prompt', 
+            'Confirm', 
+            'Cancel', 
+            logger=self.logger
+        )
 
         self.window.add_windows([scroller, form, exitprompt])
 
@@ -272,6 +349,9 @@ class Application(Loggable):
         return self.window.send_signal(signal)
 
 if __name__ == "__main__":
-    a = Application('data/')
+    a = Application('./reciepts/')
+    a.setup()
+    a.build_windows()
+    a.run()
     for table in a.database.tables:
         print(table)

@@ -9,11 +9,18 @@ from collections import namedtuple
 from source.logger import Loggable
 from source.YamlObjects import Reciept
 from source.schema import (
-    Table, SQLType, build_products_table, build_reciepts_table
+    Table, 
+    SQLType, 
+    build_products_table, 
+    build_reciepts_table
 )
 from source.utils import (
-    logargs, setup_logger, setup_logger_from_logargs, format_date as date,
-    format_float as real, filename_and_extension as fileonly
+    logargs, 
+    setup_logger, 
+    setup_logger_from_logargs, 
+    format_date as date,
+    format_float as real, 
+    filename_and_extension as fileonly
 )
 
 spacer = "  "
@@ -84,7 +91,7 @@ class Connection(Loggable):
         self.conn.commit()
         self.log("created tables {', '.join(tablenames)} in database.")
 
-    def inserted_files(self, fields=None):
+    def previously_inserted_files(self, fields=None):
         self.log("retrieving inserted files from database")
         cursor = self.conn.execute("SELECT FILENAME FROM reciepts;")
         for data in unpack(cursor):
@@ -96,7 +103,7 @@ class Connection(Loggable):
             return
 
         self.log("inserting reciepts data into database.")
-        inserted_files = self.inserted_files()
+        inserted_files = self.previously_inserted_files()
         
         reciept_table = self.table("reciepts")
         product_table = self.table("products")
@@ -107,18 +114,19 @@ class Connection(Loggable):
                 self.log(f"inserting {file_name}")
 
                 file_only, _ = fileonly(file_name)
-                self.conn.execute(reciept_table.insert_command, 
-                                  (
-                                    file_only,
-                                    yaml_obj.store,
-                                    yaml_obj.short,
-                                    date(yaml_obj.date),
-                                    yaml_obj.category,
-                                    real(yaml_obj.subtotal),
-                                    real(yaml_obj.tax),
-                                    real(yaml_obj.total),
-                                    real(yaml_obj.payment)
-                                  )
+                self.conn.execute(
+                    reciept_table.insert_command, 
+                    (
+                        file_only,
+                        yaml_obj.store,
+                        yaml_obj.short,
+                        date(yaml_obj.date),
+                        yaml_obj.category,
+                        real(yaml_obj.subtotal),
+                        real(yaml_obj.tax),
+                        real(yaml_obj.total),
+                        real(yaml_obj.payment)
+                    )
                 )
                                     
                 self.log(f"{spacer}+ 'filename': '{file_only}'")
@@ -128,12 +136,13 @@ class Connection(Loggable):
 
                 for product, price in yaml_obj.products.items():
                     self.log(f"{spacer}+ '{product}': '{price:.2f}'")
-                    self.conn.execute(product_table.insert_command, 
-                                      (
-                                        file_only,
-                                        product, 
-                                        real(price)
-                                      )
+                    self.conn.execute(
+                        product_table.insert_command, 
+                        (
+                            file_only,
+                            product, 
+                            real(price)
+                        )
                     )
                 self.log(f"{spacer}inserted into products table")
             else:

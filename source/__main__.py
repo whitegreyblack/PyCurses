@@ -1,5 +1,6 @@
 """__main__.py: Reciept Viewer App
-Handles building application within curses environment
+Handles building application within curses environment. Initializes
+curses settings then sends the screen into the application to be built
 """
 
 __author__ = "Samuel Whang"
