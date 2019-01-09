@@ -59,8 +59,9 @@ class Application(Loggable):
     Then the application is looped to draw the views onto the screen using 
     curses framework.
     """
-    def __init__(self, folder, logger=None, rebuild=False):
+    def __init__(self, folder, screen=None, logger=None, rebuild=False):
         super().__init__(self, logger=logger)
+        self.screen = screen
         self.folder = folder
         self.export = "./export/"
         # self.checker = YamlChecker(folder, logger=logger)
@@ -77,7 +78,9 @@ class Application(Loggable):
         # TODO: need a way to format paths before creating other objects
         self.formatted_import_paths = None
         self.formatted_export_path = None
+        self.setup_datebase()
 
+    def setup_datebase(self):
         self.database.rebuild_tables()
         inserted = self.database.previously_inserted_files()
 
@@ -115,7 +118,7 @@ class Application(Loggable):
         v = cerberus.Validator(schema)
         if not v.validate({'filename': filename}):
             raise BaseException(f'Yaml Filename {filename} is invalid')
-        print(f'Yaml Filename is valid {filename}')
+        # print(f'Yaml Filename is valid {filename}')
 
     def check_file_data(self, filename):
         v = utils.validate_from_path(self.folder+filename, './data/schema.yaml')
@@ -231,8 +234,8 @@ class Application(Loggable):
         optbar.add_option('Help', None)
         self.window.add_view(v1)
 
-    def build_windows2(self, screen):
-        self.screen = screen
+    def build_windows2(self):
+        screen = self.screen
         y, x = screen.getbegyx() # just a cool way of getting 0, 0
         height, width = screen.getmaxyx()
         # TODO: options manager, view manager, component manager
@@ -343,7 +346,9 @@ class Application(Loggable):
         # self.screen.addstr(2, self.window.width // 8 + 11, "[Products]")
         # self.screen.addstr(2, self.window.width // 8 + 22, "[Stores]")
         # self.window.draw(self.screen)
-        self.window.draw()
+
+        # send in the screen to all window objects
+        self.window.draw(self.screen)
 
     def send_signal(self, signal):
         return self.window.send_signal(signal)
