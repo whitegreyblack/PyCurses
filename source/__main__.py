@@ -45,12 +45,18 @@ def application(screen, folderpath, rebuild, logger=None):
     initialize_curses_settings()
     
     # initialize application object and build front/back end
-    app = Application(folderpath, logger=logger, rebuild=rebuild)
+    app = Application(
+        folderpath, 
+        screen=screen,
+        logger=logger,
+        rebuild=rebuild
+    )
 
     # should we create a new function that calls all 4 functions?
+    # or manually call individual functions in here?
     app.setup()
     #app.build_windows(screen)
-    app.build_windows2(screen)
+    app.build_windows2()
     app.draw()
     app.run()
 

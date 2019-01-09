@@ -17,7 +17,9 @@ Window:
     Move to json?
 """
 
+
 __author__ = "Samuel Whang"
+
 
 import curses
 from collections import namedtuple
@@ -30,7 +32,6 @@ line = namedtuple("Line", "x y line")
 
 def intersect(this, other):
     return False
-
 
 
 # -- Curses-independent classes --
@@ -178,16 +179,16 @@ class Window:
                     next_window.visible = True
         return True
 
-    def draw(self):
-        # screen.addstr(0, 1, self.title)
-        # dimensions = f"{self.term_width}, {self.term_height}"
-        # screen.addstr(0, self.term_width - len(dimensions) - 1, dimensions)
+    def draw(self, screen):
+        screen.addstr(0, 1, self.title)
+        dimensions = f"{self.term_width}, {self.term_height}"
+        screen.addstr(0, self.term_width - len(dimensions) - 1, dimensions)
         # for window in self.windows:
         #     window.draw(screen)
 
-        # for view in self.views:
-        #     # view.window.border()
-        #     view.draw()
+        for view in self.views:
+            # view.window.border()
+            view.draw()
 
         for comp in self.components:
             comp.draw()
