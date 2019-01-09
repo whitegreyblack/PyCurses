@@ -14,6 +14,7 @@ import datetime
 import textwrap
 import cerberus
 from source.YamlObjects import Reciept
+from source.config import YAML_FILE_NAME_REGEX
 from typing import Union, Tuple
 from collections import namedtuple
 from itertools import chain
@@ -270,3 +271,13 @@ def validate_from_path(doc_path, schema_path):
     document = load_yaml_object(doc_path, doc=True)
     schema = load_yaml_object(schema_path)
     return validate(document, schema)
+
+def validate_file_name():
+    schema = {
+        'filename': {
+            'type': 'string', 
+            'regex': YAML_FILE_NAME_REGEX
+        }
+    }
+    v = cerberus.Validator(schema)
+    print(v.validate({'filename': '170327-leevers'}))

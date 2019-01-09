@@ -221,7 +221,7 @@ class YamlChecker(Loggable):
                 "VERIFIED": verified,
                 "SKIPPED": skipped,
                 "UNVERIFIED": unverified,
-                }
+            }
 
     # !DEPRACATED CODE! TODO: REMOVE CODE ONCE ALL FUNCTIONS HAVE BEEN MOVED
     # def files_safe(self, loaded_files=None):
@@ -451,10 +451,12 @@ def log_file_results(logger, batches, toconsole):
             log(logger, batchmessage, toconsole)
             for index, b in enumerate(batch):
                 symbol = config.YAML_CHECKER_BATCH_SYMBOL[batchtype]
-                message = config.YAML_CHECKER_FILE_MSG.format(symbol,
-                                                              index + 1,
-                                                              len(batch),
-                                                              b)
+                message = config.YAML_CHECKER_FILE_MSG.format(
+                    symbol,
+                    index + 1,
+                    len(batch),
+                    b
+                )
                 log(logger, message, toconsole)
         else:
             batchmessage = config.YAML_CHECKER_NO_BATCH.format(batchtype)
