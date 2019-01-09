@@ -281,3 +281,6 @@ def validate_file_name():
     }
     v = cerberus.Validator(schema)
     print(v.validate({'filename': '170327-leevers'}))
+
+def partition(distance, partitions, length=1):
+    return round(distance/partitions)*length
