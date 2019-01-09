@@ -267,65 +267,71 @@ class Application(Loggable):
         self.window.add_view(optionview3)
         #self.window.add_view(View(1, 1, width, height - 1))
 
-    def build_windows(self, screen):
-        self.screen = screen
+    def build_windows(self):
+        """Work on window recursion and tree"""
+        screen = self.screen
         height, width = screen.getmaxyx()
-        self.window = Window('Application', width, height)
-        self.window.add_view()
+        self.window = Window(screen, title='Application Example 1')
+        self.window.add_windows([
+            Window(screen.subwin(height, width//2, 0, 0), title='verylongtitlescree'),
+            Window(screen.subwin(height, width//2, 0, width//2))
+        ])
+        # v1 = View(screen.subwin(height - 1, width, 1, 0), columns=2, rows=2)
+        # self.window.add_view(v1)
 
-        scroller = ScrollList(1, 1,
-                              self.window.width // 4,
-                              self.window.height,
-                              title='Reciepts',
-                              selected=True)
+        # scroller = ScrollList(1, 1,
+        #                       self.window.width // 4,
+        #                       self.window.height,
+        #                       title='Reciepts',
+        #                       selected=True)
 
-        reciept_cards = [ Card(r) for r in self.build_reciepts() ]
-        scroller.add_items(reciept_cards)
-        form = RecieptForm(
-            (self.window.width // 4) + 1, # add 1 for offset
-            1,
-            self.window.width - (self.window.width // 4) - 1, 
-            self.window.height,
-            scroller.model
-        )
+        # reciept_cards = [ Card(r) for r in self.build_reciepts() ]
+        # scroller.add_items(reciept_cards)
+        # form = RecieptForm(
+        #     (self.window.width // 4) + 1, # add 1 for offset
+        #     1,
+        #     self.window.width - (self.window.width // 4) - 1, 
+        #     self.window.height,
+        #     scroller.model
+        # )
 
-        promptwin = screen.subwin(
-            self.window.height // 3, 
-            self.window.width // 2, 
-            self.window.height // 3,
-            self.window.width // 4
-        )
+        # promptwin = screen.subwin(
+        #     self.window.height // 3, 
+        #     self.window.width // 2, 
+        #     self.window.height // 3,
+        #     self.window.width // 4
+        # )
 
-        exitprompt = Prompt(
-            promptwin, 
-            'Exit Prompt', 
-            'Confirm', 
-            'Cancel', 
-            logger=self.logger
-        )
+        # exitprompt = Prompt(
+        #     promptwin, 
+        #     'Exit Prompt', 
+        #     'Confirm', 
+        #     'Cancel', 
+        #     logger=self.logger
+        # )
 
-        self.window.add_windows([scroller, form, exitprompt])
+        # self.window.add_windows([scroller, form, exitprompt])
 
         keymap = dict()
-        keymap[(curses.KEY_UP, scroller.wid)] = scroller.wid
-        keymap[(curses.KEY_DOWN, scroller.wid)] = scroller.wid
-        keymap[(curses.KEY_ENTER, scroller.wid)] = form.wid
-        keymap[(curses.KEY_RIGHT, scroller.wid)] = form.wid
-        keymap[(curses.KEY_LEFT, form.wid)] = scroller.wid
-        keymap[(curses.KEY_LEFT, exitprompt.wid)] = exitprompt.wid
-        keymap[(curses.KEY_RIGHT, exitprompt.wid)] = exitprompt.wid
-        keymap[(ord('\t'), exitprompt.wid)] = exitprompt.wid
-        # keymap[(curses.KEY_F1,)] = 'Reciepts'
-        # 10 : New Line Character
-        keymap[(10, scroller.wid)] = form.wid
-        keymap[(10, exitprompt.wid)] = scroller.wid
-        # 27 : Escape Key Code
-        keymap[(27, scroller.wid)] =  exitprompt.wid
-        keymap[(27, exitprompt.wid)] = None
-        keymap[(27, form.wid)] = scroller.wid
-        keymap[(ord('y'), exitprompt.wid)] = None
-        keymap[(ord('n'), exitprompt.wid)] = form.wid
-        keymap[(curses.KEY_ENTER, exitprompt.wid)] = None
+        # keymap[(curses.KEY_UP, scroller.wid)] = scroller.wid
+        # keymap[(curses.KEY_DOWN, scroller.wid)] = scroller.wid
+        # keymap[(curses.KEY_ENTER, scroller.wid)] = form.wid
+        # keymap[(curses.KEY_RIGHT, scroller.wid)] = form.wid
+        # keymap[(curses.KEY_LEFT, form.wid)] = scroller.wid
+        # keymap[(curses.KEY_LEFT, exitprompt.wid)] = exitprompt.wid
+        # keymap[(curses.KEY_RIGHT, exitprompt.wid)] = exitprompt.wid
+        # keymap[(ord('\t'), exitprompt.wid)] = exitprompt.wid
+        # # keymap[(curses.KEY_F1,)] = 'Reciepts'
+        # # 10 : New Line Character
+        # keymap[(10, scroller.wid)] = form.wid
+        # keymap[(10, exitprompt.wid)] = scroller.wid
+        # # 27 : Escape Key Code
+        # keymap[(27, scroller.wid)] =  exitprompt.wid
+        # keymap[(27, exitprompt.wid)] = None
+        # keymap[(27, form.wid)] = scroller.wid
+        # keymap[(ord('y'), exitprompt.wid)] = None
+        # keymap[(ord('n'), exitprompt.wid)] = form.wid
+        # keymap[(curses.KEY_ENTER, exitprompt.wid)] = None
         self.window.add_keymap(keymap)
 
     def draw(self):
@@ -348,7 +354,7 @@ class Application(Loggable):
         # self.window.draw(self.screen)
 
         # send in the screen to all window objects
-        self.window.draw(self.screen)
+        self.window.draw()
 
     def send_signal(self, signal):
         return self.window.send_signal(signal)

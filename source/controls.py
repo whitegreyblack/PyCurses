@@ -115,10 +115,16 @@ class View:
         self.window.border()
 
 class Window:
-    def __init__(self, title, x, y):
+    def __init__(self, window, title=None):
         self.title = title
+        y, x = window.getmaxyx()
+
         self.term_width = x
         self.term_height = y
+        self.window = window
+        self.parent = None
+        self.child = False
+        self.border = False
         self.width = x - 2
         self.height = y - 2
         self.components = []
@@ -130,20 +136,26 @@ class Window:
         self.components.append(component)
 
     @property
-    def window(self):
-        for window in self.windows:
-            if hasattr(window, 'selected') and window.selected:
-                return window
+    def windows(self):
+        for window in self.__windows:
+            # if hasattr(window, 'selected') and window.selected:
+            yield window
+
+    @windows.setter
+    def windows(self, value):
+        self.__windows = value
 
     def add_view(self, view):
         self.views.append(view)
 
     def add_window(self, window):
-        self.windows.append(window)
+        window.parent = self
+        window.border = True
+        self.__windows.append(window)
 
     def add_windows(self, windows):
-        for window in windows:
-            self.windows.append(window)
+        for w in windows:
+            self.add_window(w)
 
     def add_keymap(self, keymap):
         self.keymap = keymap
@@ -179,23 +191,33 @@ class Window:
                     next_window.visible = True
         return True
 
-    def draw(self, screen):
-        screen.addstr(0, 1, self.title)
-        dimensions = f"{self.term_width}, {self.term_height}"
-        screen.addstr(0, self.term_width - len(dimensions) - 1, dimensions)
-        # for window in self.windows:
-        #     window.draw(screen)
+    def draw(self):
+        self.draw_border()
 
-        for view in self.views:
-            # view.window.border()
-            view.draw()
+        if self.title:
+            self.window.addstr(0, 2, self.title[:self.term_width//2])
 
-        for comp in self.components:
-            comp.draw()
+        if not self.parent:
+            dimensions = f"{self.term_width}, {self.term_height}"
+            self.window.addstr(0, self.term_width - len(dimensions) - 1, dimensions)
+            # self.window.addstr(0, 2, dimensions + f'{self.term_width - len(dimensions)-1}')
+
+        for window in self.windows:
+            window.draw()
+        # for view in self.views:
+        #     # view.window.border()
+        #     view.draw()
+
+        # for comp in self.components:
+        #     comp.draw()
 
     def clear(self):
         for view in self.views:
             view.clear()
+
+    def draw_border(self):
+        if self.border:
+            self.window.border()
 
 class Label:
     def __init__(self, x, y, string):
