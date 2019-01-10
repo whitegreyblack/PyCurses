@@ -5,6 +5,11 @@ Data models to hold data from db
 
 __author__ = "Samuel Whang"
 
+import textwrap
+from faker import Faker
+from faker.providers import job, phone_number
+from fakedata.name import Name
+from fakedata.phonenumber import PhoneNumber
 from typing import Union
 from collections import namedtuple
 
@@ -27,6 +32,48 @@ def day_month(date):
 
 point = namedtuple('Point', 'x y')
 pointgrid = namedtuple('PointGrid', 'x y width height')
+
+fake = Faker()
+fake.add_provider(job)
+fake.add_provider(phone_number)
+
+class Person:
+    def __init__(self, name=None, address=None, job=None, phone_number=None):
+        self.name = name if name else Name.random((('female', 'first last'),))
+        self.address = address if address else fake.address()
+        self.job = job if job else fake.job()
+        self.phone_number = phone_number if phone_number else PhoneNumber.random()
+        self.description = fake.text()
+    
+    def display(self, x, y, mx, my, indent=0):
+        space = ' ' * indent
+        yield (y + 0, x, space + "Name         :")
+        yield (y + 1, x, space + "Address      :")
+        yield (y + 4, x, space + "Phone Number :")
+        yield (y + 5, x, space + "Occupation   :")
+        yield (y + 7, x, space + "Description  :")
+
+        dy = 0
+        dx = indent + 18
+        yield (y, dx, str(self.name))
+        dy += 1
+
+        addr = self.address.split('\n')
+        for line in addr:
+            yield (y + dy, dx, line)
+            dy += 1
+        dy += 1
+
+        yield (y + dy, dx, self.job)
+        dy += 1
+
+        yield (y + dy, dx, self.phone_number)
+        dy += 2
+
+        desc = textwrap.wrap(self.description, mx - dx)
+        for line in desc:
+            yield (y + dy, dx, line)
+            dy += 1
 
 class Transaction:
     properties = ["subtotal", "tax", "total", "payment"]

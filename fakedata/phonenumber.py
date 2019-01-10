@@ -13,5 +13,5 @@ class PhoneNumber(str):
             openparen = "("
             closeparen = ")"
         n = str(random.randint(1000000000, 9999999999))
-        phone= f"{openparen}{n[0:3]}{closeparen}{delim}{n[3:6]}{delim}{n[6:]}"
+        phone = f"{openparen}{n[0:3]}{closeparen}{delim}{n[3:6]}{delim}{n[6:]}"
         return cls(phone)

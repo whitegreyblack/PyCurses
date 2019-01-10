@@ -29,10 +29,14 @@ EventArg = namedtuple('EventArg', 'sender msg')
 
 
 class Event(list):
-    def __call__(self, sender, event):
-        for fn in self:
-            fn(sender, event)
-
+    # def __call__(self, sender, event):
+    #     for fn in self:
+    #         fn(sender, event)
+    def __call__(self, *args, **kwargs):
+        for f in self:
+            f(*args, **kwargs)
+    def __repr__(self):
+        return f"Event({s})"
 '''
 class Permissions(Enum): 
     flags = {
@@ -272,7 +276,7 @@ def validate_from_path(doc_path, schema_path):
     schema = load_yaml_object(schema_path)
     return validate(document, schema)
 
-def validate_file_name():
+def validate_filename(filename):
     schema = {
         'filename': {
             'type': 'string', 
@@ -280,7 +284,7 @@ def validate_file_name():
         }
     }
     v = cerberus.Validator(schema)
-    print(v.validate({'filename': '170327-leevers'}))
+    print(v.validate({'filename': filename}))
 
 def partition(distance, partitions, length=1):
-    return round(distance/partitions)*length
+    return round(distance/partitions*length)

@@ -23,9 +23,11 @@ __author__ = "Samuel Whang"
 
 import curses
 from collections import namedtuple
-from source.utils import border
-from source.utils import format_float as Money
-
+from source.utils import (
+    Event,
+    border, 
+    format_float as Money
+)
 line = namedtuple("Line", "x y line")
 
 
@@ -174,19 +176,27 @@ class Window:
                 return window
 
     def draw(self):
+        """
+        Handles erasing of window, border drawing and title placement.
+        Then calls children object draw functions
+        """
         self.erase()
         self.draw_border()
 
         if self.title:
             x, y, s = 0, 2, self.title[:self.term_width//2]
+            # children titles are -1 from the right
             if self.parent:
-                y = self.term_width//2+len(s)//2-1
+                y = self.term_width-len(s)-1
             self.window.addstr(x, y, s)
 
         if not self.parent:
             dimensions = f"{self.term_width}, {self.term_height}"
-            self.window.addstr(self.term_height-1, self.term_width - len(dimensions) - 1, dimensions)
-            # self.window.addstr(0, 2, dimensions + f'{self.term_width - len(dimensions)-1}')
+            self.window.addstr(
+                self.term_height - 1, 
+                self.term_width - len(dimensions) - 1, 
+                dimensions
+            )
 
         for window in self.windows:
             window.draw()
@@ -207,6 +217,29 @@ class Window:
     def draw_border(self):
         if self.border:
             self.window.border()
+
+# more specific classes
+class DisplayWindow(Window):
+    def __init__(self, window, title=None, focused=False):
+        super().__init__(window, title, focused)
+        self.dataobject = None
+        self.selected = -1
+
+    def on_data_changed(self, sender, sid, arg):
+        self.dataobject = arg
+    
+    def draw(self):
+        super().draw()
+        if self.dataobject:
+            mx, my = self.width - 4, self.height - 4
+            for y, x, s in self.dataobject.display(2, 2, mx, my, 2):
+                self.window.addstr(y, x, s)
+        else:
+            self.window.addstr(2, 2, "No data present")
+
+    def handle_key(self, key):
+        if key == curses.KEY_DOWN:
+            pass
 
 class Label:
     def __init__(self, x, y, string):
@@ -349,18 +382,22 @@ class Prompt(UIControl):
         self.visible = False
         self.logger = logger
         longerlabel = max(len(confirm), len(cancel))
-        self.confirm = Button(self.x + 1, 
-                              self.height - 4, 
-                              longerlabel + 2, 
-                              2, 
-                              confirm, 
-                              True)
+        self.confirm = Button(
+            self.x + 1, 
+            self.height - 4, 
+            longerlabel + 2, 
+            2, 
+            confirm, 
+            True
+        )
 
-        self.cancel = Button(self.width - 3 - longerlabel - 1, 
-                             self.height - 4, 
-                             longerlabel + 2, 
-                             2, 
-                             cancel)
+        self.cancel = Button(
+            self.width - longerlabel -4, 
+            self.height - 4, 
+            longerlabel + 2, 
+            2, 
+            cancel
+        )
 
         # TODO should be changeable through constructor
         # class button: property isSelected/Selected
@@ -476,18 +513,85 @@ class PromptWindow(Window):
         curses.curs_set(0)
 
 class ScrollableWindow(Window):
-    def __init__(self, window, title=None, data=None, focused=False):
+    def __init__(
+            self, 
+            window, 
+            title=None, 
+            data=None, 
+            focused=False,
+            data_changed_handlers=None
+        ):
         super().__init__(window, title, focused)
+        self.data_changed_event = Event()
+        for handler in data_changed_handlers:
+            self.data_changed_event.append(handler)
         self.data = data
         self.selected = -1
         self.index = 0 if self.data else -1
 
+    @property
+    def data(self):
+        return self.__data
+    
+    @data.setter
+    def data(self, data):
+        self.__data = data
+        self.on_data_changed()
+    
+    def on_data_changed(self):
+        if self.__data and self.index > -1:
+            self.data_changed_event(
+                self.__class__.__name__, 
+                self.wid, 
+                self.index
+            )
+
     def draw(self):
         super().draw()
-        for i, d in enumerate(self.data[self.index:self.index+self.height]):
-            s = d[:self.width].ljust(self.width)
-            c = curses.color_pair((i == 0) * 2)
-            self.window.addstr(1 + i, 1, s, c)
+        # for i, d in enumerate(self.data[self.index:self.index+self.height]):
+        #     s = d[:self.width].ljust(self.width)
+        #     c = curses.color_pair((i == 0) * 2)
+        #     self.window.addstr(1 + i, 1, s, c)
+
+        rows_in_view = None
+        s, e = 0, self.height
+        halfscreen = self.height // 2
+        if len(self.data) > self.height - 1:
+            if self.index < halfscreen:
+                pass
+            elif self.index > len(self.data) - halfscreen:
+                s = len(self.data) - self.height + 1
+                e = s + self.height
+            else:
+                s = self.index - halfscreen
+                e = s + self.height
+            rows_in_view = self.data[s:e]
+        else:
+            s = 0
+            rows_in_view = self.data
+
+        for i, r in enumerate(rows_in_view):
+            l = r[:self.width].ljust(self.width)
+            c = curses.color_pair((s + i == self.index) * 2)
+            self.window.addstr(i + 1, 1, l, c)
+
+    def handle_key(self, key):
+        if key == curses.KEY_DOWN:
+            self.increment_index()
+        elif key == curses.KEY_UP:
+            self.decrement_index()
+
+    def increment_index(self):
+        t = self.index + 1
+        if t < len(self.data):
+            self.index = t
+            self.on_data_changed()
+    
+    def decrement_index(self):
+        t = self.index - 1
+        if t >= 0:
+            self.index = t
+            self.on_data_changed()
 
 class ScrollList:
     """ScrollList should be able to take in any model type that is wrapped in
