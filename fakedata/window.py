@@ -207,11 +207,12 @@ class ScrollList(Window):
         rows_in_view = None
         s, e = 0, self.height - 1
         halfscreen = self.height // 2
+
         if len(self.data) > self.height - 1:
             if self.index < halfscreen:
                 pass
             elif self.index > len(self.data) - halfscreen:
-                s = len(self.data) - self.height + 1
+                s = len(self.data) - self.height - 1
                 e = s + self.height - 1
             else:
                 s = self.index - halfscreen
@@ -220,6 +221,7 @@ class ScrollList(Window):
         else:
             s = 0
             rows_in_view = self.data
+
         for i, r in enumerate(rows_in_view):
             rows[i+1] = f"\u2502{str(r).ljust(mx)}\u2502"
             if self.index == s + i:

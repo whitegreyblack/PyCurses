@@ -45,16 +45,16 @@ class Person:
         self.phone_number = phone_number if phone_number else PhoneNumber.random()
         self.description = fake.text()
     
-    def display(self, x, y, mx, my, indent=0):
-        space = ' ' * indent
-        yield (y + 0, x, space + "Name         :")
-        yield (y + 1, x, space + "Address      :")
-        yield (y + 4, x, space + "Phone Number :")
-        yield (y + 5, x, space + "Occupation   :")
-        yield (y + 7, x, space + "Description  :")
+    def display(self, x, y, mx, my, indent=None):
+        space = ''
+        yield (y + 0, x, space + "Name        :")
+        yield (y + 1, x, space + "Address     :")
+        yield (y + 4, x, space + "Phone Number:")
+        yield (y + 5, x, space + "Occupation  :")
+        yield (y + 7, x, space + "Description :")
 
         dy = 0
-        dx = indent + 18
+        dx = indent + 13
         yield (y, dx, str(self.name))
         dy += 1
 
@@ -64,14 +64,16 @@ class Person:
             dy += 1
         dy += 1
 
-        yield (y + dy, dx, self.job)
+        yield (y + dy, dx, self.phone_number)
         dy += 1
 
-        yield (y + dy, dx, self.phone_number)
+        occu = textwrap.wrap(self.job, mx - dx)
+        for i, line in enumerate(occu):
+            yield (y + dy + i, dx, line)
         dy += 2
 
         desc = textwrap.wrap(self.description, mx - dx)
-        for line in desc:
+        for line in desc[:my-dy]:
             yield (y + dy, dx, line)
             dy += 1
 
