@@ -39,7 +39,6 @@ from source.controls import (
     OptionsBar,
 )
 import source.controls2 as ui
-from fakedata.name import Name
 
 def setup_test_cards():
     """List of example product cards"""

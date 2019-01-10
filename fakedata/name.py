@@ -1,5 +1,9 @@
 import random
 
+SHORT_FEMALE_NAME_SCHEMA = {'female': [{'format': 'first last', 'count': 1}]}
+SHORT_MALE_NAME_SCHEMA = {'male': [{'format': 'first last', 'count': 1}]}
+SHORT_NAME_SCHEMA = {**SHORT_FEMALE_NAME_SCHEMA, **SHORT_MALE_NAME_SCHEMA}
+
 def read_file(dataset):
     container = []
     with open(f'./data/{dataset}.txt', 'r') as data:
@@ -174,7 +178,5 @@ class Name:
         return p
 
 if __name__ == "__main__":
-    female_name = {'female': [{'format': 'first last', 'count': 1}]}
-    male_name = {'male': [{'format': 'first last', 'count': 1}]}
-    print(Name.random(female_name))
-    print(Name.random(male_name))
+    print(Name.random(SHORT_FEMALE_NAME_SCHEMA))
+    print(Name.random(SHORT_MALE_NAME_SCHEMA))
