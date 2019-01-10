@@ -25,18 +25,13 @@ from source.database import Connection
 from source.models.models import Reciept, Transaction
 from source.models.product import Product
 from source.YamlObjects import Reciept as YamlReciept
-from source.controls import (
+from source.window import (
     Window,
     ScrollableWindow,
     PromptWindow,
     DisplayWindow,
-    ScrollList, 
-    Card, 
-    RecieptForm, 
-    Prompt, 
-    Button, 
-    View, 
-    OptionsBar,
+    on_keypress_down,
+    on_keypress_up
 )
 import source.controls2 as ui
 
@@ -307,7 +302,7 @@ class Application(Loggable):
         # main window
         self.window = Window(screen, title='Application Example 1')
 
-# display window
+        # display window
         display = DisplayWindow(
             screen.subwin(
                 11,
@@ -340,7 +335,7 @@ class Application(Loggable):
                 height - 13, 
                 utils.partition(width, 5, 3),
                 12, 
-                =utils.partition(width, 5, 2)
+                utils.partition(width, 5, 2)
             ), 
             title='verylongtitlescree'
         )
@@ -397,7 +392,8 @@ class Application(Loggable):
             focused=True,
             data_changed_handlers=(self.on_data_changed,)
         )
-
+        scroller.keypress_up_event.append(on_keypress_up)
+        scroller.keypress_down_event.append(on_keypress_down)
         # secondary display -- currently unused
         # adding sub windows to parent window
         unused = Window(
@@ -405,7 +401,7 @@ class Application(Loggable):
                 height - 13, 
                 utils.partition(width, 5, 3),
                 12, 
-                =utils.partition(width, 5, 2)
+                utils.partition(width, 5, 2)
             ), 
             title='verylongtitlescree'
         )
