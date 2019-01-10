@@ -307,13 +307,13 @@ class Application(Loggable):
         # main window
         self.window = Window(screen, title='Application Example 1')
 
-        # display window
+# display window
         display = DisplayWindow(
             screen.subwin(
-                nlines=11, 
-                ncols=utils.partition(width, 5, 3),
-                begin_y=1, 
-                begin_x=utils.partition(width, 5, 2)
+                11,
+                utils.partition(width, 5, 3),
+                1, 
+                utils.partition(width, 5, 2)
             ),
             title="Profile"
         )
@@ -322,10 +322,10 @@ class Application(Loggable):
         # scroll window
         scroller = ScrollableWindow(
             screen.subwin(
-                nlines=height - 2, 
-                ncols=utils.partition(width, 5, 2), 
-                begin_y=1, 
-                begin_x=0
+                height - 2, 
+                utils.partition(width, 5, 2), 
+                1, 
+                0
             ),
             title="Directory",
             data=[str(n.name) for n in self.data],
@@ -337,10 +337,10 @@ class Application(Loggable):
         # adding sub windows to parent window
         unused = Window(
             screen.subwin(
-                nlines=height - 13, 
-                ncols=utils.partition(width, 5, 3),
-                begin_y=12, 
-                begin_x=utils.partition(width, 5, 2)
+                height - 13, 
+                utils.partition(width, 5, 3),
+                12, 
+                =utils.partition(width, 5, 2)
             ), 
             title='verylongtitlescree'
         )
@@ -375,10 +375,10 @@ class Application(Loggable):
         # display window
         display = DisplayWindow(
             screen.subwin(
-                nlines=11, 
-                ncols=utils.partition(width, 5, 3),
-                begin_y=1, 
-                begin_x=utils.partition(width, 5, 2)
+                11,
+                utils.partition(width, 5, 3),
+                1, 
+                utils.partition(width, 5, 2)
             ),
             title="Profile"
         )
@@ -387,10 +387,10 @@ class Application(Loggable):
         # scroll window
         scroller = ScrollableWindow(
             screen.subwin(
-                nlines=height - 2, 
-                ncols=utils.partition(width, 5, 2), 
-                begin_y=1, 
-                begin_x=0
+                height - 2, 
+                utils.partition(width, 5, 2), 
+                1, 
+                0
             ),
             title="Directory",
             data=[str(n.name) for n in self.data],
@@ -402,10 +402,10 @@ class Application(Loggable):
         # adding sub windows to parent window
         unused = Window(
             screen.subwin(
-                nlines=height - 13, 
-                ncols=utils.partition(width, 5, 3),
-                begin_y=12, 
-                begin_x=utils.partition(width, 5, 2)
+                height - 13, 
+                utils.partition(width, 5, 3),
+                12, 
+                =utils.partition(width, 5, 2)
             ), 
             title='verylongtitlescree'
         )

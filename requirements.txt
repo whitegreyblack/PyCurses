@@ -3,3 +3,5 @@ click>=7.0
 curses>=2.2
 sqlite3
 cerberus
+faker
+marshmallow
