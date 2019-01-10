@@ -1,7 +1,7 @@
 # PyCurses
 
 ## Description
-  Build and run a simple curses application
+  Build and run a simple curses application. (Includes a lot of examples and unused/depracated code)
 
 ## How to run (Python 3)
   `python -m source`
