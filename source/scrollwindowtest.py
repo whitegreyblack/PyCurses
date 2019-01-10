@@ -1,6 +1,6 @@
 import curses
 from source.utils import Event
-from source.window import ScrollableWindow, on_keypress_up, on_keypress_down
+from source.window import ScrollableWindowWithBar, on_keypress_up, on_keypress_down
 
 def initialize_curses_settings(logger=None):
     """Sets settings for cursor visibility and color pairings"""
@@ -10,16 +10,17 @@ def initialize_curses_settings(logger=None):
     curses.init_pair(1, curses.COLOR_WHITE, curses.COLOR_BLACK)
     curses.init_pair(2, curses.COLOR_BLACK, curses.COLOR_WHITE)
     curses.init_pair(3, curses.COLOR_BLACK, curses.COLOR_CYAN)
+    curses.init_pair(4, curses.COLOR_WHITE, curses.COLOR_BLACK)
 
 def application(screen):
     events = {
         curses.KEY_UP: Event(),
         curses.KEY_DOWN: Event()
     }
-    s = ScrollableWindow(screen, data=[str(i) for i in range(100)])
+    s = ScrollableWindowWithBar(screen, data=[str(i) for i in range(100)])
     s.keypress_up_event.append(on_keypress_up)
     s.keypress_down_event.append(on_keypress_down)
-    
+
     events[curses.KEY_UP].append(s.handle_key)
     events[curses.KEY_DOWN].append(s.handle_key)
 

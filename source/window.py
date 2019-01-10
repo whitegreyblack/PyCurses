@@ -234,6 +234,22 @@ class ScrollableWindow(Window):
     #         self.index = t
     #         self.on_data_changed()
 
+class ScrollableWindowWithBar(ScrollableWindow):
+    def draw(self):
+        super().draw()
+        self.draw_scroll_bar()
+
+    def draw_scroll_bar(self):
+        # determine size of bar
+        # determine bar position
+        # determine step size
+        self.window.addch(
+            1, 
+            self.width + 1, 
+            curses.ACS_BLOCK, 
+            curses.color_pair(4)
+        )
+
 def on_keypress_down(obj):
     t = obj.index + 1
     if t < len(obj.data):
