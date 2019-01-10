@@ -13,6 +13,7 @@ import cerberus
 import source.utils as utils
 import source.config as config
 from source.logger import Loggable
+from source.controllers import PersonController
 from source.schema import (
     Table, 
     SQLType, 
@@ -28,6 +29,7 @@ from source.controls import (
     Window,
     ScrollableWindow,
     PromptWindow,
+    DisplayWindow,
     ScrollList, 
     Card, 
     RecieptForm, 
@@ -40,7 +42,7 @@ import source.controls2 as ui
 from fakedata.name import Name
 
 def setup_test_cards():
-    """List of example product cards used in testing"""
+    """List of example product cards"""
     return [
         Card(Product(fruit, price))
             for fruit, price in zip(
@@ -51,7 +53,7 @@ def setup_test_cards():
 
 class Application(Loggable):
     """Overview:
-    Buids the database and yamlchecker objects. (They are tightly coupled. May
+    Builds the database and yamlchecker objects. (They are tightly coupled. May
     need to change in the future.) The data from the yaml files found in using
     the folder path paramter are first checked by the yamlchecker before
     loading into the database.
@@ -75,6 +77,13 @@ class Application(Loggable):
         self.keymap[ord('q')] = None
 
         self.database = Connection(logger=logger, rebuild=rebuild)
+        self.person_controller = PersonController()
+
+        self.data_changed_event = utils.Event()
+        self.events = {
+            curses.KEY_DOWN: utils.Event(),
+            curses.KEY_UP: utils.Event()
+        }
 
     def setup(self):
         # TODO: need a setting to determine behavior of previously loaded data
@@ -126,14 +135,17 @@ class Application(Loggable):
         # print(f'Yaml Filename is valid {filename}')
 
     def check_file_data(self, filename):
-        v = utils.validate_from_path(self.folder+filename, './data/schema.yaml')
+        v = utils.validate_from_path(
+            self.folder + filename, 
+            './data/schema.yaml'
+        )
         if not v:
             raise BaseException(f"File data for {filename} invalid")
 
     def load_files(self, files):
         yobjs = {}
         for f in files:
-            with open(self.folder+f, 'r') as o:
+            with open(self.folder + f, 'r') as o:
                 yobjs[f] = yaml.load(o.read())
         return yobjs
 
@@ -144,13 +156,16 @@ class Application(Loggable):
                 if self.keymap[key] == None:
                     break
                 self.keyhandler(key)
+            elif key in self.events.keys():
+                self.events[key](key)
             else:
                 retval = self.send_signal(key)
                 if not retval:
                     break
             self.screen.erase()
             self.draw()
-            self.screen.addstr(2, 2, key)
+            y, x = self.screen.getmaxyx()
+            self.screen.addstr(y-1, 1, str(key))
 
     def keyhandler(self, key):
         self.keymap[key]()
@@ -179,6 +194,9 @@ class Application(Loggable):
 
     def build_reciepts_for_export(self):
         """Generates Yaml Reciept objects from database"""
+
+        # TODO: adding a serialize function in YamlReciept will help
+        #       shorten this function
         for r in self.database.select_reciepts():
             products = {
                 p.product: p.price
@@ -273,35 +291,61 @@ class Application(Loggable):
         self.window.add_view(optionview3)
         #self.window.add_view(View(1, 1, width, height - 1))
 
+    def on_data_changed(self, sender, sid, arg):
+        model = self.data[arg]
+        self.data_changed_event(sender, sid, model)
+
     def build_windows(self):
         """Work on window recursion and tree"""
         screen = self.screen
         height, width = screen.getmaxyx()
+        
+        self.data = [
+            self.person_controller.request_person(pid)
+                for pid in range(100)
+        ]
 
-        self.data = [Name.random() for _ in range(100)]
-
+        # main window
         self.window = Window(screen, title='Application Example 1')
+
+        # display window
+        display = DisplayWindow(
+            screen.subwin(
+                14, 
+                utils.partition(width, 5, 3),
+                1, 
+                utils.partition(width, 5, 2)
+            ),
+            title="Profile"
+        )
+        self.data_changed_event.append(display.on_data_changed)
+
+        # scroll window
         scroller = ScrollableWindow(
             screen.subwin(
-                height-2, 
+                height-2,
                 utils.partition(width, 5, 2), 
                 1, 
                 0
             ),
-            title="/Directory/",
-            data=[str(n) for n in self.data],
-            focused=True
+            title="Directory",
+            data=[str(n.name) for n in self.data],
+            focused=True,
+            data_changed_handlers=(self.on_data_changed,)
         )
+
+        # adding sub windows to parent window
         self.window.add_windows([
             scroller,
-            # Window(screen.subwin(height, width//2, 0, 0), title='verylongtitlescree'),
+            display,
             Window(
                 screen.subwin(
-                    height-2, 
+                    height - 16, 
                     utils.partition(width, 5, 3),
-                    1, 
+                    15, 
                     utils.partition(width, 5, 2)
-                )
+                ), 
+                title='verylongtitlescree'
             ),
             # PromptWindow(
             #     screen.subwin(
@@ -312,6 +356,11 @@ class Application(Loggable):
             #     )
             # )
         ])
+
+        # add window key handlers to application event mapping
+        self.events[curses.KEY_DOWN].append(scroller.handle_key)
+        self.events[curses.KEY_UP].append(scroller.handle_key)
+
         # v1 = View(screen.subwin(height - 1, width, 1, 0), columns=2, rows=2)
         # self.window.add_view(v1)
 
