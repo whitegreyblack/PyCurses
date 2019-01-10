@@ -8,7 +8,10 @@ __author__ = "Samuel Whang"
 import textwrap
 from faker import Faker
 from faker.providers import job, phone_number
-from fakedata.name import Name
+from fakedata.name import (
+    Name,
+    SHORT_NAME_SCHEMA
+)
 from fakedata.phonenumber import PhoneNumber
 from typing import Union
 from collections import namedtuple
@@ -39,7 +42,7 @@ fake.add_provider(phone_number)
 
 class Person:
     def __init__(self, name=None, address=None, job=None, phone_number=None):
-        self.name = name if name else Name.random((('female', 'first last'),))
+        self.name = name if name else Name.random(SHORT_NAME_SCHEMA)
         self.address = address if address else fake.address()
         self.job = job if job else fake.job()
         self.phone_number = phone_number if phone_number else PhoneNumber.random()
