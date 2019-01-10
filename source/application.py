@@ -295,14 +295,14 @@ class Application(Loggable):
         model = self.data[arg]
         self.data_changed_event(sender, sid, model)
 
-    def build_windows(self):
+    def build_windows1(self):
         """Work on window recursion and tree"""
         screen = self.screen
         height, width = screen.getmaxyx()
         
         self.data = [
             self.person_controller.request_person(pid)
-                for pid in range(100)
+                for pid in range(10)
         ]
 
         # main window
@@ -311,7 +311,7 @@ class Application(Loggable):
         # display window
         display = DisplayWindow(
             screen.subwin(
-                14, 
+                11, 
                 utils.partition(width, 5, 3),
                 1, 
                 utils.partition(width, 5, 2)
@@ -334,27 +334,91 @@ class Application(Loggable):
             data_changed_handlers=(self.on_data_changed,)
         )
 
+        # secondary display -- currently unused
         # adding sub windows to parent window
+        unused = Window(
+            screen.subwin(
+                height - 13, 
+                utils.partition(width, 5, 3),
+                12, 
+                utils.partition(width, 5, 2)
+            ), 
+            title='verylongtitlescree'
+        )
+
+        # prompt screen
+        prompt = PromptWindow(screen.subwin(3, width, height-4, 0))
+
         self.window.add_windows([
             scroller,
             display,
-            Window(
-                screen.subwin(
-                    height - 16, 
-                    utils.partition(width, 5, 3),
-                    15, 
-                    utils.partition(width, 5, 2)
-                ), 
-                title='verylongtitlescree'
+            unused,
+            prompt
+        ])
+
+        # add window key handlers to application event mapping
+        self.events[curses.KEY_DOWN].append(scroller.handle_key)
+        self.events[curses.KEY_UP].append(scroller.handle_key)
+
+    def build_windows(self):
+        """Work on window recursion and tree"""
+        screen = self.screen
+        height, width = screen.getmaxyx()
+        
+        self.data = [
+            self.person_controller.request_person(pid)
+                for pid in range(10)
+        ]
+
+        # main window
+        self.window = Window(screen, title='Application Example 1')
+
+        # display window
+        display = DisplayWindow(
+            screen.subwin(
+                11, 
+                utils.partition(width, 5, 3),
+                1, 
+                utils.partition(width, 5, 2)
             ),
-            # PromptWindow(
-            #     screen.subwin(
-            #         3,
-            #         width,
-            #         height-4,
-            #         0
-            #     )
-            # )
+            title="Profile"
+        )
+        self.data_changed_event.append(display.on_data_changed)
+
+        # scroll window
+        scroller = ScrollableWindow(
+            screen.subwin(
+                height-2,
+                utils.partition(width, 5, 2), 
+                1, 
+                0
+            ),
+            title="Directory",
+            data=[str(n.name) for n in self.data],
+            focused=True,
+            data_changed_handlers=(self.on_data_changed,)
+        )
+
+        # secondary display -- currently unused
+        # adding sub windows to parent window
+        unused = Window(
+            screen.subwin(
+                height - 13, 
+                utils.partition(width, 5, 3),
+                12, 
+                utils.partition(width, 5, 2)
+            ), 
+            title='verylongtitlescree'
+        )
+
+        # prompt screen
+        prompt = PromptWindow(screen.subwin(3, width, height-4, 0))
+
+        self.window.add_windows([
+            scroller,
+            display,
+            unused,
+            prompt
         ])
 
         # add window key handlers to application event mapping
@@ -441,7 +505,8 @@ class Application(Loggable):
         # self.window.draw(self.screen)
 
         # send in the screen to all window objects
-        self.window.draw()
+        if self.window.showing:
+            self.window.draw()
 
     def send_signal(self, signal):
         return self.window.send_signal(signal)

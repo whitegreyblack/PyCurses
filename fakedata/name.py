@@ -36,13 +36,37 @@ class Name:
     names_last = names_last_ordered
     names_males = names_males_ordered
     names_females = names_females_ordered
-    names_females_prefix = ('Dr.', 'Mrs.', 'Miss', 'Ms.')
-    names_females_suffix = ('M.D.', 'Phd.')
+    names_prefix = ('Dr.',)
+    names_males_prefix = ('Mr.', 'Sir',)
+    names_females_prefix = ('Mrs.', 'Miss', 'Ms.')
+    names_males_suffix = ('I', 'II', 'III', 'IV', 'Jr.', 'Sr.')
+    names_suffix = ('M.D.', 'Phd.')
+    # number of occurrances increases change of patter being generated
+    formats = {
+        'male': [
+            {'format': 'prefix first last suffix', 'count': 1},
+            {'format': 'prefix first last', 'count': 2},
+            {'format': 'first last suffix', 'count': 2},
+            {'format': 'first last suffix', 'count': 4}
+        ],
+        'female': [
+            {'format': 'prefix first last suffix', 'count': 1},
+            {'format': 'prefix first last', 'count': 2},
+            {'format': 'first last suffix', 'count': 2},
+            {'format': 'first last suffix', 'count': 4}
+        ]
+        
+    }
     formats = (
-        # ('male', ('prefix', 'first', 'last', 'suffix')),
-        # ('male', ('prefix', 'first', 'last')),
-        # ('male', ('first', 'last', 'suffix')),
-        # ('male', ('first', 'last')),
+        ('male', 'prefix first last suffix'),
+        ('male', 'prefix first last'),
+        ('male', 'prefix first last'),
+        ('male', 'prefix first last'),
+        ('male', 'first last suffix'),
+        ('male', 'first last'),
+        ('male', 'first last'),
+        ('male', 'first last'),
+        ('male', 'first last'),
         ('female', 'prefix first last suffix'),
         ('female', 'prefix first last'),
         ('female', 'prefix first last'),
@@ -73,12 +97,12 @@ class Name:
 
     def first(self, gender):
         if gender == "male":
-            return male_first()
+            return self.male_first()
         return self.female_first()
     
     def last(self, gender):
         if gender == "male":
-            return male_last()
+            return self.male_last()
         return self.female_last()
 
     def suffix(self, gender):
@@ -89,6 +113,21 @@ class Name:
     def male_prefix(self):
         if hasattr(self, 'male_prefixes'):
             return random.choice(self.male_prefixes)
+        return ''
+
+    def male_first(self):
+        if hasattr(self, 'names_males'):
+            return random.choice(self.names_females)
+        return random.choice(self.names_first)
+
+    def male_last(self):
+        if hasattr(self, 'names_males_last'):
+            return random.choice(self.male_last)
+        return random.choice(self.names_last)
+
+    def male_suffix(self):
+        if hasattr(self, 'names_males_suffix'):
+            return random.choice(self.male_suffix)
         return ''
 
     def female_prefix(self):
@@ -107,20 +146,35 @@ class Name:
         return random.choice(self.names_last)
     
     def female_suffix(self):
+        s = self.names_suffix
         if hasattr(self, 'names_females_suffix'):
-            return random.choice(self.names_females_suffix)
-        return ''
+            s = self.names_females_suffix
+        return random.choice(s)
 
     @classmethod
     def random(cls, formats=None):
         p = cls()
         if not formats:
             formats = cls.formats
-        gender, choices = random.choice(formats)
+        
+        # generate formats
+        generate = []
+        for gender, data in formats.items():
+            for d in data:
+                frmt = d['format']
+                for _ in range(d['count']):
+                    generate.append((gender, frmt))
+
+        gender, choices = random.choice(generate)
+
         for choice in choices.split():
             attr = getattr(p, choice)(gender)
             setattr(p, 'name_' + choice, attr)
+
         return p
 
 if __name__ == "__main__":
-    print(Name.random((('female', 'first last'),)))
+    female_name = {'female': [{'format': 'first last', 'count': 1}]}
+    male_name = {'male': [{'format': 'first last', 'count': 1}]}
+    print(Name.random(female_name))
+    print(Name.random(male_name))

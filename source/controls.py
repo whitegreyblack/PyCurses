@@ -117,7 +117,7 @@ class View:
 
 class Window:
     window_ids = 0
-    def __init__(self, window, title=None, focused=False):
+    def __init__(self, window, title=None, focused=False, showing=True):
         self.title = title
         y, x = window.getmaxyx()
         self.term_width = x
@@ -199,7 +199,8 @@ class Window:
             )
 
         for window in self.windows:
-            window.draw()
+            if window.showing:
+                window.draw()
         # for view in self.views:
         #     # view.window.border()
         #     view.draw()
@@ -231,8 +232,10 @@ class DisplayWindow(Window):
     def draw(self):
         super().draw()
         if self.dataobject:
-            mx, my = self.width - 4, self.height - 4
-            for y, x, s in self.dataobject.display(2, 2, mx, my, 2):
+            mx, my = self.width, self.height
+            for y, x, s in self.dataobject.display(1, 1, mx, my, 2):
+                if len(s) >= mx:
+                    raise BaseException(s)
                 self.window.addstr(y, x, s)
         else:
             self.window.addstr(2, 2, "No data present")
@@ -255,7 +258,7 @@ class OptionsBar:
         def __init__(self, screen, options):
             self.options = options
             self.maxlen = max(map(len, options))
-            self.view = View(screen.subwin(len(options), self.maxlen + 4, 1, 1))
+            self.view = View(screen.subwin(len(options), self.maxlen+4, 1, 1))
             self.show = False
 
         def draw(self):
@@ -292,10 +295,12 @@ class OptionsBar:
 
         # draw stuff
         for opt, win in self.options.items():
-            self.screen.addstr(0, 
-                               1 + len(prevopt) + step, 
-                               opt, 
-                               curses.color_pair(2))
+            self.screen.addstr(
+                0, 
+                1 + len(prevopt) + step, 
+                opt, 
+                curses.color_pair(2)
+            )
             prevopt += opt + ' ' * step
             if self.showlabel and self.options[self.showlabel].show:
                 self.options[self.showlabel].draw()
@@ -498,8 +503,9 @@ class Scroller:
             self.subwin = self.view.subwin(self.columnspan, self.rowspan)
 
 class PromptWindow(Window):
-    def __init__(self, window, title=None, focused=False):
-        super().__init__(window, title, focused)
+    def __init__(self, window, title=None, focused=False, showing=False):
+        super().__init__(window, title, focused, showing)
+        self.showing = showing
 
     def draw(self):
         super().draw()
@@ -520,7 +526,7 @@ class ScrollableWindow(Window):
             data=None, 
             focused=False,
             data_changed_handlers=None
-        ):
+    ):
         super().__init__(window, title, focused)
         self.data_changed_event = Event()
         for handler in data_changed_handlers:
@@ -547,21 +553,19 @@ class ScrollableWindow(Window):
             )
 
     def draw(self):
+        if not self.showing:
+            return
         super().draw()
-        # for i, d in enumerate(self.data[self.index:self.index+self.height]):
-        #     s = d[:self.width].ljust(self.width)
-        #     c = curses.color_pair((i == 0) * 2)
-        #     self.window.addstr(1 + i, 1, s, c)
-
         rows_in_view = None
         s, e = 0, self.height
         halfscreen = self.height // 2
-        if len(self.data) > self.height - 1:
+
+        if len(self.data) > self.height:
             if self.index < halfscreen:
                 pass
-            elif self.index > len(self.data) - halfscreen:
-                s = len(self.data) - self.height + 1
-                e = s + self.height
+            elif self.index > len(self.data) - halfscreen - 1:
+                s = len(self.data) - self.height
+                e = s + self.height + 1
             else:
                 s = self.index - halfscreen
                 e = s + self.height
