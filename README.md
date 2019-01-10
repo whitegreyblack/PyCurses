@@ -4,7 +4,7 @@
   Build and run a simple curses application
 
 ## How to run (Python 3)
-  `python -m source
+  `python -m source`
 
 ## Dependancies
 - pyyaml : file parsing and extension for data files

@@ -372,7 +372,7 @@ class Application(Loggable):
         # main window
         self.window = Window(screen, title='Application Example 1')
 
- # display window
+        # display window
         display = DisplayWindow(
             screen.subwin(
                 nlines=11, 
