@@ -1,6 +1,11 @@
 import curses
 from source.utils import Event
-from source.window import ScrollableWindowWithBar, on_keypress_up, on_keypress_down
+from source.window import (
+    ScrollableWindowWithBar, 
+    on_keypress_up, 
+    on_keypress_down, 
+    on_keypress_a
+)
 
 def initialize_curses_settings(logger=None):
     """Sets settings for cursor visibility and color pairings"""
@@ -15,20 +20,23 @@ def initialize_curses_settings(logger=None):
 def application(screen):
     events = {
         curses.KEY_UP: Event(),
-        curses.KEY_DOWN: Event()
+        curses.KEY_DOWN: Event(),
+        ord('a'): Event()
     }
-    s = ScrollableWindowWithBar(screen, data=[str(i) for i in range(100)])
+    s = ScrollableWindowWithBar(screen, data=[str(i) for i in range(25)])
     s.keypress_up_event.append(on_keypress_up)
     s.keypress_down_event.append(on_keypress_down)
+    s.keypress_a_event.append(on_keypress_a)
 
     events[curses.KEY_UP].append(s.handle_key)
     events[curses.KEY_DOWN].append(s.handle_key)
+    events[ord('a')].append(s.handle_key)
 
     initialize_curses_settings()
 
     s.draw()
     while True:
-        key = screen.getch()
+        key = s.window.getch()
         if key in events.keys():
             events[key](key)
         elif key == 27 or key == ord('q'):
