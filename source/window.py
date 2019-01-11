@@ -4,6 +4,17 @@ import curses
 from source.utils import Event
 from math import ceil
 
+class WindowProperty:
+    __slots__ = [
+        'title',
+        'focused',
+        'selected',
+        'showing',
+        'border',
+    ]
+    def __init__(self, *props):
+        for prop, value in props.items():
+            setattr(self, prop, value)
 
 class Window:
     window_ids = 0
@@ -137,7 +148,6 @@ class PromptWindow(Window):
     def draw(self):
         super().draw()
         y, x = self.window.getbegyx()
-        curses.curs_set(2)
         self.window.addch(1, 1, ' ')
         self.window.refresh()
     
