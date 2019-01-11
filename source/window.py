@@ -2,6 +2,7 @@
 
 import curses
 from source.utils import Event
+from math import ceil
 
 
 class Window:
@@ -41,9 +42,6 @@ class Window:
     def windows(self, value):
         self.__windows = value
 
-    def add_view(self, view):
-        self.views.append(view)
-
     def add_window(self, window):
         window.parent = self
         window.border = True
@@ -73,11 +71,15 @@ class Window:
         self.draw_border()
 
         if self.title:
-            x, y, s = 0, 2, self.title[:self.term_width//2]
+            c = curses.color_pair(2)
+            x, y, s = 0, 0, self.title[:self.term_width//2]
             # children titles are -1 from the right
             if self.parent:
+                c = curses.color_pair(1)
                 y = self.term_width-len(s)-1
-            self.window.addstr(x, y, s)
+            else:
+                s = s.rjust(len(s)+2).ljust(self.width+2)
+            self.window.addstr(0, 0, s, c)
 
         if not self.parent:
             dimensions = f"{self.term_width}, {self.term_height}"
@@ -90,12 +92,6 @@ class Window:
         for window in self.windows:
             if window.showing:
                 window.draw()
-        # for view in self.views:
-        #     # view.window.border()
-        #     view.draw()
-
-        # for comp in self.components:
-        #     comp.draw()
 
     def erase(self):
         self.window.erase()
@@ -162,6 +158,7 @@ class ScrollableWindow(Window):
         self.data_changed_event = Event()
         self.keypress_up_event = Event()
         self.keypress_down_event = Event()
+        self.keypress_a_event = Event()
 
         if data_changed_handlers:
             for handler in data_changed_handlers:
@@ -221,6 +218,8 @@ class ScrollableWindow(Window):
             self.keypress_down_event(self)
         elif key == curses.KEY_UP:
             self.keypress_up_event(self)
+        elif key == ord('a'):
+            self.keypress_a_event(self)
 
     # def increment_index(self):
     #     t = self.index + 1
@@ -235,32 +234,104 @@ class ScrollableWindow(Window):
     #         self.on_data_changed()
 
 class ScrollableWindowWithBar(ScrollableWindow):
+    def __init__(
+            self, 
+            window, 
+            title=None, 
+            data=None, 
+            focused=False,
+            border=True,
+            data_changed_handlers=None):
+        super().__init__(
+            window, 
+            title, 
+            data, 
+            focused, 
+            border, 
+            data_changed_handlers
+        )
+        self.offset = 1
+        # self.scrollbar_height = 0
+        # self.scrollbar_column = 0
+        # self.scrollbar_offset = 0
+        # self.calculate_scroll_bar()
+
     def draw(self):
         super().draw()
         self.draw_scroll_bar()
+
+    # def calculate_scroll_bar(self):
+    #     percentage = self.offset / len(self.data)
+    #     self.scrollbar_height = min(
+    #         int(ceil(self.height * self.height / len(self.data))), 
+    #         self.height
+    #     )
+
+    #     self.offset = int(len(self.data) * percentage)
+    #     self.offset = min(self.offset, len(self.data) - self.height)
+    #     if len(self.data) <= self.height: self.offset = 0
 
     def draw_scroll_bar(self):
         # determine size of bar
         # determine bar position
         # determine step size
-        self.window.addch(
-            1, 
-            self.width + 1, 
-            curses.ACS_BLOCK, 
-            curses.color_pair(4)
-        )
+        # basically turn a progress
+        if len(self.data) <= self.height:
+            return
+
+        # color entire bar before individual blocks
+        char = curses.ACS_BLOCK
+        color = curses.color_pair(4)
+        for y in range(self.height):
+            self.window.addch(
+                self.offset + y, 
+                self.width + 1, 
+                char, 
+                color
+            )
+
+        # char = curses.ACS_BLOCK
+        # color = curses.color_pair(4)
+        # for y in range(self.scrollbar_height):
+        #     try:
+        #         self.window.addch(
+        #             self.offset + self.scrollbar_offset + y, 
+        #             self.width + 1, 
+        #             char, 
+        #             color
+        #         )
+        #     except curses.error:
+        #         raise Exception(y)
 
 def on_keypress_down(obj):
     t = obj.index + 1
     if t < len(obj.data):
         obj.index = t
         obj.on_data_changed()
+        # obj.offset = max(
+        #     0, 
+        #     min(
+        #         obj.height - 1,
+        #         obj.offset + 1
+        #     )
+        # )
 
 def on_keypress_up(obj):
     t = obj.index - 1
     if t >= 0:
         obj.index = t
         obj.on_data_changed()
+        # obj.offset = min(
+        #     obj.height-2, 
+        #     max(
+        #         1,
+        #         obj.offset - 1
+        #     )
+        # )
+
+def on_keypress_a(obj):
+    obj.data.append(str(len(obj.data)))
+    obj.calculate_scroll_bar()
 
 # def increment_index(scrollobj):
 #     t = scrollobj.index + 1
