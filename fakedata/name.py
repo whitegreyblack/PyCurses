@@ -1,3 +1,4 @@
+import os
 import random
 
 SHORT_FEMALE_NAME_SCHEMA = {'female': [{'format': 'first last', 'count': 1}]}
@@ -6,14 +7,15 @@ SHORT_NAME_SCHEMA = {**SHORT_FEMALE_NAME_SCHEMA, **SHORT_MALE_NAME_SCHEMA}
 
 def read_file(dataset):
     container = []
-    with open(f'./data/{dataset}.txt', 'r') as data:
+    path = os.path.join(f'.{os.sep}data', f'{dataset}.txt')
+    with open(path, 'r') as data:
         for line in data.readlines():
             container.append(line.strip())
     return container, set(container)
 
-names_last_ordered, names_last = read_file('NAMES_LAST')
-names_males_ordered, names_males = read_file('NAMES_MALE')
-names_females_ordered, names_females = read_file('NAMES_FEMALE')
+names_last_ordered, names_last = read_file('names_last')
+names_males_ordered, names_males = read_file('names_male')
+names_females_ordered, names_females = read_file('names_female')
 # names_males_prefix = set()
 # names_males_suffix = set()
 # names_females_prefix = set()
