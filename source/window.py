@@ -86,11 +86,12 @@ class Window:
             x, y, s = 0, 0, self.title[:self.term_width//2]
             # children titles are -1 from the right
             if self.parent:
+                x = 1
                 c = curses.color_pair(1)
-                y = self.term_width-len(s)-1
+                y = self.term_width - len(s) - 1
             else:
                 s = s.rjust(len(s)+2).ljust(self.width+2)
-            self.window.addstr(0, 0, s, c)
+            self.window.addstr(0, x, s, c)
 
         if not self.parent:
             dimensions = f"{self.term_width}, {self.term_height}"
