@@ -3,6 +3,8 @@ Main class that builds all other objects and runs the curses loop
 """
 import os
 import yaml
+import math
+import random
 import curses
 import logging
 import datetime
@@ -292,6 +294,66 @@ class Application(Loggable):
         self.data = [
             self.controller.request_tree()
         ]
+
+    def build_todo_tasks(self):
+        """Builds a todo app"""
+        screen = self.screen
+        height, width = screen.getmaxyx()
+        
+        self.data = [(f"task {i}", random.randint(0, 3)) for i in range(10)]
+        self.window = Window(screen, title="Tasks To Do")
+
+        todo_win = ScrollableWindow(
+            screen.subwin(
+                (height // 2) - 1,
+                utils.partition(width, 3, 1),
+                1,
+                0
+            ),
+            title="Todo",
+            data=[task[0] for task in self.data if task[1] == 0],
+            data_changed_handlers=(self.on_data_changed,)
+        )
+
+        work_win = ScrollableWindow(
+            screen.subwin(
+                (height // 2) - 1,
+                utils.partition(width, 3, 1, math.floor),
+                1,
+                utils.partition(width, 3, 1)
+            ),
+            title="In-progress",
+            data=[task[0] for task in self.data if task[1] == 1],
+            data_changed_handlers=(self.on_data_changed,)
+        )
+
+        done_win = ScrollableWindow(
+            screen.subwin(
+                (height // 2) - 1,
+                utils.partition(width, 3, 1, math.ceil),
+                1,
+                utils.partition(width, 3, 2)
+            ),
+            title="Finished",
+            data=[task[0] for task in self.data if task[1] == 2],
+            data_changed_handlers=(self.on_data_changed,)
+        )
+
+        task_win = DisplayWindow(
+            screen.subwin(
+                utils.partition(height-2, 2, 1),
+                width,
+                utils.partition(height, 2, 1),
+                0
+            )
+        )
+
+        self.window.add_windows(
+            todo_win,
+            work_win,
+            done_win,
+            task_win
+        )
 
     def build_note_viewer(self):
         """Builds an application to view all notes"""

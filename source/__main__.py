@@ -83,12 +83,14 @@ def main(folder, demo, rebuild):
         print("Invalid folder specified: cannot use dot")
         return
 
-    if demo and demo not in ("notes", "note", "n", "tree", "t"):
+    if demo and demo not in ("notes", "note", "tree", "todos", "todo"):
         print("Invalid demo specified: not found in demo list")
         return
-    elif demo in ("notes", "note", "n"):
+    elif demo in ("todo", "todos"):
+        demo = "build_todo_tasks"
+    elif demo in ("notes", "note"):
         demo = "build_note_viewer"
-    elif demo in ("tree", "t"):
+    elif demo in ("tree",):
         demo = "build_file_explorer"
     else:
         demo = "build_windows"
