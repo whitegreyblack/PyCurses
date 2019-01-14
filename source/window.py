@@ -12,8 +12,10 @@ class WindowProperty:
         'showing',
         'border',
     ]
-    def __init__(self, *props):
+    def __init__(self, props):
         for prop, value in props.items():
+            if not prop in self.__slots__:
+                raise AttributeError(f"Invalid attribute: {prop}")
             setattr(self, prop, value)
 
 class Window:
@@ -135,7 +137,7 @@ class DisplayWindow(Window):
                     raise BaseException(s)
                 self.window.addstr(y, x, s)
         else:
-            self.window.addstr(2, 2, "No data present")
+            self.window.addstr(1, 1, "No data present")
 
     def handle_key(self, key):
         if key == curses.KEY_DOWN:
@@ -201,6 +203,11 @@ class ScrollableWindow(Window):
             return
 
         super().draw()
+
+        if not self.data:
+            self.window.addstr(1, 1, "No data")
+            return
+
         rows_in_view = None
         s, e = 0, self.height
         halfscreen = self.height // 2

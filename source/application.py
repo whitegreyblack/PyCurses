@@ -13,7 +13,11 @@ import cerberus
 import source.utils as utils
 import source.config as config
 from source.logger import Loggable
-from source.controllers import PersonController
+from source.controllers import (
+    PersonController,
+    ExplorerController,
+    NotesController,
+)
 from source.schema import (
     Table, 
     SQLType, 
@@ -21,7 +25,10 @@ from source.schema import (
     build_reciepts_table
 )
 from source.yamlchecker import YamlChecker
-from source.database import Connection
+from source.database import (
+    Connection,
+    NoteConnection
+)
 from source.models.models import Reciept, Transaction
 from source.models.product import Product
 from source.YamlObjects import Reciept as YamlReciept
@@ -71,7 +78,7 @@ class Application(Loggable):
         self.keymap[ord('q')] = None
 
         self.database = Connection(logger=logger, rebuild=rebuild)
-        self.person_controller = PersonController()
+        self.controller = None
 
         self.data_changed_event = utils.Event()
         self.events = {
@@ -289,16 +296,62 @@ class Application(Loggable):
         model = self.data[arg]
         self.data_changed_event(sender, sid, model)
 
+    def build_folder_explorer(self):
+        """Work on putting folder/file names in window"""
+        screen = self.screen
+        height, width = screen.getmaxyx()
+        self.controller = ExplorerController()
+        self.data = [
+            self.explorer_controller.request_tree()
+        ]
+
+    def build_note_viewer(self):
+        """Builds an application to view all notes"""
+        screen = self.screen
+        height, width = screen.getmaxyx()
+
+        self.controller = NotesController(NoteConnection())
+        self.data = self.controller.request_notes()
+
+        self.window = Window(screen, title='Note Viewer Example')
+
+        note_display = DisplayWindow(
+            screen.subwin(
+                height - 2,
+                utils.partition(width, 3, 2),
+                1,
+                utils.partition(width, 3, 1)
+            )
+        )
+        self.data_changed_event.append(note_display.on_data_changed)
+        self.window.add_window(note_display)
+
+        note_explorer = ScrollableWindow(
+            screen.subwin(
+                height - 2,
+                utils.partition(width, 3, 1),
+                1,
+                0
+            ),
+            title="Explorer",
+            data=[n.title for n in self.data],
+            data_changed_handlers=(self.on_data_changed,)
+        )
+        note_explorer.keypress_up_event = on_keypress_up
+        note_explorer.keypress_down_event = on_keypress_down
+        self.window.add_window(note_explorer)
+        self.events[curses.KEY_DOWN].append(note_explorer.handle_key)
+        self.events[curses.KEY_UP].append(note_explorer.handle_key)
+
     def build_windows1(self):
         """Work on window recursion and tree"""
         screen = self.screen
         height, width = screen.getmaxyx()
-        
+        self.controller = PersonController()
         self.data = [
-            self.person_controller.request_person(pid)
+            self.controller.request_person(pid)
                 for pid in range(10)
         ]
-
         # main window
         self.window = Window(screen, title='Application Example 1')
 
@@ -358,10 +411,10 @@ class Application(Loggable):
         """Work on window recursion and tree"""
         screen = self.screen
         height, width = screen.getmaxyx()
-        
+        self.controller = PersonController()
         self.data = [
-            self.person_controller.request_person(pid)
-                for pid in range(100)
+            self.controller.request_person(pid)
+                for pid in range(10)
         ]
 
         # main window
