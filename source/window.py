@@ -2,7 +2,7 @@
 
 import curses
 from source.utils import Event
-from math import ceil
+from math import ceil, floor
 
 class WindowProperty:
     __slots__ = [
@@ -60,7 +60,7 @@ class Window:
         window.border = True
         self.__windows.append(window)
 
-    def add_windows(self, windows):
+    def add_windows(self, *windows):
         for w in windows:
             self.add_window(w)
 

@@ -13,6 +13,7 @@ import logging
 import datetime
 import textwrap
 import cerberus
+from math import floor, ceil
 from source.YamlObjects import Reciept
 from source.config import YAML_FILE_NAME_REGEX
 from typing import Union, Tuple
@@ -286,5 +287,5 @@ def validate_filename(filename):
     v = cerberus.Validator(schema)
     print(v.validate({'filename': filename}))
 
-def partition(distance, partitions, length=1):
-    return round(distance/partitions*length)
+def partition(distance, partitions, length=1, operator=round):
+    return operator(distance/partitions*length)
