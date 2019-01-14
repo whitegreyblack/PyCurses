@@ -1,4 +1,4 @@
-a# PyCurses
+# PyCurses
 
 ## Description
   Build and run a simple curses application. (Includes a lot of examples and unused/depracated code)
@@ -47,8 +47,7 @@ a# PyCurses
 
 ## Overview
 The project will be broken down into several portions which may be revisited if need be:
-- Application:
-  - Command line argument parsing to set configuration settings before app is run
-  - Window classes are used to give the screen structure and display information from models.
-  - Controllers hold connections to database files using sqlite as well as specific methods for data reading and writing. They are responsible for transforming database records into premade models for usage in the application.
-  - Models are used to hold the data retrieved from the database during data retrieval or test data from test functions.
+- Command line argument parsing to set configuration settings before app is run
+- Window classes are used to give the screen structure and display information from models.
+- Controllers hold connections to database files using sqlite as well as specific methods for data reading and writing. They are responsible for transforming database records into premade models for usage in the application.
+- Models are used to hold the data retrieved from the database during data retrieval or test data from test functions.
