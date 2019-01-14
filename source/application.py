@@ -68,6 +68,7 @@ class Application(Loggable):
     def __init__(self, folder, screen=None, logger=None, rebuild=False):
         super().__init__(self, logger=logger)
         self.screen = screen
+        self.window = None
         self.folder = folder
         self.export = "./export/"
         # self.checker = YamlChecker(folder, logger=logger)
@@ -296,13 +297,13 @@ class Application(Loggable):
         model = self.data[arg]
         self.data_changed_event(sender, sid, model)
 
-    def build_folder_explorer(self):
+    def build_file_explorer(self):
         """Work on putting folder/file names in window"""
         screen = self.screen
         height, width = screen.getmaxyx()
         self.controller = ExplorerController()
         self.data = [
-            self.explorer_controller.request_tree()
+            self.controller.request_tree()
         ]
 
     def build_note_viewer(self):
@@ -551,6 +552,9 @@ class Application(Loggable):
         # self.screen.addstr(2, self.window.width // 8 + 11, "[Products]")
         # self.screen.addstr(2, self.window.width // 8 + 22, "[Stores]")
         # self.window.draw(self.screen)
+
+        if not self.window:
+            raise Exception("No window to draw")
 
         # send in the screen to all window objects
         if self.window.showing:
