@@ -111,7 +111,7 @@ class RecieptController:
         elif rid:
             self.request_reciept_by_id(rid)
         else:
-            self.request_reciept_by_file(rfile)
+            self.request_reciept_by_file(rfile) 
 
     def request_reciept_by_id(self, rid):
         pass
