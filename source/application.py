@@ -28,7 +28,7 @@ from source.database import (
     Connection,
     NoteConnection
 )
-from source.models.models import Reciept, Transaction
+from source.models.models import Reciept, Transaction, Task
 from source.models.product import Product
 from source.YamlObjects import Reciept as YamlReciept
 from source.window import (
@@ -39,7 +39,6 @@ from source.window import (
     on_keypress_down,
     on_keypress_up
 )
-import source.controls2 as ui
 
 class Application(Loggable):
     """Overview:
@@ -73,7 +72,9 @@ class Application(Loggable):
         self.data_changed_event = utils.Event()
         self.events = {
             curses.KEY_DOWN: utils.Event(),
-            curses.KEY_UP: utils.Event()
+            curses.KEY_UP: utils.Event(),
+            ord('\t'): utils.Event(),
+            curses.KEY_BTAB: utils.Event()
         }
 
     def setup(self):
@@ -299,45 +300,13 @@ class Application(Loggable):
         """Builds a todo app"""
         screen = self.screen
         height, width = screen.getmaxyx()
-        
-        self.data = [(f"task {i}", random.randint(0, 3)) for i in range(10)]
+
+        self.data = [
+            Task(f"task {i}", random.randint(0, 3), datetime.datetime.today())
+                for i in range(50)
+        ]
+
         self.window = Window(screen, title="Tasks To Do")
-
-        todo_win = ScrollableWindow(
-            screen.subwin(
-                (height // 2) - 1,
-                utils.partition(width, 3, 1),
-                1,
-                0
-            ),
-            title="Todo",
-            data=[task[0] for task in self.data if task[1] == 0],
-            data_changed_handlers=(self.on_data_changed,)
-        )
-
-        work_win = ScrollableWindow(
-            screen.subwin(
-                (height // 2) - 1,
-                utils.partition(width, 3, 1, math.floor),
-                1,
-                utils.partition(width, 3, 1)
-            ),
-            title="In-progress",
-            data=[task[0] for task in self.data if task[1] == 1],
-            data_changed_handlers=(self.on_data_changed,)
-        )
-
-        done_win = ScrollableWindow(
-            screen.subwin(
-                (height // 2) - 1,
-                utils.partition(width, 3, 1, math.ceil),
-                1,
-                utils.partition(width, 3, 2)
-            ),
-            title="Finished",
-            data=[task[0] for task in self.data if task[1] == 2],
-            data_changed_handlers=(self.on_data_changed,)
-        )
 
         task_win = DisplayWindow(
             screen.subwin(
@@ -347,8 +316,69 @@ class Application(Loggable):
                 0
             )
         )
+        self.data_changed_event.append(task_win.on_data_changed)
+
+        none_win = ScrollableWindow(
+            screen.subwin(
+                (height // 2) - 1,
+                utils.partition(width, 4, 1),
+                1, 
+                0
+            ),
+            title="No Status",
+            title_centered=True,
+            data=[task.title for task in self.data if task.status_id == 0],
+            data_changed_handlers=(self.on_data_changed,)
+        )
+
+        todo_win = ScrollableWindow(
+            screen.subwin(
+                (height // 2) - 1,
+                utils.partition(width, 4, 1),
+                1,
+                utils.partition(width, 4, 1)
+            ),
+            title="Todo",
+            title_centered=True,
+            focused=True,
+            data=[task.title for task in self.data if task.status_id == 1],
+            data_changed_handlers=(self.on_data_changed,)
+        )
+        todo_win.keypress_up_event = on_keypress_up
+        todo_win.keypress_down_event = on_keypress_down
+        self.events[ord('\t')].append(todo_win.handle_key)
+        self.events[curses.KEY_BTAB].append(todo_win.handle_key)
+        self.events[curses.KEY_DOWN].append(todo_win.handle_key)
+        self.events[curses.KEY_UP].append(todo_win.handle_key)
+
+        work_win = ScrollableWindow(
+            screen.subwin(
+                (height // 2) - 1,
+                utils.partition(width, 4, 1),
+                1,
+                utils.partition(width, 4, 2)
+            ),
+            title="In-progress",
+            title_centered=True,
+            data=[task.title for task in self.data if task.status_id == 2],
+            data_changed_handlers=(self.on_data_changed,)
+        )
+
+        done_win = ScrollableWindow(
+            screen.subwin(
+                (height // 2) - 1,
+                utils.partition(width, 4, 1),
+                1,
+                utils.partition(width, 4, 3)
+            ),
+            title="Finished",
+            title_centered=True,
+            data=[task.title for task in self.data if task.status_id == 3],
+            data_changed_handlers=(self.on_data_changed,)
+        )
 
         self.window.add_windows(
+            none_win,
             todo_win,
             work_win,
             done_win,

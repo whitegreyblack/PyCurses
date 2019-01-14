@@ -20,8 +20,17 @@ class WindowProperty:
 
 class Window:
     window_ids = 0
-    def __init__(self, window, title=None, focused=False, showing=True, border=False):
+    def __init__(
+            self, 
+            window, 
+            title=None, 
+            title_centered=False,
+            focused=False, 
+            showing=True, 
+            border=False):
+        """Main parent window which all other windows derive from"""
         self.title = title
+        self.title_centered = title_centered
         y, x = window.getmaxyx()
         self.term_width = x
         self.term_height = y
@@ -87,13 +96,16 @@ class Window:
             c = curses.color_pair(2)
             x, y, s = 0, 0, self.title[:self.term_width//2]
             # children titles are -1 from the right
-            if self.parent:
-                x = 1
+            if self.title_centered:
                 c = curses.color_pair(1)
-                y = self.term_width - len(s) - 1
+                x = self.width // 2 - len(self.title) // 2
             else:
-                s = s.rjust(len(s)+2).ljust(self.width+2)
-            self.window.addstr(0, x, s, c)
+                if self.parent:
+                    x = self.width - len(s) - 2
+                    c = curses.color_pair(1)
+                else:
+                    s = s.rjust(len(s)+2).ljust(self.width+2)
+            self.window.addstr(y, x, s, c)
 
         if not self.parent:
             dimensions = f"{self.term_width}, {self.term_height}"
@@ -133,7 +145,7 @@ class DisplayWindow(Window):
         if self.dataobject:
             mx, my = self.width, self.height
             for y, x, s in self.dataobject.display(1, 1, mx, my, 2):
-                if len(s) >= mx:
+                if len(s) > mx:
                     raise BaseException(s)
                 self.window.addstr(y, x, s)
         else:
@@ -162,12 +174,13 @@ class ScrollableWindow(Window):
     def __init__(
             self, 
             window, 
-            title=None, 
+            title=None,
+            title_centered=False,
             data=None, 
             focused=False,
             border=True,
             data_changed_handlers=None):
-        super().__init__(window, title, focused, border=border)
+        super().__init__(window, title, title_centered, focused, border)
         self.data_changed_event = Event()
         self.keypress_up_event = Event()
         self.keypress_down_event = Event()
@@ -228,7 +241,13 @@ class ScrollableWindow(Window):
 
         for i, r in enumerate(rows_in_view):
             l = r[:self.width].ljust(self.width)
-            c = curses.color_pair((s + i == self.index) * 2)
+            c = curses.color_pair(1)
+            if s + i == self.index:
+                if self.focused:
+                    c = curses.color_pair(2)
+                else:
+                    c = curses.color_pair(3)
+            # c = curses.color_pair((s + i == self.index) * 2)
             self.window.addstr(i + 1, 1, l, c)
 
     def handle_key(self, key):
@@ -238,6 +257,10 @@ class ScrollableWindow(Window):
             self.keypress_up_event(self)
         elif key == ord('a'):
             self.keypress_a_event(self)
+        elif key == ord('\t'):
+            self.keypress_tab_event(self)
+        elif key == curses.KEY_BTAB:
+            self.keypress_btab_event(self)
 
     # def increment_index(self):
     #     t = self.index + 1

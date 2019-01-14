@@ -40,6 +40,32 @@ fake = Faker()
 fake.add_provider(job)
 fake.add_provider(phone_number)
 
+class Task:
+    tid = 0
+    statuses = {
+        0: "No Status",
+        1: "Todo",
+        2: "In progress",
+        3: "Done",
+    }
+    def __init__(self, title, status, created, description=None, tid=None):
+        self.title = title
+        self.status_id = status
+        self.status = Task.statuses[status]
+        self.created = created
+        self.description = description if description else fake.text() + fake.text()
+
+        if tid:
+            self.tid = nid
+            Task.tid = max(Task.tid, tid) + 1
+        else:
+            self.nid = Task.tid
+            Task.tid += 1
+    def display(self, x, y, mx, my, indent):
+        text = textwrap.wrap(self.description, mx)
+        for i, line in enumerate(text):
+            yield (y + i, 1, line)
+
 class Note:
     nid = 0
     def __init__(self, title, nid=None, created=None, modified=None, note=None):
@@ -154,14 +180,15 @@ class Product:
             yield Product(n, p) 
 
 class Reciept:
-    def __init__(self, 
-                 store: str, 
-                 store_short: str,
-                 date: str,
-                 date_short: str,
-                 category: str, 
-                 products: list, 
-                 transaction: Transaction):
+    def __init__(
+            self, 
+            store: str, 
+            store_short: str,
+            date: str,
+            date_short: str,
+            category: str, 
+            products: list, 
+            transaction: Transaction):
         """Initialize fields used in reciept"""
         self.store = store
         self.store_short = store_short
