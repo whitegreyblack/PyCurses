@@ -126,6 +126,10 @@ class Transaction:
             raise ValueError('payment less than total cost')
 
 class Product:
+    test_names = [
+        'Apples', 'Oranges', 'Pears', 'Watermelons', 'Peaches'
+    ]
+    test_prices = [3, 5, 888, 24, 55]
     def __init__(self, name: str, price: Currency):
         self.name = name
         self.name_format = '{}'
@@ -143,6 +147,11 @@ class Product:
     @property
     def format_criteria(self):
         return '{}{}{:.2f}'
+
+    @staticmethod
+    def test_products():
+        for n, p in zip(Product.test_names, Product.test_prices):
+            yield Product(n, p) 
 
 class Reciept:
     def __init__(self, 

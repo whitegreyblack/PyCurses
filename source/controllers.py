@@ -1,25 +1,26 @@
 """Datacontroller.py"""
-__author__ = "Samuel Whang"
-
 import os
 from source.database import (
     NoteConnection
 )
-
 from source.models.models import (
     Person,
-    Note
+    Note,
+    Product
 )
 from source.utils import setup_logger
 from source.utils import Event, EventArg
+
 
 class Node:
     def __init__(self, curdir, files):
         pass
 
+
 class Args:
     def __init__(self, *args, **kwargs):
         pass
+
 
 class Controller:
     """Handles requests for data and responses from database"""
@@ -35,6 +36,7 @@ class Controller:
                 extra=self.logger_args
             )
         self.logger = logger
+
 
 class NotesController(Controller):
     """
@@ -55,6 +57,7 @@ class NotesController(Controller):
     def request_notes(self):
         notes = self.connection.select_from_table()
         return [Note.from_database(*n) for n in notes]
+
 
 class ExplorerController(Controller):
     ignore_folders = ['.git', '.vscode','tests', '__pycache__']
@@ -86,15 +89,20 @@ class ExplorerController(Controller):
     def request_tree(self):
         return None
 
+
 class ProductController(Controller):
     def request_product(self, pid):
         pass
+
+    def request_products(self):
+        return list(Product.test_products())
 
 
 class PersonController(Controller):
     def request_person(self, pid):
         if not self.connection:
             return Person()
+
 
 class RecieptController:
     def request_reciept(self, rid=None, rfile=None):

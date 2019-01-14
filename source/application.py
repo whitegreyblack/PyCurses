@@ -1,9 +1,6 @@
 """Application.py: 
 Main class that builds all other objects and runs the curses loop
 """
-
-__author__ = "Samuel Whang"
-
 import os
 import yaml
 import curses
@@ -41,16 +38,6 @@ from source.window import (
     on_keypress_up
 )
 import source.controls2 as ui
-
-def setup_test_cards():
-    """List of example product cards"""
-    return [
-        Card(Product(fruit, price))
-            for fruit, price in zip(
-                ['Apples', 'Oranges', 'Pears', 'Watermelons', 'Peaches'],
-                [3, 5, 888, 24, 55]
-            )
-    ]
 
 class Application(Loggable):
     """Overview:
