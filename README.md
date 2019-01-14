@@ -47,14 +47,8 @@ a# PyCurses
 
 ## Overview
 The project will be broken down into several portions which may be revisited if need be:
-- Loading yamlfiles into database:
-  - The yamlchecker and database files are currently psuedo-tightly coupled in that the
-    yamlchecker uses the database to check for previously inserted files and the database 
-    uses files from yamlchecker to check for new files to insert. The functions for each
-    files differed enough to need two separate classes. (YAMLCHECKER is DEPRACATED)
-  - The YamlObjects file holds the data model the data files use when loading the files
-    in the yaml loader.
-
-- Building the screen:
-  - Models are used to hold the data retrieved from the database during data retrieval.
-  - Controls hold the window classes to be able to draw the screen with the correct data.
+- Application:
+  - Command line argument parsing to set configuration settings before app is run
+  - Window classes are used to give the screen structure and display information from models.
+  - Controllers hold connections to database files using sqlite as well as specific methods for data reading and writing. They are responsible for transforming database records into premade models for usage in the application.
+  - Models are used to hold the data retrieved from the database during data retrieval or test data from test functions.
