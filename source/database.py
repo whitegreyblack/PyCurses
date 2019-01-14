@@ -22,7 +22,6 @@ from source.utils import (
     format_float as real, 
     filename_and_extension as fileonly
 )
-
 spacer = "  "
 
 def unpack(cursor):
@@ -177,7 +176,36 @@ class Connection(Loggable):
         for product in unpack(cursor):
             yield productinfo(*product)
 
+class NoteConnection:
+    """TODO: make this more abstract for different connections"""
+    def __init__(self):
+        # leave the logging initialization to the loggable class
+        self.__connection = sqlite3.connect(
+            'data/notes.db', 
+            detect_types=sqlite3.PARSE_DECLTYPES
+        )
+        self.fields = list(self.tables_info())
+
+    def tables_info(self):
+        table_info = []
+        cursor = self.__connection.execute('pragma table_info(notes)')
+        for colnum, colname, coltype, _, _, autoincrement in cursor:
+            yield (colname, coltype)
+    
+    def select_from_table(self):
+        table = "notes"
+        print(self.fields)
+        fields = ", ".join(n for (n, t) in self.fields)
+        statement = f"select {fields} from {table}"
+        print(statement)
+        for note in self.__connection.execute(statement).fetchall():
+            yield note
+    
 if __name__ == "__main__":
-    args = logargs(type("db_main", (), dict()))
-    logger = setup_logger_from_logargs(args)
-    db = Connection(None, logger=logger)
+    # args = logargs(type("db_main", (), dict()))
+    # logger = setup_logger_from_logargs(args)
+    # db = Connection(None, logger=logger)
+    n = NoteConnection()
+    print(datetime.datetime.strftime(datetime.datetime.today(), '%Y-%m-%d %I:%M:%S'))
+    for (rowid, title, created, modified, note) in n.select_from_table():
+        print(created, type(created))

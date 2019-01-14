@@ -1,9 +1,21 @@
 """Datacontroller.py"""
 __author__ = "Samuel Whang"
 
-from source.models.models import Person
+import os
+from source.database import (
+    NoteConnection
+)
+
+from source.models.models import (
+    Person,
+    Note
+)
 from source.utils import setup_logger
 from source.utils import Event, EventArg
+
+class Node:
+    def __init__(self, curdir, files):
+        pass
 
 class Args:
     def __init__(self, *args, **kwargs):
@@ -24,15 +36,65 @@ class Controller:
             )
         self.logger = logger
 
+class NotesController(Controller):
+    """
+    TODO: need a schema written to hold data
+    Notes:
+        idNote   int,
+        title    varchar(50),
+        created  datetime,
+        modified datetime, -- last modified or every modification?
+        note     varchar(250),
+    """
+    def __init__(self, connection):
+        super().__init__(connection, None)
+    
+    def request_note(self, nid):
+        pass
+    
+    def request_notes(self):
+        notes = self.connection.select_from_table()
+        return [Note.from_database(*n) for n in notes]
+
+class ExplorerController(Controller):
+    ignore_folders = ['.git', '.vscode','tests', '__pycache__']
+    def __init__(self):
+        super().__init__(None, None)
+
+        # yes, this shouldn't be in the controller, but currently no class
+        # in project does this yet. Doing the prototype here, then refactoring
+        self.build_explorer()
+
+    def build_explorer(self):
+        for root, folders, files in os.walk('.'):
+            skip_root = False
+            for ignore in self.ignore_folders:
+                if ignore in root:
+                    skip_root = True
+            if skip_root:
+                continue
+            print(root)
+            for name in files:
+                print(name)
+            # for folder in folders:
+            #     print(os.path.join(root, folder))
+            # for name in files:
+            #     print(os.path.join(root, name))
+            # print(f)
+            # print(files)
+
+    def request_tree():
+        pass
+
 class ProductController(Controller):
     def request_product(self, pid):
         pass
+
 
 class PersonController(Controller):
     def request_person(self, pid):
         if not self.connection:
             return Person()
-        
 
 class RecieptController:
     def request_reciept(self, rid=None, rfile=None):
@@ -63,3 +125,6 @@ class RecieptController:
 
 #     def response(self):
 #         pass
+
+if __name__ == "__main__":
+    e = ExplorerController()

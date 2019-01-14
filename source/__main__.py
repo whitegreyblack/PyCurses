@@ -56,7 +56,8 @@ def application(screen, folderpath, rebuild, logger=None):
     # or manually call individual functions in here?
     app.setup()
     #app.build_windows(screen)
-    app.build_windows()
+    # app.build_windows()
+    app.build_note_viewer()
     app.draw()
     app.run()
 

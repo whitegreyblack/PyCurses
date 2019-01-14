@@ -40,6 +40,33 @@ fake = Faker()
 fake.add_provider(job)
 fake.add_provider(phone_number)
 
+class Note:
+    nid = 0
+    def __init__(self, title, nid=None, created=None, modified=None, note=None):
+        self.title = title
+        self.created = created
+        self.modified = modified
+        self.note = note
+
+        if nid:
+            self.nid = nid
+            Note.nid = max(Note.nid, nid) + 1
+        else:
+            self.nid = Note.nid
+            Note.nid += 1
+
+    def __repr__(self):
+        return f"Note({self.nid}, '{self.title}')"
+
+    def display(self, x, y, mx, my, indent):
+        text = textwrap.wrap(self.note, mx)
+        for i, line in enumerate(text):
+            yield (y + i, 1, line)
+
+    @classmethod
+    def from_database(self, nid, title, created, modified, note):
+        return Note(title, nid, created, modified, note)
+
 class Person:
     def __init__(self, name=None, address=None, job=None, phone_number=None):
         self.name = name if name else Name.random(SHORT_NAME_SCHEMA)

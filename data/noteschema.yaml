@@ -1,0 +1,20 @@
+idNote:
+  type: string
+title:
+  type: string
+created:
+  type: list
+  items: [
+    type: integer,
+    type: integer,
+    type: integer
+  ]
+modified:
+type: list
+  items: [
+    type: integer,
+    type: integer,
+    type: integer
+  ]
+note:
+  type: string
