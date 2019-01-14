@@ -83,8 +83,8 @@ class ExplorerController(Controller):
             # print(f)
             # print(files)
 
-    def request_tree():
-        pass
+    def request_tree(self):
+        return None
 
 class ProductController(Controller):
     def request_product(self, pid):

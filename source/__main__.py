@@ -28,7 +28,7 @@ def initialize_environment_settings(logger=None):
     # Reduce the delay when pressing escape key on keyboard.
     os.environ.setdefault('ESCDELAY', '25')
 
-def application(screen, folderpath, rebuild, logger=None):
+def application(screen, folderpath, demo, rebuild, logger=None):
     """Initializes the Application object which builds the rest of the
     necessary frontend/backend objects.
 
@@ -46,7 +46,7 @@ def application(screen, folderpath, rebuild, logger=None):
     
     # initialize application object and build front/back end
     app = Application(
-        folderpath, 
+        folderpath,
         screen=screen,
         logger=logger,
         rebuild=rebuild
@@ -57,7 +57,7 @@ def application(screen, folderpath, rebuild, logger=None):
     app.setup()
     #app.build_windows(screen)
     # app.build_windows()
-    app.build_note_viewer()
+    getattr(app, demo)()
     app.draw()
     app.run()
 
@@ -67,9 +67,11 @@ def application(screen, folderpath, rebuild, logger=None):
 @click.command()
 @click.option('-f', "folder", nargs=1,
               help="Folder containing yaml data files")
+@click.option('--demo', "demo", nargs=1,
+              help="Specified which demo application to run")
 @click.option('--rb', "rebuild", is_flag=True, default=False,
               help="Rebuild tables before inserting files")
-def main(folder, rebuild):
+def main(folder, demo, rebuild):
     """Handles argument parsing using click framework before calling the
     curses wrapper handler function
     """
@@ -81,6 +83,15 @@ def main(folder, rebuild):
         print("Invalid folder specified: cannot use dot")
         return
 
+    if demo and demo not in ("notes", "note", "n", "tree", "t"):
+        print("Invalid demo specified: not found in demo list")
+        return
+    elif demo in ("notes", "note", "n"):
+        demo = "build_note_viewer"
+    elif demo in ("tree", "t"):
+        demo = "build_file_explorer"
+    else:
+        demo = "build_windows"
     # Format the given path for the correct path delimiter and the check if
     # that path exists as a directory within the filesystem. Exit early if
     # false.
@@ -96,7 +107,7 @@ def main(folder, rebuild):
     # logger class before we enter main curses loop
     logargs = utils.logargs(application, __file__)
     logger = utils.setup_logger_from_logargs(logargs)
-    curses.wrapper(application, folder, rebuild, logger)
+    curses.wrapper(application, folder, demo, rebuild, logger)
 
 if __name__ == "__main__":
     main()
