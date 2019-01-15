@@ -185,6 +185,8 @@ class NoteConnection:
             detect_types=sqlite3.PARSE_DECLTYPES
         )
         self.fields = list(self.tables_info())
+        if not self.fields:
+            self.__connection.execute()
 
     def tables_info(self):
         table_info = []
@@ -196,6 +198,7 @@ class NoteConnection:
         table = "notes"
         print(self.fields)
         fields = ", ".join(n for (n, t) in self.fields)
+        print(fields)
         statement = f"select {fields} from {table}"
         print(statement)
         for note in self.__connection.execute(statement).fetchall():
@@ -206,6 +209,9 @@ if __name__ == "__main__":
     # logger = setup_logger_from_logargs(args)
     # db = Connection(None, logger=logger)
     n = NoteConnection()
-    print(datetime.datetime.strftime(datetime.datetime.today(), '%Y-%m-%d %I:%M:%S'))
+    print(datetime.datetime.strftime(
+        datetime.datetime.today(), 
+        '%Y-%m-%d %I:%M:%S')
+    )
     for (rowid, title, created, modified, note) in n.select_from_table():
         print(created, type(created))
