@@ -6,10 +6,10 @@ import curses
 from source.utils import Event
 from collections.abc import MutableMapping
 
-
-class KeyMap(MutableMapping):
+class EventMap(MutableMapping):
     def __init__(self, *args, **kwargs):
-        self.update(dict(*args, **kwargs))
+        self.store = dict()
+        self.update(dict(*args, **kwargs))  # use the free update to set keys
 
     def __getitem__(self, key):
         return self.store[self.__keytransform__(key)]
@@ -28,16 +28,18 @@ class KeyMap(MutableMapping):
 
     def __keytransform__(self, key):
         return key
-    # def __setitem__(self, )
-    # def add_handler(self, key, curr_win_wid, next_win_wid):
-    #     if (key, curr_win_wid) in self:
-    #         raise ValueError("Duplicate key mapping")
-    #     self[(key, curr_win_wid)] = next_win_wid
+
+    @staticmethod
+    def fromkeys(seq, value=None):
+        t = EventMap()
+        for key in seq:
+            t.store[key] = value if value else Event()
+        return t
 
     # def add_handler_map(self, keymap):
     #     self.update(keymap)
 
 if __name__ == "__main__":
-    km = KeyMap()
-    km.keys()
-    # km.add_handler(0, 1, 3)
+    em = EventMap().fromkeys((1,2,3,4,5,6))
+    for k, v in em.__dict__.items():
+        print(k, v)

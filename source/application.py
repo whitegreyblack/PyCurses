@@ -9,6 +9,7 @@ import curses
 import logging
 import datetime
 import cerberus
+from source.keymap import EventMap
 import source.utils as utils
 import source.config as config
 from source.logger import Loggable
@@ -70,12 +71,18 @@ class Application(Loggable):
         self.controller = None
 
         self.data_changed_event = utils.Event()
-        self.events = {
-            curses.KEY_DOWN: utils.Event(),
-            curses.KEY_UP: utils.Event(),
-            ord('\t'): utils.Event(),
-            curses.KEY_BTAB: utils.Event()
-        }
+        self.events = EventMap.fromkeys((
+            curses.KEY_DOWN,
+            curses.KEY_UP,
+            ord('\t'),
+            curses.KEY_BTAB
+        ))
+        # self.events = {
+        #     curses.KEY_DOWN: utils.Event(),
+        #     curses.KEY_UP: utils.Event(),
+        #     ord('\t'): utils.Event(),
+        #     curses.KEY_BTAB: utils.Event()
+        # }
 
     def setup(self):
         # TODO: need a setting to determine behavior of previously loaded data
