@@ -54,10 +54,10 @@ class Application(Loggable):
     Then the application is looped to draw the views onto the screen using 
     curses framework.
     """
-    def __init__(self, folder, screen=None, logger=None, rebuild=False):
+    def __init__(self, folder, screen=None, logger=None):
         super().__init__(self, logger=logger)
         self.screen = screen
-        self.window = None
+        self.window = Window(screen)
         self.folder = folder
         self.export = "./export/"
         # self.checker = YamlChecker(folder, logger=logger)
@@ -67,7 +67,6 @@ class Application(Loggable):
         self.keymap[ord('Q')] = None
         self.keymap[ord('q')] = None
 
-        self.database = Connection(logger=logger, rebuild=rebuild)
         self.controller = None
 
         self.data_changed_event = utils.Event()
@@ -313,7 +312,7 @@ class Application(Loggable):
                 for i in range(50)
         ]
 
-        self.window = Window(screen, title="Tasks To Do")
+        self.window.title = "Tasks To Do"
 
         task_win = DisplayWindow(
             screen.subwin(
@@ -392,15 +391,15 @@ class Application(Loggable):
             task_win
         )
 
-    def build_note_viewer(self):
+    def build_note_viewer(self, rebuild):
         """Builds an application to view all notes"""
         screen = self.screen
         height, width = screen.getmaxyx()
 
-        self.controller = NotesController(NoteConnection())
+        self.controller = NotesController(NoteConnection(rebuild=rebuild))
         self.data = self.controller.request_notes()
 
-        self.window = Window(screen, title='Note Viewer Example')
+        self.window.title = 'Note Viewer Example'
 
         note_display = DisplayWindow(
             screen.subwin(
@@ -421,6 +420,8 @@ class Application(Loggable):
                 0
             ),
             title="Explorer",
+            title_centered=True,
+            focused=True,
             data=[n.title for n in self.data],
             data_changed_handlers=(self.on_data_changed,)
         )
@@ -440,7 +441,7 @@ class Application(Loggable):
                 for pid in range(10)
         ]
         # main window
-        self.window = Window(screen, title='Application Example 1')
+        self.window.title = 'Application Example 1'
 
         # display window
         display = DisplayWindow(

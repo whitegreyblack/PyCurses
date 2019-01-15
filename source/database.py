@@ -28,22 +28,41 @@ def unpack(cursor):
     """Returns data in a database cursor object as list"""
     return [data for data in cursor]
 
-class Connection(Loggable):
-    """Database Connection Object"""
+# class Connection(Loggable):
+class Connection:
+    """
+    Database Connection Object
+    TODO: make this more abstract for different connections
+    """
     rebuild = False
+    def __init__(self, database, schema, rebuild=None):
+        self._connection = sqlite3.connect(
+            database,
+            detect_types=sqlite3.PARSE_DECLTYPES
+        )
+        self.schema = schema
+        self.rebuild_database(rebuild)
+    
+    def rebuild_database(self, rebuild):
+        if not rebuild:
+            return
+        with open(rebuild, 'r') as sql:
+            for stmt in ''.join(sql.readlines()).split(';'):
+                print('repace', stmt.replace('\n', ''))
+                print('insu', f"{stmt};")
+                self._connection.execute(f"{stmt};")
 
-    def __init__(self, logger=None, rebuild=False):
+class RecieptConnection(Connection):
+    def __init__(self, database='reciepts.db', rebuild=False):
         # leave the logging initialization to the loggable class
-        super().__init__(self, logger=logger)
-
-        self.conn = sqlite3.connect('reciepts.db')
+        # super().__init__(self, logger=logger)
+        super().__init__(database, rebuild)
         self.tables = [
             build_reciepts_table(),
             build_products_table()
         ]
-        self.rebuild = rebuild
         self.committed = []
-        self.log("created database connection.")
+        # self.log("created database connection.")
 
     def __exit__(self):
         self.log("closing database connection.")
@@ -176,32 +195,24 @@ class Connection(Loggable):
         for product in unpack(cursor):
             yield productinfo(*product)
 
-class NoteConnection:
-    """TODO: make this more abstract for different connections"""
-    def __init__(self):
-        # leave the logging initialization to the loggable class
-        self.__connection = sqlite3.connect(
-            'data/notes.db', 
-            detect_types=sqlite3.PARSE_DECLTYPES
-        )
+class NoteConnection(Connection):
+    def __init__(self, database="./data/notes.db", schema=None, rebuild=False):
+        super().__init__(database, schema, rebuild)
         self.fields = list(self.tables_info())
         if not self.fields:
-            self.__connection.execute()
+            self._connection.execute()
 
     def tables_info(self):
         table_info = []
-        cursor = self.__connection.execute('pragma table_info(notes)')
+        cursor = self._connection.execute('pragma table_info(notes)')
         for colnum, colname, coltype, _, _, autoincrement in cursor:
             yield (colname, coltype)
     
     def select_from_table(self):
         table = "notes"
-        print(self.fields)
         fields = ", ".join(n for (n, t) in self.fields)
-        print(fields)
         statement = f"select {fields} from {table}"
-        print(statement)
-        for note in self.__connection.execute(statement).fetchall():
+        for note in self._connection.execute(statement).fetchall():
             yield note
     
 if __name__ == "__main__":

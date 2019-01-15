@@ -129,6 +129,9 @@ class Window:
     def draw_border(self):
         if self.border:
             self.window.border()
+    
+    def handle_key(self, key):
+        pass
 
 # more specific classes
 class DisplayWindow(Window):
@@ -138,6 +141,7 @@ class DisplayWindow(Window):
         self.selected = -1
 
     def on_data_changed(self, sender, sid, arg):
+        """This is a base event handler. Can remove or add more"""
         self.dataobject = arg
     
     def draw(self):
@@ -150,10 +154,6 @@ class DisplayWindow(Window):
                 self.window.addstr(y, x, s)
         else:
             self.window.addstr(1, 1, "No data present")
-
-    def handle_key(self, key):
-        if key == curses.KEY_DOWN:
-            pass
 
 class PromptWindow(Window):
     def __init__(self, window, title=None, focused=False, showing=False):

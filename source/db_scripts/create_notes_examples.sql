@@ -29,5 +29,17 @@ insert into notes (
     'example 2',
     datetime('now'),
     datetime('now'),
-    'ali baba had a great meal for those with small bellies.'
-)
+    'ali baba had a great meal for those with small bellies.\n\nAfter a while they went to bed.'
+);
+
+insert into notes (
+    title,
+    created,
+    modified,
+    note
+) values (
+    'example 3',
+    datetime('now'),
+    datetime('now'),
+    'ali baba had a great meal for those with small bellies.\nAfter a while they went to bed.'
+);

@@ -48,16 +48,15 @@ def application(screen, folderpath, demo, rebuild, logger=None):
     app = Application(
         folderpath,
         screen=screen,
-        logger=logger,
-        rebuild=rebuild
+        logger=logger
     )
 
     # should we create a new function that calls all 4 functions?
     # or manually call individual functions in here?
-    app.setup()
+    # app.setup() -- each demo will setup their own database
     #app.build_windows(screen)
     # app.build_windows()
-    getattr(app, demo)()
+    getattr(app, demo)(rebuild=rebuild)
     app.draw()
     app.run()
 
@@ -69,7 +68,7 @@ def application(screen, folderpath, demo, rebuild, logger=None):
               help="Folder containing yaml data files")
 @click.option('--demo', "demo", nargs=1,
               help="Specified which demo application to run")
-@click.option('--rb', "rebuild", is_flag=True, default=False,
+@click.option('--rb', "rebuild", nargs=1, default=None,
               help="Rebuild tables before inserting files")
 def main(folder, demo, rebuild):
     """Handles argument parsing using click framework before calling the

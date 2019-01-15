@@ -27,15 +27,16 @@ class Controller:
     logger_name = 'controller'
     logger_file = 'controller.log'
     logger_args = {'currentfile': __file__}
-    def __init__(self, connection=None, logger=None):
+    # def __init__(self, connection=None, logger=None):
+    def __init__(self, connection=None):
         self.connection = connection
-        if not logger:
-            logger = setup_logger(
-                self.logger_name, 
-                self.logger_file, 
-                extra=self.logger_args
-            )
-        self.logger = logger
+        # if not logger:
+        #     logger = setup_logger(
+        #         self.logger_name, 
+        #         self.logger_file, 
+        #         extra=self.logger_args
+        #     )
+        # self.logger = logger
 
 
 class NotesController(Controller):
@@ -48,9 +49,6 @@ class NotesController(Controller):
         modified datetime, -- last modified or every modification?
         note     varchar(250),
     """
-    def __init__(self, connection):
-        super().__init__(connection, None)
-    
     def request_note(self, nid):
         pass
     
@@ -62,7 +60,7 @@ class NotesController(Controller):
 class ExplorerController(Controller):
     ignore_folders = ['.git', '.vscode','tests', '__pycache__']
     def __init__(self):
-        super().__init__(None, None)
+        super().__init__(None)
 
         # yes, this shouldn't be in the controller, but currently no class
         # in project does this yet. Doing the prototype here, then refactoring

@@ -85,9 +85,12 @@ class Note:
         return f"Note({self.nid}, '{self.title}')"
 
     def display(self, x, y, mx, my, indent):
-        text = textwrap.wrap(self.note, mx)
-        for i, line in enumerate(text):
-            yield (y + i, 1, line)
+        dy = 0
+        for line in self.note.replace('\\n', '\\n\\n').split('\\n'):
+            frmt = textwrap.wrap(line, mx)
+            for i, l in enumerate(frmt):
+                yield (y + dy + i, 1, l)
+            dy += 1
 
     @classmethod
     def from_database(self, nid, title, created, modified, note):
