@@ -29,7 +29,7 @@ from source.database import (
     Connection,
     NoteConnection
 )
-from source.models.models import Reciept, Transaction, Task
+from source.models.models import Reciept, Transaction, Task, Text
 from source.models.product import Product
 from source.YamlObjects import Reciept as YamlReciept
 from source.window import (
@@ -57,7 +57,7 @@ class Application(Loggable):
     def __init__(self, folder, screen=None, logger=None):
         super().__init__(self, logger=logger)
         self.screen = screen
-        self.window = Window(screen)
+        self.window = Window(screen, eventmap=EventMap.fromkeys((27, 113, 81)))
         self.folder = folder
         self.export = "./export/"
         # self.checker = YamlChecker(folder, logger=logger)
@@ -71,10 +71,10 @@ class Application(Loggable):
 
         self.data_changed_event = utils.Event()
         self.events = EventMap.fromkeys((
-            curses.KEY_DOWN,
-            curses.KEY_UP,
-            ord('\t'),
-            curses.KEY_BTAB
+            # curses.KEY_DOWN,
+            # curses.KEY_UP,
+            # ord('\t'),
+            # curses.KEY_BTAB
         ))
         # self.events = {
         #     curses.KEY_DOWN: utils.Event(),
@@ -419,7 +419,7 @@ class Application(Loggable):
                 1,
                 0
             ),
-            title="Explorer",
+            title="Notes",
             title_centered=True,
             focused=True,
             data=[n.title for n in self.data],
@@ -430,6 +430,21 @@ class Application(Loggable):
         self.window.add_window(note_explorer)
         self.events[curses.KEY_DOWN].append(note_explorer.handle_key)
         self.events[curses.KEY_UP].append(note_explorer.handle_key)
+
+        help_window = DisplayWindow(
+            screen.subwin(
+                height - 12,
+                utils.partition(width, 4, 2),
+                6,
+                utils.partition(width, 4, 1)
+            ),
+            title="Help",
+            dataobj=Text.random(),
+            showing=False,
+        )
+        help_window.add_handler(ord('h'), help_window.toggle_showing)
+        self.events[ord('h')].append(help_window.handle_key)
+        self.window.add_window(help_window)
 
     def build_windows1(self):
         """Work on window recursion and tree"""

@@ -12,7 +12,10 @@ class EventMap(MutableMapping):
         self.update(dict(*args, **kwargs))  # use the free update to set keys
 
     def __getitem__(self, key):
-        return self.store[self.__keytransform__(key)]
+        tkey = self.__keytransform__(key)
+        if not tkey in self.store.keys():
+            self.store[tkey] = Event()
+        return self.store[tkey]
 
     def __setitem__(self, key, value):
         self.store[self.__keytransform__(key)] = value

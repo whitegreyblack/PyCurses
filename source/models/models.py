@@ -6,6 +6,7 @@ Data models to hold data from db
 __author__ = "Samuel Whang"
 
 import textwrap
+import random
 from faker import Faker
 from faker.providers import job, phone_number
 from fakedata.name import (
@@ -39,6 +40,25 @@ pointgrid = namedtuple('PointGrid', 'x y width height')
 fake = Faker()
 fake.add_provider(job)
 fake.add_provider(phone_number)
+
+
+class Text:
+    def __init__(self, text):
+        self.text = text
+
+    def display(self, x, y, mx, my, indent):
+        dy = 0
+        for line in self.text.replace('\\n', '\\n\\n').split('\\n'):
+            frmt = textwrap.wrap(line, mx)
+            for i, l in enumerate(frmt):
+                if y + dy + i > my:
+                    return
+                yield (y + dy + i, 1, l)
+            dy += 1
+
+    @classmethod
+    def random(self):
+        return Text(''.join(fake.text() for _ in range(random.randint(1, 5))))
 
 class Task:
     tid = 0
@@ -89,7 +109,9 @@ class Note:
         for line in self.note.replace('\\n', '\\n\\n').split('\\n'):
             frmt = textwrap.wrap(line, mx)
             for i, l in enumerate(frmt):
-                yield (y + dy + i, 1, l)
+                if y + dy + i > my:
+                    return
+                yield (y + dy + i, x, l)
             dy += 1
 
     @classmethod
@@ -138,13 +160,13 @@ class Person:
 
 class Transaction:
     properties = ["subtotal", "tax", "total", "payment"]
-    def __init__(self, 
-                 total: Currency, 
-                 payment: Currency, 
-                 subtotal: Currency, 
-                 tax: Currency = 0,
-                 change: Currency = 0.00):
-
+    def __init__(
+            self, 
+            total: Currency, 
+            payment: Currency, 
+            subtotal: Currency, 
+            tax: Currency = 0,
+            change: Currency = 0.00):
         self.subtotal = subtotal
         self.total = total
         self.payment = payment

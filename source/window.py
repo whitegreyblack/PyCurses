@@ -2,11 +2,13 @@
 
 import curses
 from source.utils import Event
+from source.keymap import EventMap
 from math import ceil, floor
 
 class WindowProperty:
     __slots__ = [
         'title',
+        'title_centered',
         'focused',
         'selected',
         'showing',
@@ -26,8 +28,9 @@ class Window:
             title=None, 
             title_centered=False,
             focused=False, 
-            showing=True, 
-            border=False):
+            showing=True,
+            border=False,
+            eventmap=None):
         """Main parent window which all other windows derive from"""
         self.title = title
         self.title_centered = title_centered
@@ -35,7 +38,7 @@ class Window:
         self.term_width = x
         self.term_height = y
         self.window = window
-        self.showing = True
+        self.showing = showing
         self.parent = None
         self.child = False
         self.border = border
@@ -46,6 +49,7 @@ class Window:
         self.views = []
         self.index = 0
         self.focused = focused
+        self.eventmap = eventmap if eventmap else EventMap()
 
         # Window.window_ids[2**w] = self
         self.wid = 2**Window.window_ids
@@ -84,11 +88,25 @@ class Window:
             if window.wid == window_id:
                 return window
 
+    def toggle_showing(self):
+        if self.showing:
+            self.hide_window()
+        else:
+            self.show_window()
+
+    def show_window(self):
+        self.showing = True
+
+    def hide_window(self):
+        self.showing = False
+
     def draw(self):
         """
         Handles erasing of window, border drawing and title placement.
         Then calls children object draw functions
         """
+        if not self.showing:
+            return
         self.erase()
         self.draw_border()
 
@@ -130,14 +148,18 @@ class Window:
         if self.border:
             self.window.border()
     
+    def add_handler(self, key, handler):
+        self.keypress_events[key].append(handler)
+
     def handle_key(self, key):
-        pass
+        if key in self.keypress_events.keys():
+            self.keypress_events[key]()
 
 # more specific classes
 class DisplayWindow(Window):
-    def __init__(self, window, title=None, focused=False):
-        super().__init__(window, title, focused)
-        self.dataobject = None
+    def __init__(self, window, title=None, dataobj=None, focused=False, showing=True):
+        super().__init__(window, title, focused=focused, showing=showing)
+        self.dataobject = dataobj
         self.selected = -1
 
     def on_data_changed(self, sender, sid, arg):
@@ -145,6 +167,9 @@ class DisplayWindow(Window):
         self.dataobject = arg
     
     def draw(self):
+        if not self.showing:
+            return
+
         super().draw()
         if self.dataobject:
             mx, my = self.width, self.height
@@ -157,7 +182,7 @@ class DisplayWindow(Window):
 
 class PromptWindow(Window):
     def __init__(self, window, title=None, focused=False, showing=False):
-        super().__init__(window, title, focused, showing)
+        super().__init__(window, title, focused=focused, showing=showing)
         self.showing = showing
 
     def draw(self):
