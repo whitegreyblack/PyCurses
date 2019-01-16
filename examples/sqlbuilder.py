@@ -38,6 +38,6 @@ class SqlString(str):
 if __name__ == "__main__":
     string = SqlString()          \
                 .Select("*")      \
-                .From("Reciepts") \
+                .From("receipts") \
                 .OrderBy(["Name", "Product"])
     print(string)

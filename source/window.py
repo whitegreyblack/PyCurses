@@ -55,6 +55,9 @@ class Window:
         self.wid = 2**Window.window_ids
         Window.window_ids += 1
 
+    def __repr__(self):
+        return f"{self.__class__.__name__}({self.title if self.title else self.wid})"
+
     def add_component(self, component):
         self.components.append(component)
 
@@ -87,6 +90,18 @@ class Window:
         for window in self.windows:
             if window.wid == window_id:
                 return window
+
+    @property
+    def currently_focused(self):
+        if self.focused:
+            return self
+
+        for w in self.windows:
+            t = w.currently_focused
+            if t:
+                return t
+
+        return None
 
     def toggle_showing(self):
         if self.showing:
@@ -149,7 +164,7 @@ class Window:
             self.window.border()
     
     def add_handler(self, key, handler):
-        self.keypress_events[key].append(handler)
+        self.eventmap[key].append(handler)
 
     def handle_key(self, key):
         if key in self.keypress_events.keys():

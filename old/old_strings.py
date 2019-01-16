@@ -109,23 +109,23 @@ passfail = {
 # MORE  : SQL COMMANDS FOR DATA BASE INSERTION|SELECTION|MODIFICATION|DELETION
 # -----------------------------------------------------------------------------
 stmts = {
-    'headcreate': """create table if not exists reciepthead (store varchar(25),
+    'headcreate': """create table if not exists receipthead (store varchar(25),
         date varchar(10), type varchar(10), code varchar(30) PRIMARY KEY,
         subtotal real, tax real, total real, UNIQUE(store, date, total))""",
-    'headinsert': """insert or ignore into reciepthead \
+    'headinsert': """insert or ignore into receipthead \
             values (?,?,?,?,?,?,?);""",
 
-    'bodycreate': """create table if not exists recieptbody (item varchar(25),
+    'bodycreate': """create table if not exists receiptbody (item varchar(25),
         price real, code varchar(30), UNIQUE(item, price, code))""",
-    'bodyinsert': """insert or ignore into recieptbody values (?,?,?)""",
+    'bodyinsert': """insert or ignore into receiptbody values (?,?,?)""",
 
-    'filecount': """select count(*) from reciepthead""",
-    'total': """select sum(total) from reciepthead""",
+    'filecount': """select count(*) from receipthead""",
+    'total': """select sum(total) from receipthead""",
 
-    'algrocery': """select * from reciepthead""",
-    'hdgrocery': """select * from reciepthead where {}='{}'""",
-    'bdgrocery': """select * from reciepthead where code={}""",
+    'algrocery': """select * from receipthead""",
+    'hdgrocery': """select * from receipthead where {}='{}'""",
+    'bdgrocery': """select * from receipthead where code={}""",
 
-    'mindate': """select min(date) from reciepthead""",
-    'maxdate': """select max(date) from reciepthead""",
+    'mindate': """select min(date) from receipthead""",
+    'maxdate': """select max(date) from receipthead""",
 }

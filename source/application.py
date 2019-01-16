@@ -17,21 +17,23 @@ from source.controllers import (
     PersonController,
     ExplorerController,
     NotesController,
+    ReceiptController
 )
 from source.schema import (
     Table, 
     SQLType, 
     build_products_table,
-    build_reciepts_table
+    build_receipts_table
 )
 from source.yamlchecker import YamlChecker
 from source.database import (
     Connection,
-    NoteConnection
+    NoteConnection,
+    ReceiptConnection
 )
-from source.models.models import Reciept, Transaction, Task, Text
+from source.models.models import Receipt, Transaction, Task, Text
 from source.models.product import Product
-from source.YamlObjects import Reciept as YamlReciept
+from source.YamlObjects import receipt as Yamlreceipt
 from source.window import (
     Window,
     ScrollableWindow,
@@ -42,30 +44,40 @@ from source.window import (
 )
 
 class Application(Loggable):
-    """Overview:
-    Builds the database and yamlchecker objects. (They are tightly coupled. May
-    need to change in the future.) The data from the yaml files found in using
-    the folder path paramter are first checked by the yamlchecker before
-    loading into the database.
+    """
+    Builds the initial parent window using the initial curses screen passed in
+    during initialization.
 
-    With loading finished, the front end is created and views are initialized,
-    using data from the database.
+    Also saves export folder paths for data exporting.
+
+    During build functions, creates window objects for the view, controller
+    objects to retrieve data after requests are sent in, and moves model data
+    into the correct window object.
 
     Then the application is looped to draw the views onto the screen using 
     curses framework.
+
+    Handles two way data exchanges between windows if data needs transformation
+    before reaching destination window from source window.
     """
     def __init__(self, folder, screen=None, logger=None):
         super().__init__(self, logger=logger)
+        
+        self.continue_app = True
+        
         self.screen = screen
-        self.window = Window(screen, eventmap=EventMap.fromkeys((27, 113, 81)))
+        self.window = Window(
+            screen, 
+            eventmap=EventMap.fromkeys((
+                27,         # escape key
+                113,        # letter q
+                81          # letter Q
+            ))
+        )
+        self.focused = self.window
+        self.window.add_handler(27, self.on_keypress_escape)
         self.folder = folder
         self.export = "./export/"
-        # self.checker = YamlChecker(folder, logger=logger)
-
-        self.keymap = dict()
-        self.keymap[ord('e')] = self.export_reciepts
-        self.keymap[ord('Q')] = None
-        self.keymap[ord('q')] = None
 
         self.controller = None
 
@@ -148,14 +160,18 @@ class Application(Loggable):
         return yobjs
 
     def run(self):
-        while True:
+        while self.continue_app:
             key = self.screen.getch()
-            if key in self.keymap.keys():
-                if self.keymap[key] == None:
-                    break
-                self.keyhandler(key)
-            elif key in self.events.keys():
-                self.events[key](key)
+            print(self.focused)
+            break
+            if key in self.focused.eventmap.keys():
+                self.focused.eventmap[key]()
+            # if key in self.keymap.keys():
+            #     if self.keymap[key] == None:
+            #         break
+            #     self.keyhandler(key)
+            # elif key in self.events.keys():
+            #     self.events[key](key)
             else:
                 retval = self.send_signal(key)
                 if not retval:
@@ -168,44 +184,22 @@ class Application(Loggable):
     def keyhandler(self, key):
         self.keymap[key]()
 
-    def build_reciepts(self):
-        """Generates View Reciept objects from database"""
-        for rdata in self.database.select_reciepts():
-            reciept = rdata.filename
-            rproducts = list(self.database.select_reciept_products(reciept))
-            t = Transaction(
-                rdata.total, 
-                rdata.payment, 
-                rdata.subtotal, 
-                rdata.tax
-            )
-            d = utils.parse_date_from_database(rdata.date)
-            r = Reciept(
-                rdata.store,
-                rdata.short,
-                utils.format_date(d, config.DATE_FORMAT['L']),
-                utils.format_date(d, config.DATE_FORMAT['S']),
-                rdata.category,
-                [Product(p.product, p.price) for p in rproducts], t
-            )
-            yield r
+    def build_receipts_for_export(self):
+        """Generates Yaml receipt objects from database"""
 
-    def build_reciepts_for_export(self):
-        """Generates Yaml Reciept objects from database"""
-
-        # TODO: adding a serialize function in YamlReciept will help
+        # TODO: adding a serialize function in Yamlreceipt will help
         #       shorten this function
-        for r in self.database.select_reciepts():
+        for r in self.database.select_receipts():
             products = {
                 p.product: p.price
-                    for p in self.database.select_reciept_products(r.filename)
+                    for p in self.database.select_receipt_products(r.filename)
             }
 
             # separates date into list of int values again
             datelist = utils.parse_date_from_database(r.date)
 
             # reuse yaml object to export
-            reciept = YamlReciept(
+            receipt = Yamlreceipt(
                 r.store, 
                 r.short, 
                 datelist, 
@@ -216,9 +210,9 @@ class Application(Loggable):
                 r.total,
                 r.payment
             )
-            yield (r.filename, reciept)
+            yield (r.filename, receipt)
 
-    def export_reciepts(self):
+    def export_receipts(self):
         """Should create a folder that matches exactly the input folder"""
         # TODO: single file to hold all data vs multiple files
         # TODO: move file/folder existance checks to self.setup(). That way
@@ -229,10 +223,10 @@ class Application(Loggable):
         folderpath = utils.check_or_create_folder(self.export)
         formatpath = utils.format_directory_path(folderpath)
         self.log(f"Begin exporting to {formatpath}")
-        for filename, reciept in self.build_reciepts_for_export():
+        for filename, receipt in self.build_receipts_for_export():
             filepath = formatpath + filename + config.YAML_FILE_EXTENSION
             with open(filepath, 'w') as yamlfile:
-                yamlfile.write(yaml.dump(reciept))
+                yamlfile.write(yaml.dump(receipt))
         self.log("Finished exporting.")
 
     def generate_reports(self):
@@ -242,6 +236,39 @@ class Application(Loggable):
         """
         pass
 
+    def build_receipt_viewer(self, rebuild=False):
+        screen = self.screen
+        height, width = screen.getmaxyx()
+
+        self.controller = ReceiptController(ReceiptConnection(rebuild=rebuild))
+
+        self.data = list(self.controller.request_receipts())
+        print([n.store for n in self.data])
+
+        receipt_explorer = ScrollableWindow(
+            screen.subwin(
+                height - 2,
+                utils.partition(width, 3, 1),
+                1,
+                0
+            ),
+            title="receipt",
+            title_centered=True,
+            focused=True,
+            data=[n.store for n in self.data],
+            data_changed_handlers=(self.on_data_changed,)
+        )
+        receipt_explorer.keypress_up_event = on_keypress_up
+        receipt_explorer.keypress_down_event = on_keypress_down
+        self.window.add_window(receipt_explorer)
+        self.events[curses.KEY_DOWN].append(receipt_explorer.handle_key)
+        self.events[curses.KEY_UP].append(receipt_explorer.handle_key)
+
+        self.focused = self.window.currently_focused
+        if not self.focused:
+            self.focused = self.window
+        
+    """
     def build_windows3(self, screen):
         height, width = screen.getmaxyx()
         self.screen = screen
@@ -255,7 +282,6 @@ class Application(Loggable):
         optbar.add_option('Select', None)
         optbar.add_option('Help', None)
         self.window.add_view(v1)
-
     def build_windows2(self):
         screen = self.screen
         y, x = screen.getbegyx() # just a cool way of getting 0, 0
@@ -265,11 +291,11 @@ class Application(Loggable):
 
         v1 = View(screen.subwin(height - 1, width, 1, 0), columns=2, rows=2)
 
-        reciept_cards = [ Card(r) for r in self.build_reciepts() ]
+        receipt_cards = [ Card(r) for r in self.build_receipts() ]
         scroller = ScrollList(v1.x, v1.y, v1.width // 4, v1.height)
-        scroller.add_items(reciept_cards)
+        scroller.add_items(receipt_cards)
 
-        form = RecieptForm(
+        form = receiptForm(
             v1.width // 4,
             v1.y,
             (v1.width // 4) * 3,
@@ -288,10 +314,14 @@ class Application(Loggable):
         self.window.add_view(optionview2)
         self.window.add_view(optionview3)
         #self.window.add_view(View(1, 1, width, height - 1))
+    """
 
     def on_data_changed(self, sender, sid, arg):
         model = self.data[arg]
         self.data_changed_event(sender, sid, model)
+
+    def on_keypress_escape(self, sender, sid, arg):
+        self.continue_app = False
 
     def build_file_explorer(self):
         """Work on putting folder/file names in window"""
@@ -446,6 +476,9 @@ class Application(Loggable):
         self.events[ord('h')].append(help_window.handle_key)
         self.window.add_window(help_window)
 
+        self.focused = self.window.currently_focused
+        print(self.focused)
+
     def build_windows1(self):
         """Work on window recursion and tree"""
         screen = self.screen
@@ -582,12 +615,12 @@ class Application(Loggable):
         # scroller = ScrollList(1, 1,
         #                       self.window.width // 4,
         #                       self.window.height,
-        #                       title='Reciepts',
+        #                       title='receipts',
         #                       selected=True)
 
-        # reciept_cards = [ Card(r) for r in self.build_reciepts() ]
-        # scroller.add_items(reciept_cards)
-        # form = RecieptForm(
+        # receipt_cards = [ Card(r) for r in self.build_receipts() ]
+        # scroller.add_items(receipt_cards)
+        # form = receiptForm(
         #     (self.window.width // 4) + 1, # add 1 for offset
         #     1,
         #     self.window.width - (self.window.width // 4) - 1, 
@@ -623,7 +656,7 @@ class Application(Loggable):
         # keymap[(curses.KEY_LEFT, exitprompt.wid)] = exitprompt.wid
         # keymap[(curses.KEY_RIGHT, exitprompt.wid)] = exitprompt.wid
         # keymap[(ord('\t'), exitprompt.wid)] = exitprompt.wid
-        # # keymap[(curses.KEY_F1,)] = 'Reciepts'
+        # # keymap[(curses.KEY_F1,)] = 'receipts'
         # # 10 : New Line Character
         # keymap[(10, scroller.wid)] = form.wid
         # keymap[(10, exitprompt.wid)] = scroller.wid
@@ -650,7 +683,7 @@ class Application(Loggable):
         # self.screen.addstr(2, 2, "[e] export files")
         # self.screen.addstr(4, 2, "[E] export current file")
 
-        # self.screen.addstr(2, self.window.width // 8, "[Reciepts]")
+        # self.screen.addstr(2, self.window.width // 8, "[receipts]")
         # self.screen.addstr(2, self.window.width // 8 + 11, "[Products]")
         # self.screen.addstr(2, self.window.width // 8 + 22, "[Stores]")
         # self.window.draw(self.screen)
@@ -666,7 +699,7 @@ class Application(Loggable):
         return self.window.send_signal(signal)
 
 if __name__ == "__main__":
-    a = Application('./reciepts/')
+    a = Application('./receipts/')
     a.setup()
     a.build_windows()
     a.run()

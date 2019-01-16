@@ -1,4 +1,4 @@
-"""__main__.py: Reciept Viewer App
+"""__main__.py: receipt Viewer App
 Handles building application within curses environment. Initializes
 curses settings then sends the screen into the application to be built
 """
@@ -56,7 +56,10 @@ def application(screen, folderpath, demo, rebuild, logger=None):
     # app.setup() -- each demo will setup their own database
     #app.build_windows(screen)
     # app.build_windows()
-    getattr(app, demo)(rebuild=rebuild)
+    if not rebuild:
+        getattr(app, demo)()
+    else:
+        getattr(app, demo)(rebuild=rebuild)
     app.draw()
     app.run()
 
@@ -82,9 +85,11 @@ def main(folder, demo, rebuild):
         print("Invalid folder specified: cannot use dot")
         return
 
-    if demo and demo not in ("notes", "note", "tree", "todos", "todo"):
+    if demo and demo not in ("notes", "note", "tree", "todos", "todo", "receipts", "receipt"):
         print("Invalid demo specified: not found in demo list")
         return
+    elif demo in ("receipt", "receipts"):
+        demo = "build_receipt_viewer"
     elif demo in ("todo", "todos"):
         demo = "build_todo_tasks"
     elif demo in ("notes", "note"):

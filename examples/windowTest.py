@@ -22,7 +22,7 @@ def main(screen):
         for i in range(screen_height):
             screen.addch(i + 1, vertical_divider, '|')
         # get bounds of header
-        screen.addstr(0, 1, 'Reciept Viewer')
+        screen.addstr(0, 1, 'receipt Viewer')
 
         # get bounds of main panel to add string
         card_length = vertical_divider - 3

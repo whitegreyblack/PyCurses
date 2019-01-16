@@ -9,7 +9,7 @@ import os
 import unittest
 import yaml
 from re import compile
-from source.YamlObjects import Reciept
+from source.YamlObjects import receipt
 
 FOLDER = 'singlefail/'
 

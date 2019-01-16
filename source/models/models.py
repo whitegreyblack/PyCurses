@@ -204,7 +204,7 @@ class Product:
         for n, p in zip(Product.test_names, Product.test_prices):
             yield Product(n, p) 
 
-class Reciept:
+class Receipt:
     def __init__(
             self, 
             store: str, 
@@ -214,7 +214,7 @@ class Reciept:
             category: str, 
             products: list, 
             transaction: Transaction):
-        """Initialize fields used in reciept"""
+        """Initialize fields used in receipt"""
         self.store = store
         self.store_short = store_short
         self.date = date

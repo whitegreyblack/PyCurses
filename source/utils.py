@@ -14,7 +14,7 @@ import datetime
 import textwrap
 import cerberus
 from math import floor, ceil
-from source.YamlObjects import Reciept
+from source.YamlObjects import receipt
 from source.config import YAML_FILE_NAME_REGEX
 from typing import Union, Tuple
 from collections import namedtuple

@@ -1,6 +1,6 @@
 import yaml
 from cerberus import Validator
-from source.YamlObjects import Reciept
+from source.YamlObjects import receipt
 
 v = Validator()
 schema_text = """

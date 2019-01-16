@@ -1,15 +1,23 @@
 """Datacontroller.py"""
 import os
 from source.database import (
-    NoteConnection
+    NoteConnection,
+    ReceiptConnection,
 )
 from source.models.models import (
     Person,
+    Transaction,
     Note,
-    Product
+    Product,
+    Receipt
 )
-from source.utils import setup_logger
-from source.utils import Event, EventArg
+from source.utils import (
+    setup_logger,
+    Event, 
+    EventArg,
+    parse_date_from_database,
+    format_date
+)
 
 
 class Node:
@@ -102,35 +110,46 @@ class PersonController(Controller):
             return Person()
 
 
-class RecieptController:
-    def request_reciept(self, rid=None, rfile=None):
+class ReceiptController(Controller):
+    def request_receipt(self, rid=None, rfile=None):
         if not rid and not rfile:
             raise BaseException("Either rid or rfile must be supplied")
         elif rid:
-            self.request_reciept_by_id(rid)
+            self.request_receipt_by_id(rid)
         else:
-            self.request_reciept_by_file(rfile) 
+            self.request_receipt_by_file(rfile) 
 
-    def request_reciept_by_id(self, rid):
+    def request_receipt_by_id(self, rid):
         pass
 
-    def request_reciept_by_file(self, rfile):
+    def request_receipt_by_file(self, rfile):
         pass
 
-#     def response_reciept(self):
-#         pass
-
-#     def request_product(self):
-#         pass
-
-#     def response_product(self):
-#         pass
-
-#     def request(self):
-#         pass
-
-#     def response(self):
-#         pass
+    def request_receipts(self):
+        for rdata in self.connection.select_receipts():
+            rid = rdata.rid
+            store = self.connection.select_store(rdata.sid)
+            category = self.connection.select_category(store.cid)
+            products = list(self.connection.select_receipt_products(rid))
+            t = Transaction(
+                rdata.total, 
+                rdata.payment, 
+                rdata.subtotal, 
+                rdata.tax
+            )
+            r = Receipt(
+                store.store,
+                store.store,
+                rdata.purchased_on,
+                rdata.purchased_on,
+                category,
+                [
+                    Product(p.product, p.price) 
+                        for p in products
+                ], 
+                t
+            )
+            yield r
 
 if __name__ == "__main__":
     e = ExplorerController()
