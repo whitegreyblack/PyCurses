@@ -88,6 +88,7 @@ class Window:
 
     def add_window(self, window):
         # print("add", window, window.focused, window.focused and self.focused)
+        print(window)
         window.parent = self
         window.border = True
         # if window.focused and self.focused:
@@ -95,7 +96,7 @@ class Window:
             # print(window, "focused", self.focused)
         self.__windows.append(window)
 
-    def add_windows(self, *windows):
+    def add_windows(self, windows):
         for w in windows:
             self.add_window(w)
 

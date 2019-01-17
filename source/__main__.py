@@ -11,6 +11,9 @@ import click
 import curses
 import source.utils as utils
 from source.application import Application
+from source.applications.contacts import ContactsApplication
+from source.applications.notes import NoteApplication
+from source.applications.tasks import TaskApplication
 
 def initialize_curses_settings(logger=None):
     """Sets settings for cursor visibility and color pairings"""
@@ -44,6 +47,14 @@ def application(screen, folderpath, demo, rebuild, logger=None):
     # curses only options.
     initialize_curses_settings()
     
+    # determine which application to run
+    application = Application
+    if demo == "notes":
+        application = NoteApplication
+    elif demo == "tasks":
+        application = TaskApplication
+    elif demo == "contacts":
+        application = ContactsApplication
     # initialize application object and build front/back end
     app = Application(
         folderpath,
@@ -56,10 +67,11 @@ def application(screen, folderpath, demo, rebuild, logger=None):
     # app.setup() -- each demo will setup their own database
     #app.build_windows(screen)
     # app.build_windows()
-    if not rebuild:
-        getattr(app, demo)()
-    else:
-        getattr(app, demo)(rebuild=rebuild)
+    app.build_application(rebuild)
+    # if not rebuild:
+    #     getattr(app, demo)()
+    # else:
+    #     getattr(app, demo)(rebuild=rebuild)
     app.draw()
     app.run()
 
@@ -91,9 +103,9 @@ def main(folder, demo, rebuild):
     elif demo in ("receipt", "receipts"):
         demo = "build_receipt_viewer"
     elif demo in ("todo", "todos", "tasks", "task"):
-        demo = "build_todo_tasks"
+        demo = "task"
     elif demo in ("notes", "note"):
-        demo = "build_note_viewer"
+        demo = "notes"
     elif demo in ("tree",):
         demo = "build_file_explorer"
     else:
