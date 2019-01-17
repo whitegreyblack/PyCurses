@@ -4,9 +4,15 @@ from source.window import (
     Window,
     ScrollableWindow,
     DisplayWindow,
-    WindowProperty
+    HelpWindow,
+    WindowProperty,
+    on_keypress_up,
+    on_keypress_down
 )
-import source.utils
+from source.models.models import Text
+import source.utils as utils
+from source.controllers import NotesController
+from source.database import NoteConnection
 
 class NoteApplication(Application):
     def build_application(self, rebuild=False):
@@ -25,16 +31,10 @@ class NoteApplication(Application):
                 utils.partition(width, 3, 2),
                 1,
                 utils.partition(width, 3, 1)
-            )
+            ),
+            title="Explorer"
         )
-        self.data_changed_event.append(note_display.on_data_changed)
-        self.window.add_window(note_display)
 
-        note_explorer_props = WindowProperty({
-            'title': "Notes",
-            'title_centered': True,
-            'focused': True,            
-        })
         note_explorer = ScrollableWindow(
             screen.subwin(
                 height - 2,
@@ -48,27 +48,72 @@ class NoteApplication(Application):
             data=[n.title for n in self.data],
             data_changed_handlers=(self.on_data_changed,)
         )
-        note_explorer.keypress_up_event = on_keypress_up
-        note_explorer.keypress_down_event = on_keypress_down
-        self.window.add_window(note_explorer)
-        self.events[curses.KEY_DOWN].append(note_explorer.handle_key)
-        self.events[curses.KEY_UP].append(note_explorer.handle_key)
 
-        help_window = DisplayWindow(
+        help_window = HelpWindow(
             screen.subwin(
-                height - 12,
+                height // 3,
                 utils.partition(width, 4, 2),
-                6,
+                utils.partition(height, 3, 1),
                 utils.partition(width, 4, 1)
             ),
-            title="Help",
+            title="Help Window",
             dataobj=Text.random(),
-            showing=False,
         )
-        help_window.add_handler(ord('h'), help_window.toggle_showing)
-        self.events[ord('h')].append(help_window.handle_key)
-        self.window.add_window(help_window)
 
+        self.window.add_handlers(
+            curses.KEY_F1,
+            self.window.unfocus,
+            help_window.set_opener,
+            help_window.focus,
+            help_window.show,
+            self.on_focus_changed
+        )
+        note_explorer.add_handler(27, self.on_keypress_escape)
+        note_explorer.add_handlers(
+            9, 
+            note_explorer.unfocus,
+            note_display.focus,
+            self.on_focus_changed
+        )
+        note_explorer.add_handlers(
+            curses.KEY_F1,
+            note_explorer.unfocus,
+            help_window.set_opener,
+            help_window.focus,
+            help_window.show,
+            self.on_focus_changed
+        )
+        note_display.add_handler(27, self.on_keypress_escape)
+        note_display.add_handlers(
+            351,
+            note_display.unfocus,
+            note_explorer.focus,
+            self.on_focus_changed
+        )
+        note_display.add_handlers(
+            curses.KEY_F1,
+            note_display.unfocus,
+            help_window.set_opener,
+            help_window.focus,
+            help_window.show,
+            self.on_focus_changed
+        )
+        help_window.add_handlers(
+            27,
+            help_window.hide,
+            help_window.unfocus,
+            help_window.refocus_opener,
+            self.on_focus_changed
+        )
+        help_window.add_handlers(
+            curses.KEY_F1,
+            help_window.hide,
+            help_window.unfocus,
+            help_window.refocus_opener,
+            self.on_focus_changed
+        )
+
+        self.window.add_windows(note_explorer, note_display, help_window)
         self.focused = self.window.currently_focused
     
     def build_application_with_properties(self, rebuild):

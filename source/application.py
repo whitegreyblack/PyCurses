@@ -76,6 +76,7 @@ class Application(Loggable):
             ))
         )
         self.focused = self.window
+        self.last_focused = None
         self.window.add_handler(27, self.on_keypress_escape)
         self.folder = folder
         self.export = "./export/"

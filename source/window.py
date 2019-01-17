@@ -135,10 +135,10 @@ class Window:
         else:
             self.show_window()
 
-    def show_window(self):
+    def show(self, sender):
         self.showing = True
 
-    def hide_window(self):
+    def hide(self, sender):
         self.showing = False
 
     def draw(self):
@@ -234,8 +234,38 @@ class DisplayWindow(Window):
         else:
             self.window.addstr(1, 1, "No data present")
 
+
+class HelpWindow(Window):
+    def __init__(self, window, title=None, dataobj=None, focused=False, showing=False, opener=None):
+        super().__init__(window, title, focused=focused, showing=showing)
+        self.dataobject = dataobj
+        self.selected = -1
+        self.opener = None
+
+    def set_opener(self, sender):
+        self.opener = sender
+
+    def refocus_opener(self, sender):
+        self.opener.focus(sender)
+        self.opener = None
+
+    def draw(self):
+        if not self.showing:
+            return
+
+        super().draw()
+        if self.dataobject:
+            mx, my = self.width, self.height
+            for y, x, s in self.dataobject.display(1, 1, mx, my, 2):
+                if len(s) > mx:
+                    raise BaseException(s)
+                self.window.addstr(y, x, s)
+        else:
+            self.window.addstr(1, 1, "No data present")
+
+
 class PromptWindow(Window):
-    def __init__(self, window, title=None, focused=False, showing=False):
+    def __init__(self, window, title=None, focused=False, showing=True):
         super().__init__(window, title, focused=focused, showing=showing)
         self.showing = showing
 
@@ -248,6 +278,7 @@ class PromptWindow(Window):
     def erase(self):
         super().erase()
         curses.curs_set(0)
+
 
 class ScrollableWindow(Window):
     def __init__(

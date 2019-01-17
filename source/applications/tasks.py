@@ -1,4 +1,10 @@
 import curses
+import random
+import datetime
+
+import source.utils as utils
+from source.keymap import EventMap
+from source.models.models import Task
 from source.application import Application
 from source.window import (
     Window,
@@ -7,11 +13,6 @@ from source.window import (
     on_keypress_down,
     on_keypress_up,
 )
-from source.models.models import Task
-import source.utils as utils
-import random
-import datetime
-from source.keymap import EventMap
 
 class TaskApplication(Application):
     def build_application(self, rebuild):
@@ -62,11 +63,10 @@ class TaskApplication(Application):
             data=[task.title for task in self.data if task.status_id == 1],
             data_changed_handlers=(self.on_data_changed,),
             eventmap=EventMap.fromkeys((
-                ord('\t'),          # 9
-                curses.KEY_BTAB,    # 351
-                curses.KEY_DOWN,    # 258
-                curses.KEY_UP,      # 259
-                27
+                9,      # ord('\t'),
+                351,    # curses.KEY_BTAB,
+                258,    # curses.KEY_DOWN,
+                259     # curses.KEY_UP,
             ))
         )
 
@@ -100,7 +100,8 @@ class TaskApplication(Application):
         none_win.add_handler(258, on_keypress_down)
         none_win.add_handler(259, on_keypress_up)
         none_win.add_handler(27, self.on_keypress_escape)
-        none_win.add_handlers(9,
+        none_win.add_handlers(
+            9,
             none_win.unfocus,
             todo_win.focus, 
             self.on_focus_changed
@@ -110,7 +111,8 @@ class TaskApplication(Application):
         todo_win.add_handler(258, on_keypress_down)
         todo_win.add_handler(259, on_keypress_up)
         todo_win.add_handler(27, self.on_keypress_escape)
-        todo_win.add_handlers(351,
+        todo_win.add_handlers(
+            351,
             todo_win.unfocus,
             none_win.focus, 
             self.on_focus_changed
