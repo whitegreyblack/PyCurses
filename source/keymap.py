@@ -11,6 +11,10 @@ class EventMap(MutableMapping):
         self.store = dict()
         self.update(dict(*args, **kwargs))  # use the free update to set keys
 
+    def __repr__(self):
+        kvpairs = ", ".join(f"{k}, {v}" for k, v in self.store.items())
+        return f"EventMap({kvpairs})"
+
     def __getitem__(self, key):
         tkey = self.__keytransform__(key)
         if not tkey in self.store.keys():

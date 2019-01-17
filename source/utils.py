@@ -37,7 +37,7 @@ class Event(list):
         for f in self:
             f(*args, **kwargs)
     def __repr__(self):
-        return f"Event({', '.join(f for f in self)})"
+        return f"Event({', '.join(f.__name__ for f in self)})"
 '''
 class Permissions(Enum): 
     flags = {

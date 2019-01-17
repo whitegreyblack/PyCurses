@@ -85,12 +85,12 @@ def main(folder, demo, rebuild):
         print("Invalid folder specified: cannot use dot")
         return
 
-    if demo and demo not in ("notes", "note", "tree", "todos", "todo", "receipts", "receipt"):
+    if demo and demo not in ("notes", "note", "tree", "todos", "todo", "tasks", "task", "receipts", "receipt"):
         print("Invalid demo specified: not found in demo list")
         return
     elif demo in ("receipt", "receipts"):
         demo = "build_receipt_viewer"
-    elif demo in ("todo", "todos"):
+    elif demo in ("todo", "todos", "tasks", "task"):
         demo = "build_todo_tasks"
     elif demo in ("notes", "note"):
         demo = "build_note_viewer"

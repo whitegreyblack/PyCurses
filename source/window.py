@@ -5,20 +5,35 @@ from source.utils import Event
 from source.keymap import EventMap
 from math import ceil, floor
 
-class WindowProperty:
+class WindowProperty(object):
     __slots__ = [
         'title',
         'title_centered',
         'focused',
-        'selected',
         'showing',
         'border',
     ]
+    def __new__(cls, props):
+        print("WP new obj")
+        i = super().__new__(cls)
+        i.title = None
+        i.title_centered = False
+        i.focused = False
+        i.showing = True
+        i.border = False
+        return i
+    
     def __init__(self, props):
+        print("WP init obj")
+        print(props)
         for prop, value in props.items():
             if not prop in self.__slots__:
                 raise AttributeError(f"Invalid attribute: {prop}")
             setattr(self, prop, value)
+
+    def __repr__(self):
+        attrs = ', '.join(f'{k}: {getattr(self, k)}' for k in self.__slots__)
+        return f"WindowProperty({attrs})"
 
 class Window:
     window_ids = 0
@@ -72,8 +87,12 @@ class Window:
         self.__windows = value
 
     def add_window(self, window):
+        # print("add", window, window.focused, window.focused and self.focused)
         window.parent = self
         window.border = True
+        # if window.focused and self.focused:
+        #     self.focused = not self.focused
+            # print(window, "focused", self.focused)
         self.__windows.append(window)
 
     def add_windows(self, *windows):
@@ -102,6 +121,12 @@ class Window:
                 return t
 
         return None
+
+    def focus(self, sender):
+        self.focused = True
+
+    def unfocus(self, sender):
+        self.focused = False
 
     def toggle_showing(self):
         if self.showing:
@@ -166,9 +191,14 @@ class Window:
     def add_handler(self, key, handler):
         self.eventmap[key].append(handler)
 
+    def add_handlers(self, key, handlers):
+        for handler in handlers:
+            self.add_handler(key, handler)
+
     def handle_key(self, key):
-        if key in self.keypress_events.keys():
-            self.keypress_events[key]()
+        self.eventmap[key](self)
+        # if key in self.keypress_events.keys():
+        #     self.keypress_events[key](self)
 
 # more specific classes
 class DisplayWindow(Window):
@@ -177,7 +207,7 @@ class DisplayWindow(Window):
         self.dataobject = dataobj
         self.selected = -1
 
-    def on_data_changed(self, sender, sid, arg):
+    def on_data_changed(self, sender, arg):
         """This is a base event handler. Can remove or add more"""
         self.dataobject = arg
     
@@ -219,8 +249,16 @@ class ScrollableWindow(Window):
             data=None, 
             focused=False,
             border=True,
-            data_changed_handlers=None):
-        super().__init__(window, title, title_centered, focused, border)
+            data_changed_handlers=None,
+            eventmap=None):
+        super().__init__(
+            window, 
+            title=title, 
+            title_centered=title_centered, 
+            focused=focused, 
+            border=border, 
+            eventmap=eventmap
+        )
         self.data_changed_event = Event()
         self.keypress_up_event = Event()
         self.keypress_down_event = Event()
@@ -245,11 +283,7 @@ class ScrollableWindow(Window):
     
     def on_data_changed(self):
         if self.__data and self.index > -1:
-            self.data_changed_event(
-                self.__class__.__name__, 
-                self.wid, 
-                self.index
-            )
+            self.data_changed_event(self, self.index)
 
     def draw(self):
         if not self.showing:
@@ -290,17 +324,20 @@ class ScrollableWindow(Window):
             # c = curses.color_pair((s + i == self.index) * 2)
             self.window.addstr(i + 1, 1, l, c)
 
-    def handle_key(self, key):
-        if key == curses.KEY_DOWN:
-            self.keypress_down_event(self)
-        elif key == curses.KEY_UP:
-            self.keypress_up_event(self)
-        elif key == ord('a'):
-            self.keypress_a_event(self)
-        elif key == ord('\t'):
-            self.keypress_tab_event(self)
-        elif key == curses.KEY_BTAB:
-            self.keypress_btab_event(self)
+    # def handle_key(self, key):
+    #     self.eventmap[key](self)
+    #     if key == curses.KEY_DOWN:
+    #         self.eventmap[key](self)
+    #     elif key == curses.KEY_UP:
+    #         self.eventmap[key](self)
+    #     elif key == 27:
+    #         self.eventmap[key](self)
+    #     elif key == ord('a'):
+    #         self.keypress_a_event(self)
+    #     elif key == ord('\t'):
+    #         self.keypress_tab_event(self)
+    #     elif key == curses.KEY_BTAB:
+    #         self.keypress_btab_event(self)
 
     # def increment_index(self):
     #     t = self.index + 1

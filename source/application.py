@@ -36,6 +36,7 @@ from source.models.product import Product
 from source.YamlObjects import receipt as Yamlreceipt
 from source.window import (
     Window,
+    WindowProperty,
     ScrollableWindow,
     PromptWindow,
     DisplayWindow,
@@ -142,11 +143,10 @@ class Application(Loggable):
         v = cerberus.Validator(schema)
         if not v.validate({'filename': filename}):
             raise BaseException(f'Yaml Filename {filename} is invalid')
-        # print(f'Yaml Filename is valid {filename}')
 
     def check_file_data(self, filename):
         v = utils.validate_from_path(
-            self.folder + filename, 
+            self.folder + filename,
             './data/schema.yaml'
         )
         if not v:
@@ -162,10 +162,10 @@ class Application(Loggable):
     def run(self):
         while self.continue_app:
             key = self.screen.getch()
-            print(self.focused)
-            break
+            print(self.focused, self.focused.eventmap)
             if key in self.focused.eventmap.keys():
-                self.focused.eventmap[key]()
+                self.focused.handle_key(key)
+                # self.focused.eventmap[key]()
             # if key in self.keymap.keys():
             #     if self.keymap[key] == None:
             #         break
@@ -230,7 +230,8 @@ class Application(Loggable):
         self.log("Finished exporting.")
 
     def generate_reports(self):
-        """Basically does a join on all the files in the database for common
+        """
+        Basically does a join on all the files in the database for common
         data comparisons. Could use a handler to generate all the reports
         specific to the database being used.
         """
@@ -243,7 +244,6 @@ class Application(Loggable):
         self.controller = ReceiptController(ReceiptConnection(rebuild=rebuild))
 
         self.data = list(self.controller.request_receipts())
-        print([n.store for n in self.data])
 
         receipt_explorer = ScrollableWindow(
             screen.subwin(
@@ -316,11 +316,14 @@ class Application(Loggable):
         #self.window.add_view(View(1, 1, width, height - 1))
     """
 
-    def on_data_changed(self, sender, sid, arg):
-        model = self.data[arg]
-        self.data_changed_event(sender, sid, model)
+    def on_focus_changed(self, sender, arg=None):
+        self.focused = self.window.currently_focused
 
-    def on_keypress_escape(self, sender, sid, arg):
+    def on_data_changed(self, sender, arg):
+        model = self.data[arg]
+        self.data_changed_event(sender, model)
+
+    def on_keypress_escape(self, sender, arg=None):
         self.continue_app = False
 
     def build_file_explorer(self):
@@ -378,14 +381,15 @@ class Application(Loggable):
             title_centered=True,
             focused=True,
             data=[task.title for task in self.data if task.status_id == 1],
-            data_changed_handlers=(self.on_data_changed,)
+            data_changed_handlers=(self.on_data_changed,),
+            eventmap=EventMap.fromkeys((
+                ord('\t'),          # 9
+                curses.KEY_BTAB,    # 351
+                curses.KEY_DOWN,    # 258
+                curses.KEY_UP,      # 259
+                27
+            ))
         )
-        todo_win.keypress_up_event = on_keypress_up
-        todo_win.keypress_down_event = on_keypress_down
-        self.events[ord('\t')].append(todo_win.handle_key)
-        self.events[curses.KEY_BTAB].append(todo_win.handle_key)
-        self.events[curses.KEY_DOWN].append(todo_win.handle_key)
-        self.events[curses.KEY_UP].append(todo_win.handle_key)
 
         work_win = ScrollableWindow(
             screen.subwin(
@@ -413,6 +417,51 @@ class Application(Loggable):
             data_changed_handlers=(self.on_data_changed,)
         )
 
+        none_win.add_handler(258, on_keypress_down)
+        none_win.add_handler(259, on_keypress_up)
+        none_win.add_handler(27, self.on_keypress_escape)
+        none_win.add_handlers(9, (
+            none_win.unfocus,
+            todo_win.focus, 
+            self.on_focus_changed
+        ))
+        todo_win.add_handler(258, on_keypress_down)
+        todo_win.add_handler(259, on_keypress_up)
+        todo_win.add_handler(27, self.on_keypress_escape)
+        todo_win.add_handlers(351, (
+            todo_win.unfocus,
+            none_win.focus, 
+            self.on_focus_changed
+        ))
+        todo_win.add_handlers(9, (
+            todo_win.unfocus,
+            work_win.focus, 
+            self.on_focus_changed
+        ))
+
+        work_win.add_handler(258, on_keypress_down)
+        work_win.add_handler(259, on_keypress_up)
+        work_win.add_handler(27, self.on_keypress_escape)
+        work_win.add_handlers(351, (
+            work_win.unfocus,
+            todo_win.focus, 
+            self.on_focus_changed
+        ))
+        work_win.add_handlers(9, (
+            work_win.unfocus,
+            done_win.focus, 
+            self.on_focus_changed
+        ))
+
+        done_win.add_handler(258, on_keypress_down)
+        done_win.add_handler(259, on_keypress_up)
+        done_win.add_handler(27, self.on_keypress_escape)
+        done_win.add_handlers(351, (
+            done_win.unfocus,
+            work_win.focus, 
+            self.on_focus_changed
+        ))
+
         self.window.add_windows(
             none_win,
             todo_win,
@@ -421,7 +470,9 @@ class Application(Loggable):
             task_win
         )
 
-    def build_note_viewer(self, rebuild):
+        self.focused = self.window.currently_focused
+
+    def build_note_viewer(self, rebuild=False):
         """Builds an application to view all notes"""
         screen = self.screen
         height, width = screen.getmaxyx()
@@ -442,6 +493,11 @@ class Application(Loggable):
         self.data_changed_event.append(note_display.on_data_changed)
         self.window.add_window(note_display)
 
+        note_explorer_props = WindowProperty({
+            'title': "Notes",
+            'title_centered': True,
+            'focused': True,            
+        })
         note_explorer = ScrollableWindow(
             screen.subwin(
                 height - 2,
@@ -477,7 +533,9 @@ class Application(Loggable):
         self.window.add_window(help_window)
 
         self.focused = self.window.currently_focused
-        print(self.focused)
+
+    def build_note_viewer_with_properties(self):
+        pass
 
     def build_windows1(self):
         """Work on window recursion and tree"""
