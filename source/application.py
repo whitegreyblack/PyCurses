@@ -343,147 +343,92 @@ class Application(Loggable):
         """Work on window recursion and tree"""
         screen = self.screen
         height, width = screen.getmaxyx()
-        self.controller = PersonController()
-        self.data = [
-            self.controller.request_person(pid)
-                for pid in range(10)
-        ]
 
         # main window
         self.window = Window(screen, title='Application Example 1')
 
-        # display window
-        display = DisplayWindow(
+        # first window half screen vertical
+        sub1 = DisplayWindow(
             screen.subwin(
-                11,
-                utils.partition(width, 5, 3),
-                1, 
-                utils.partition(width, 5, 2)
-            ),
-            title="Profile"
-        )
-        self.data_changed_event.append(display.on_data_changed)
-
-        # scroll window
-        scroller = ScrollableWindow(
-            screen.subwin(
-                height - 2, 
-                utils.partition(width, 5, 2), 
-                1, 
+                height - 1,
+                utils.partition(width, 2, 1),
+                0, 
                 0
             ),
-            title="Directory",
-            data=[str(n.name) for n in self.data],
-            focused=True,
-            data_changed_handlers=(self.on_data_changed,)
+            title="Sub-win 1",
+            focused=True
         )
-        scroller.keypress_up_event.append(on_keypress_up)
-        scroller.keypress_down_event.append(on_keypress_down)
-        # secondary display -- currently unused
-        # adding sub windows to parent window
-        unused = Window(
+
+        # second window quarter screen top right
+        sub2 = DisplayWindow(
             screen.subwin(
-                height - 13, 
-                utils.partition(width, 5, 3),
-                12, 
-                utils.partition(width, 5, 2)
-            ), 
-            title='verylongtitlescree'
+                utils.partition(height, 2, 1),
+                utils.partition(width, 2, 1), 
+                0,
+                utils.partition(width, 2, 1), 
+            ),
+            title="Sub-win 2"
         )
 
-        # prompt screen
-        prompt = PromptWindow(screen.subwin(3, width, height - 4, 0))
-        print(prompt)
-        self.window.add_windows([
-            scroller,
-            display,
-            unused,
-            prompt
-        ])
+        sub3 = DisplayWindow(
+            screen.subwin(
+                utils.partition(height, 2, 1),
+                utils.partition(width, 2, 1), 
+                utils.partition(height, 2, 1),
+                utils.partition(width, 2, 1), 
+            ),
+            title="Sub-win 3"
+        )
+        
+        # win 1 handlers
+        sub1.add_handler(27, self.on_keypress_escape)
+        sub1.add_handlers(
+            9,
+            sub1.unfocus,
+            sub2.focus,
+            self.on_focus_changed
+        )
+        sub1.add_handlers(
+            351,
+            sub1.unfocus,
+            sub3.focus,
+            self.on_focus_changed
+        )
 
-        # add window key handlers to application event mapping
-        self.events[curses.KEY_DOWN].append(scroller.handle_key)
-        self.events[curses.KEY_UP].append(scroller.handle_key)
+        # window 2 handlers
+        sub2.add_handler(27, self.on_keypress_escape)
+        sub2.add_handlers(
+            351, 
+            sub2.unfocus,
+            sub1.focus,
+            self.on_focus_changed
+        )
+        sub2.add_handlers(
+            9,
+            sub2.unfocus,
+            sub3.focus,
+            self.on_focus_changed
+        )
 
-        # v1 = View(screen.subwin(height - 1, width, 1, 0), columns=2, rows=2)
-        # self.window.add_view(v1)
+        # window 3 handlers
+        sub3.add_handler(27, self.on_keypress_escape)
+        sub3.add_handlers(
+            351, 
+            sub3.unfocus,
+            sub2.focus,
+            self.on_focus_changed
+        )
+        sub3.add_handlers(
+            9,
+            sub3.unfocus,
+            sub1.focus,
+            self.on_focus_changed
+        )
 
-        # scroller = ScrollList(1, 1,
-        #                       self.window.width // 4,
-        #                       self.window.height,
-        #                       title='receipts',
-        #                       selected=True)
-
-        # receipt_cards = [ Card(r) for r in self.build_receipts() ]
-        # scroller.add_items(receipt_cards)
-        # form = receiptForm(
-        #     (self.window.width // 4) + 1, # add 1 for offset
-        #     1,
-        #     self.window.width - (self.window.width // 4) - 1, 
-        #     self.window.height,
-        #     scroller.model
-        # )
-
-        # promptwin = screen.subwin(
-        #     self.window.height // 3, 
-        #     self.window.width // 2, 
-        #     self.window.height // 3,
-        #     self.window.width // 4
-        # )
-
-        # exitprompt = Prompt(
-        #     promptwin, 
-        #     'Exit Prompt', 
-        #     'Confirm', 
-        #     'Cancel', 
-        #     logger=self.logger
-        # )
-
-        # self.window.add_windows([scroller, form, exitprompt])
-
-        keymap = dict()
-        keymap[(curses.KEY_DOWN, 1)] = 1
-        # keymap[(curses.CTL_ENTER)] -- prompt control CTRLEnter: show/hide, ENTER: command
-        # keymap[(curses.KEY_UP, scroller.wid)] = scroller.wid
-        # keymap[(curses.KEY_DOWN, scroller.wid)] = scroller.wid
-        # keymap[(curses.KEY_ENTER, scroller.wid)] = form.wid
-        # keymap[(curses.KEY_RIGHT, scroller.wid)] = form.wid
-        # keymap[(curses.KEY_LEFT, form.wid)] = scroller.wid
-        # keymap[(curses.KEY_LEFT, exitprompt.wid)] = exitprompt.wid
-        # keymap[(curses.KEY_RIGHT, exitprompt.wid)] = exitprompt.wid
-        # keymap[(ord('\t'), exitprompt.wid)] = exitprompt.wid
-        # # keymap[(curses.KEY_F1,)] = 'receipts'
-        # # 10 : New Line Character
-        # keymap[(10, scroller.wid)] = form.wid
-        # keymap[(10, exitprompt.wid)] = scroller.wid
-        # # 27 : Escape Key Code
-        # keymap[(27, scroller.wid)] =  exitprompt.wid
-        # keymap[(27, exitprompt.wid)] = None
-        # keymap[(27, form.wid)] = scroller.wid
-        # keymap[(ord('y'), exitprompt.wid)] = None
-        # keymap[(ord('n'), exitprompt.wid)] = form.wid
-        # keymap[(curses.KEY_ENTER, exitprompt.wid)] = None
-        self.window.add_keymap(keymap)
+        self.window.add_windows(sub1, sub2, sub3)
+        self.on_focus_changed(self)
 
     def draw(self):
-        # self.screen.addstr(0, 0, ' ' * (self.window.width + 2), curses.color_pair(2))
-        # self.screen.insstr(self.window.height + 1,
-        #                    0,
-        #                    ' ' * (self.window.width + 2),
-        #                    curses.color_pair(3))
-        # self.screen.addstr(0, 1, "File", curses.color_pair(2))
-        # self.screen.addstr(0, 7, "Edit", curses.color_pair(2))
-        # self.screen.addstr(0, 13, "Selection", curses.color_pair(2))
-
-        # self.screen.addstr(1, 2, "Options:")
-        # self.screen.addstr(2, 2, "[e] export files")
-        # self.screen.addstr(4, 2, "[E] export current file")
-
-        # self.screen.addstr(2, self.window.width // 8, "[receipts]")
-        # self.screen.addstr(2, self.window.width // 8 + 11, "[Products]")
-        # self.screen.addstr(2, self.window.width // 8 + 22, "[Stores]")
-        # self.window.draw(self.screen)
-
         if not self.window:
             raise Exception("No window to draw")
 

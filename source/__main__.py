@@ -52,11 +52,13 @@ def application(screen, folderpath, demo, rebuild, logger=None):
     if demo == "notes":
         application = NoteApplication
     elif demo == "tasks":
+        print(demo)
         application = TaskApplication
+        print(application)
     elif demo == "contacts":
         application = ContactsApplication
     # initialize application object and build front/back end
-    app = Application(
+    app = application(
         folderpath,
         screen=screen,
         logger=logger
@@ -103,7 +105,7 @@ def main(folder, demo, rebuild):
     elif demo in ("receipt", "receipts"):
         demo = "build_receipt_viewer"
     elif demo in ("todo", "todos", "tasks", "task"):
-        demo = "task"
+        demo = "tasks"
     elif demo in ("notes", "note"):
         demo = "notes"
     elif demo in ("tree",):

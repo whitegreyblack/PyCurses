@@ -96,7 +96,7 @@ class Window:
             # print(window, "focused", self.focused)
         self.__windows.append(window)
 
-    def add_windows(self, windows):
+    def add_windows(self, *windows):
         for w in windows:
             self.add_window(w)
 
@@ -157,11 +157,15 @@ class Window:
             # children titles are -1 from the right
             if self.title_centered:
                 c = curses.color_pair(1)
+                if self.focused:
+                    c = curses.color_pair(2)
                 x = self.width // 2 - len(self.title) // 2
             else:
                 if self.parent:
                     x = self.width - len(s) - 2
                     c = curses.color_pair(1)
+                    if self.focused:
+                        c = curses.color_pair(2)
                 else:
                     s = s.rjust(len(s)+2).ljust(self.width+2)
             self.window.addstr(y, x, s, c)
@@ -190,10 +194,14 @@ class Window:
             self.window.border()
     
     def add_handler(self, key, handler):
+        if key not in self.eventmap:
+            self.eventmap[key] = Event()
         self.eventmap[key].append(handler)
 
-    def add_handlers(self, key, handlers):
+    def add_handlers(self, key, *handlers):
         for handler in handlers:
+            print(handler)
+            print(handler.__name__)
             self.add_handler(key, handler)
 
     def handle_key(self, key):

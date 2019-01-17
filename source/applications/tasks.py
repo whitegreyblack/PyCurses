@@ -4,8 +4,14 @@ from source.window import (
     Window,
     ScrollableWindow,
     DisplayWindow,
+    on_keypress_down,
+    on_keypress_up,
 )
-import source.utils
+from source.models.models import Task
+import source.utils as utils
+import random
+import datetime
+from source.keymap import EventMap
 
 class TaskApplication(Application):
     def build_application(self, rebuild):
@@ -94,51 +100,55 @@ class TaskApplication(Application):
         none_win.add_handler(258, on_keypress_down)
         none_win.add_handler(259, on_keypress_up)
         none_win.add_handler(27, self.on_keypress_escape)
-        none_win.add_handlers(9, (
+        none_win.add_handlers(9,
             none_win.unfocus,
             todo_win.focus, 
             self.on_focus_changed
-        ))
+        )
 
         # tasks in todo list
         todo_win.add_handler(258, on_keypress_down)
         todo_win.add_handler(259, on_keypress_up)
         todo_win.add_handler(27, self.on_keypress_escape)
-        todo_win.add_handlers(351, (
+        todo_win.add_handlers(351,
             todo_win.unfocus,
             none_win.focus, 
             self.on_focus_changed
-        ))
-        todo_win.add_handlers(9, (
+        )
+        todo_win.add_handlers(
+            9,
             todo_win.unfocus,
             work_win.focus, 
             self.on_focus_changed
-        ))
+        )
         
         # in work tasks
         work_win.add_handler(258, on_keypress_down)
         work_win.add_handler(259, on_keypress_up)
         work_win.add_handler(27, self.on_keypress_escape)
-        work_win.add_handlers(351, (
+        work_win.add_handlers(
+            351,
             work_win.unfocus,
             todo_win.focus, 
             self.on_focus_changed
-        ))
-        work_win.add_handlers(9, (
+        )
+        work_win.add_handlers(
+            9,
             work_win.unfocus,
             done_win.focus, 
             self.on_focus_changed
-        ))
+        )
 
         # finished tasks
         done_win.add_handler(258, on_keypress_down)
         done_win.add_handler(259, on_keypress_up)
         done_win.add_handler(27, self.on_keypress_escape)
-        done_win.add_handlers(351, (
+        done_win.add_handlers(
+            351,
             done_win.unfocus,
             work_win.focus, 
             self.on_focus_changed
-        ))
+        )
 
         self.window.add_windows(
             none_win,
