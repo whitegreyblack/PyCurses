@@ -45,15 +45,19 @@ class Window:
             focused=False, 
             showing=True,
             border=False,
-            eventmap=None):
+            eventmap=None,
+            keypresses=None):
         """Main parent window which all other windows derive from"""
+        # Window.window_ids[2**w] = self
+        self.wid = 2**Window.window_ids
+        Window.window_ids += 1
+
         self.title = title
         self.title_centered = title_centered
         y, x = window.getmaxyx()
         self.term_width = x
         self.term_height = y
         self.window = window
-        self.showing = showing
         self.parent = None
         self.child = False
         self.border = border
@@ -63,15 +67,53 @@ class Window:
         self.windows = []
         self.views = []
         self.index = 0
-        self.focused = focused
-        self.eventmap = eventmap if eventmap else EventMap()
 
-        # Window.window_ids[2**w] = self
-        self.wid = 2**Window.window_ids
-        Window.window_ids += 1
+        self.changes = EventMap.fromkeys((
+            'focused',
+            'showing'
+        ))
+
+        self.showing = showing
+        self._focused = focused
+
+        self.keypresses = keypresses if keypresses else EventMap()
+
+        self.on_focus_changed = Event()
 
     def __repr__(self):
         return f"{self.__class__.__name__}({self.title if self.title else self.wid})"
+
+    @property
+    def currently_focused(self):
+        if self.focused:
+            print(f"{self} is currently focused. returning")
+            return self
+        for w in self.windows:
+            t = w.currently_focused
+            if t:
+                print(f"{t} was found to be focused. {t.focused}")
+                return t
+        return None
+
+    @property
+    def focused(self):
+        return self._focused
+
+    @focused.setter
+    def focused(self, value):
+        print(f"{self}: setting focus={value}")
+        self._focused = value
+        print(f"{self}: setting focus is now {value}")
+        self.changes.trigger('focused', self)
+
+    def focus(self):
+        self.focused = True
+
+    def unfocus(self):
+        self.focused = False
+
+    def property_changed(self, prop):
+        self.property_change_handlers(prop, self)
 
     def add_component(self, component):
         self.components.append(component)
@@ -88,7 +130,7 @@ class Window:
 
     def add_window(self, window):
         # print("add", window, window.focused, window.focused and self.focused)
-        print(window)
+        print(f"Adding window: {window}")
         window.parent = self
         window.border = True
         # if window.focused and self.focused:
@@ -110,24 +152,6 @@ class Window:
         for window in self.windows:
             if window.wid == window_id:
                 return window
-
-    @property
-    def currently_focused(self):
-        if self.focused:
-            return self
-
-        for w in self.windows:
-            t = w.currently_focused
-            if t:
-                return t
-
-        return None
-
-    def focus(self, sender):
-        self.focused = True
-
-    def unfocus(self, sender):
-        self.focused = False
 
     def toggle_showing(self):
         if self.showing:
@@ -205,7 +229,8 @@ class Window:
             self.add_handler(key, handler)
 
     def handle_key(self, key):
-        self.eventmap[key](self)
+        print(f"{self}: handling key {key}")
+        self.keypresses.trigger(key, self)
         # if key in self.keypress_events.keys():
         #     self.keypress_events[key](self)
 

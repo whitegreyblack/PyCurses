@@ -33,9 +33,11 @@ class Event(list):
     # def __call__(self, sender, event):
     #     for fn in self:
     #         fn(sender, event)
-    def __call__(self, *args, **kwargs):
+    def __call__(self, sender, *args, **kwargs):
         for f in self:
-            f(*args, **kwargs)
+            print(f"{sender}: calling {f.__name__}")
+            f(sender, *args, **kwargs)
+
     def __repr__(self):
         return f"Event({', '.join(f.__name__ for f in self)})"
 '''

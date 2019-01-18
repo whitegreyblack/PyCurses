@@ -77,25 +77,12 @@ class Application(Loggable):
         )
         self.focused = self.window
         self.last_focused = None
-        self.window.add_handler(27, self.on_keypress_escape)
         self.folder = folder
         self.export = "./export/"
 
         self.controller = None
 
         self.data_changed_event = utils.Event()
-        self.events = EventMap.fromkeys((
-            # curses.KEY_DOWN,
-            # curses.KEY_UP,
-            # ord('\t'),
-            # curses.KEY_BTAB
-        ))
-        # self.events = {
-        #     curses.KEY_DOWN: utils.Event(),
-        #     curses.KEY_UP: utils.Event(),
-        #     ord('\t'): utils.Event(),
-        #     curses.KEY_BTAB: utils.Event()
-        # }
 
     def setup(self):
         # TODO: need a setting to determine behavior of previously loaded data
@@ -163,8 +150,8 @@ class Application(Loggable):
     def run(self):
         while self.continue_app:
             key = self.screen.getch()
-            print(self.focused, self.focused.eventmap)
-            if key in self.focused.eventmap.keys():
+            print(f"focused:{self.focused} | keypress map:{self.focused.keypresses}")
+            if key in self.focused.keypresses.keys():
                 self.focused.handle_key(key)
                 # self.focused.eventmap[key]()
             # if key in self.keymap.keys():
@@ -324,7 +311,7 @@ class Application(Loggable):
         model = self.data[arg]
         self.data_changed_event(sender, model)
 
-    def on_keypress_escape(self, sender, arg=None):
+    def keypress_escape(self, sender, arg=None):
         self.continue_app = False
 
     def build_file_explorer(self):
