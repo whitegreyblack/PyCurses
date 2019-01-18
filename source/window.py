@@ -106,10 +106,10 @@ class Window:
         print(f"{self}: setting focus is now {value}")
         self.changes.trigger('focused', self)
 
-    def focus(self):
+    def focus(self, sender, **kwargs):
         self.focused = True
 
-    def unfocus(self):
+    def unfocus(self, sender, **kwargs):
         self.focused = False
 
     def property_changed(self, prop):
@@ -218,9 +218,9 @@ class Window:
             self.window.border()
     
     def add_handler(self, key, handler):
-        if key not in self.eventmap:
-            self.eventmap[key] = Event()
-        self.eventmap[key].append(handler)
+        if key not in self.keypresses.keys():
+            self.keypress[key] = Event()
+        self.keypresses[key].append(handler)
 
     def add_handlers(self, key, *handlers):
         for handler in handlers:

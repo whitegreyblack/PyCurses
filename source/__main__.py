@@ -85,7 +85,7 @@ def application(screen, folderpath, app, demo, rebuild, logger=None):
               help="Specified which demo application to run")
 @click.option('-x', "demo", nargs=1, is_flag=True, default=False,
               help="Use fake data to build the app")
-@click.option('--rb', "rebuild", nargs=1, default=None,
+@click.option('-r', "rebuild", nargs=1, is_flag=True, default=False,
               help="Rebuild tables before inserting files")
 def main(folder, app, demo, rebuild):
     """Handles argument parsing using click framework before calling the

@@ -152,4 +152,6 @@ class ReceiptController(Controller):
             yield r
 
 if __name__ == "__main__":
-    e = ExplorerController()
+    # e = ExplorerController()
+    n = NotesController(NoteConnection())
+    print(n.request_notes())

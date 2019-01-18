@@ -5,6 +5,7 @@ __author__ = "Samuel Whang"
 import sqlite3
 import logging
 import datetime
+import source.config as config
 from collections import namedtuple
 from source.logger import Loggable
 from source.YamlObjects import receipt
@@ -54,7 +55,17 @@ class Connection:
                 self._connection.execute(f"{stmt};")
 
 class ReceiptConnection(Connection):
-    def __init__(self, database='./data/receipts.db', rebuild=False):
+    
+    database = config.DATABASE_POINTER_RECEIPTS
+    clean_script = config.CONNECTION_CLEAN_SCRIPT_RECEIPTS
+    rebuild_script = config.CONNECTION_REBUILD_SCRIPT_RECEIPTS
+
+    def __init__(self, database=None, rebuild=False):
+        if database:
+            self.database = database
+        if rebuild:
+            self.rebuild = rebuild
+
         super().__init__(database, rebuild=rebuild)
         self.tables = [
             build_receipts_table(),
@@ -203,7 +214,6 @@ where id_store = {store_id};
 
     def select_receipt_products(self, receipt_id):
         product = namedtuple("ProductInfo", "product price")
-
         c = f"""
 SELECT product, price 
 from recieptproducts rp 
@@ -211,14 +221,26 @@ join products p
 on rp.id_product = p.id_product
 where rp.id_recieptproduct = {receipt_id};
 """[1:]
-
         cursor = self._connection.execute(c)
         for info in unpack(cursor):
             yield product(*info)
 
 class NoteConnection(Connection):
-    def __init__(self, database="./data/notes.db", schema=None, rebuild=False):
-        super().__init__(database, schema, rebuild)
+    
+    database = config.DATABASE_POINTER_NOTES
+    clean_script = config.CONNECTION_CLEAN_SCRIPT_NOTES
+    rebuild_script = config.CONNECTION_REBUILD_SCRIPT_NOTES
+
+    def __init__(self, database=None, schema=None, rebuild=False):
+        if database:
+            self.database = database
+        if schema:
+            self.schema = schema
+        if rebuild:
+            self.rebuild = rebuild
+        
+        super().__init__(self.database, self.schema, self.rebuild)
+
         self.fields = list(self.tables_info())
         if not self.fields:
             self._connection.execute()

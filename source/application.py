@@ -326,7 +326,7 @@ class Application(Loggable):
         self.events[curses.KEY_DOWN].append(scroller.handle_key)
         self.events[curses.KEY_UP].append(scroller.handle_key)
 
-    def build_application(self, rebuild=False):
+    def build_application(self, rebuild=False, examples=False):
         """Work on window recursion and tree"""
         screen = self.screen
         height, width = screen.getmaxyx()
@@ -368,7 +368,7 @@ class Application(Loggable):
         )
         
         # win 1 handlers
-        sub1.add_handler(27, self.on_keypress_escape)
+        sub1.add_handler(27, self.keypress_escape)
         sub1.add_handlers(
             9,
             sub1.unfocus,
@@ -383,7 +383,7 @@ class Application(Loggable):
         )
 
         # window 2 handlers
-        sub2.add_handler(27, self.on_keypress_escape)
+        sub2.add_handler(27, self.keypress_escape)
         sub2.add_handlers(
             351, 
             sub2.unfocus,
@@ -398,7 +398,7 @@ class Application(Loggable):
         )
 
         # window 3 handlers
-        sub3.add_handler(27, self.on_keypress_escape)
+        sub3.add_handler(27, self.keypress_escape)
         sub3.add_handlers(
             351, 
             sub3.unfocus,

@@ -32,3 +32,10 @@ DATE_FORMATS = {
 }
 
 DATE_FORMAT = DATE_FORMATS['USA']
+
+DATABASE_POINTER_NOTES = "data/notes.db"
+DATABASE_POINTER_RECEIPTS = "data/receipts.db"
+CONNECTION_CLEAN_SCRIPT_NOTES = "source/db_scripts/create_notes.sql"
+CONNECTION_REBUILD_SCRIPT_NOTES = "source/db_scripts/create_notes_examples.sql"
+CONNECTION_CLEAN_SCRIPT_RECEIPTS = "source/db_scripts/create_receipts.sql"
+CONNECTION_REBUILD_SCRIPT_RECEIPTS = "source/db_scripts/create_receipts_examples.sql"
