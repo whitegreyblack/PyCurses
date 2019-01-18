@@ -31,7 +31,7 @@ def initialize_environment_settings(logger=None):
     # Reduce the delay when pressing escape key on keyboard.
     os.environ.setdefault('ESCDELAY', '25')
 
-def application(screen, folderpath, demo, rebuild, logger=None):
+def application(screen, folderpath, app, demo, rebuild, logger=None):
     """Initializes the Application object which builds the rest of the
     necessary frontend/backend objects.
 
@@ -49,16 +49,14 @@ def application(screen, folderpath, demo, rebuild, logger=None):
     
     # determine which application to run
     application = Application
-    if demo == "notes":
+    if app == "notes":
         application = NoteApplication
-    elif demo == "tasks":
-        print(demo)
+    elif app == "tasks":
         application = TaskApplication
-        print(application)
-    elif demo == "contacts":
+    elif app == "contacts":
         application = ContactsApplication
     # initialize application object and build front/back end
-    app = application(
+    a = application(
         folderpath,
         screen=screen,
         logger=logger
@@ -69,13 +67,13 @@ def application(screen, folderpath, demo, rebuild, logger=None):
     # app.setup() -- each demo will setup their own database
     #app.build_windows(screen)
     # app.build_windows()
-    app.build_application(rebuild)
+    a.build_application(rebuild, demo)
     # if not rebuild:
     #     getattr(app, demo)()
     # else:
     #     getattr(app, demo)(rebuild=rebuild)
-    app.draw()
-    app.run()
+    a.draw()
+    a.run()
 
 # TODO: need a way to run main without needing a folder
 # TODO: need a way to run main with multiple folders
@@ -83,11 +81,13 @@ def application(screen, folderpath, demo, rebuild, logger=None):
 @click.command()
 @click.option('-f', "folder", nargs=1,
               help="Folder containing yaml data files")
-@click.option('--demo', "demo", nargs=1,
+@click.option('--app', "app", nargs=1,
               help="Specified which demo application to run")
+@click.option('-x', "demo", nargs=1, is_flag=True, default=False,
+              help="Use fake data to build the app")
 @click.option('--rb', "rebuild", nargs=1, default=None,
               help="Rebuild tables before inserting files")
-def main(folder, demo, rebuild):
+def main(folder, app, demo, rebuild):
     """Handles argument parsing using click framework before calling the
     curses wrapper handler function
     """
@@ -99,19 +99,19 @@ def main(folder, demo, rebuild):
         print("Invalid folder specified: cannot use dot")
         return
 
-    if demo and demo not in ("notes", "note", "tree", "todos", "todo", "tasks", "task", "receipts", "receipt"):
+    if app and app not in ("notes", "note", "tree", "todos", "todo", "tasks", "task", "receipts", "receipt"):
         print("Invalid demo specified: not found in demo list")
         return
-    elif demo in ("receipt", "receipts"):
-        demo = "build_receipt_viewer"
-    elif demo in ("todo", "todos", "tasks", "task"):
-        demo = "tasks"
-    elif demo in ("notes", "note"):
-        demo = "notes"
-    elif demo in ("tree",):
-        demo = "build_file_explorer"
+    elif app in ("receipt", "receipts"):
+        app = "build_receipt_viewer"
+    elif app in ("todo", "todos", "tasks", "task"):
+        app = "tasks"
+    elif app in ("notes", "note"):
+        app = "notes"
+    elif app in ("tree",):
+        app = "build_file_explorer"
     else:
-        demo = "build_windows"
+        app = "build_windows"
     # Format the given path for the correct path delimiter and the check if
     # that path exists as a directory within the filesystem. Exit early if
     # false.
@@ -127,7 +127,7 @@ def main(folder, demo, rebuild):
     # logger class before we enter main curses loop
     logargs = utils.logargs(application, __file__)
     logger = utils.setup_logger_from_logargs(logargs)
-    curses.wrapper(application, folder, demo, rebuild, logger)
+    curses.wrapper(application, folder, app, demo, rebuild, logger)
 
 if __name__ == "__main__":
     main()

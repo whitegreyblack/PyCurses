@@ -6,21 +6,24 @@ from source.window import (
     DisplayWindow,
     HelpWindow,
     WindowProperty,
-    on_keypress_up,
-    on_keypress_down
+    keypress_a
 )
-from source.models.models import Text
+from source.models.models import (
+    Text,
+    Note
+)
 import source.utils as utils
 from source.controllers import NotesController
 from source.database import NoteConnection
+
 
 class NoteWindow(Window):
     def on_keypress_f1(self):
         self.keypresses.trigger(curses.KEY_F1, self)
 
+
 class NoteHelpWindow(HelpWindow):
     def keypress_f1(self, sender, **kwargs):
-        # first things first
         if sender != self:
             sender.unfocus()
             self.set_opener = sender
@@ -31,22 +34,44 @@ class NoteHelpWindow(HelpWindow):
             self.hide()
             self.refocus_opener()
 
+
 class NoteScrollableWindow(ScrollableWindow):
+    # key events that fire on keypress
     def on_keypress_tab(self):
         self.keypresses.trigger(9, self)
     
+    # key event handlers from fired events
     def keypress_btab(self, sender, **kwargs):
         sender.unfocus()
         self.focus()
 
+    def keypress_down(self, sender, **kwargs):
+        temp = self.index + 1
+        if temp < len(self.data):
+            self.index = temp
+            self.data_changed(self)
+    
+    def keypress_up(self, sender, **kwargs):
+        temp = self.index - 1
+        if temp >= 0:
+            self.index = temp
+            self.data_changed(self)
+
+
 class NoteDisplayWindow(DisplayWindow):
+    # key events that fire on keypress
     def on_keypress_btab(self):
         self.keypresses.trigger(curses.KEY_BTAB, self)
+
+    # key event handlers from fired events
+    def data_changed(self, sender, **kwargs):
+        self.dataobject = kwargs['model']
 
     def keypress_tab(self, sender, **kwargs):
         print(f"{sender}: tabbing to {sender}")
         sender.unfocus()
         self.focus()
+
 
 class NoteApplication(Application):
     def unfocused(self):
@@ -62,13 +87,16 @@ class NoteApplication(Application):
             self.focused = self.window
         print(f"Changed to {self.focused}")
 
-    def build_application(self, rebuild=False):
+    def build_application(self, rebuild=False, examples=False):
         """Builds an application to view all notes"""
         screen = self.screen
         height, width = screen.getmaxyx()
 
-        self.controller = NotesController(NoteConnection(rebuild=rebuild))
-        self.data = self.controller.request_notes()
+        if not examples:
+            self.controller = NotesController(NoteConnection(rebuild=rebuild))
+            self.data = self.controller.request_notes()
+        else:
+            self.data = [Note.random() for i in range(10)]
 
         self.window.title = 'Note Viewer Example'
 
@@ -79,7 +107,8 @@ class NoteApplication(Application):
                 1,
                 utils.partition(width, 3, 1)
             ),
-            title="Note viewer"
+            title="Note viewer",
+            dataobj=self.data[0]
         )
 
         note_explorer = NoteScrollableWindow(
@@ -93,7 +122,7 @@ class NoteApplication(Application):
             title_centered=True,
             focused=True,
             data=[n.title for n in self.data],
-            data_changed_handlers=(self.on_data_changed,)
+            data_changed_handlers=(self.data_changed,)
         )
 
         help_window = NoteHelpWindow(
@@ -107,6 +136,9 @@ class NoteApplication(Application):
             dataobj=Text.random()
         )
 
+        # application change event
+        # self.on_data_changed.append(note_display.data_changed)
+
         # main window key press handlers
         self.window.changes.on('focused', self.focus_changed)
         self.window.keypresses.on(27, self.keypress_escape)
@@ -117,8 +149,11 @@ class NoteApplication(Application):
         note_explorer.keypresses.on(27, self.keypress_escape)
         note_explorer.keypresses.on(9, note_display.keypress_tab)
         note_explorer.keypresses.on(curses.KEY_F1, help_window.keypress_f1)
+        note_explorer.keypresses.on(curses.KEY_DOWN, note_explorer.keypress_down)
+        note_explorer.keypresses.on(curses.KEY_UP, note_explorer.keypress_up)
 
         # display window key press handlers
+        self.on_data_changed.append(note_display.data_changed)
         note_display.changes.on('focused', self.focus_changed)
         note_display.keypresses.on(27, self.keypress_escape)
         note_display.keypresses.on(351, note_explorer.keypress_btab)

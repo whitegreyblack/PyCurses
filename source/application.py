@@ -40,8 +40,8 @@ from source.window import (
     ScrollableWindow,
     PromptWindow,
     DisplayWindow,
-    on_keypress_down,
-    on_keypress_up
+    keypress_down,
+    keypress_up
 )
 
 class Application(Loggable):
@@ -82,7 +82,7 @@ class Application(Loggable):
 
         self.controller = None
 
-        self.data_changed_event = utils.Event()
+        self.on_data_changed = utils.Event()
 
     def setup(self):
         # TODO: need a setting to determine behavior of previously loaded data
@@ -307,9 +307,8 @@ class Application(Loggable):
     def on_focus_changed(self, sender, arg=None):
         self.focused = self.window.currently_focused
 
-    def on_data_changed(self, sender, arg):
-        model = self.data[arg]
-        self.data_changed_event(sender, model)
+    def data_changed(self, sender, arg):
+        self.on_data_changed(sender, model=self.data[arg])
 
     def keypress_escape(self, sender, arg=None):
         self.continue_app = False

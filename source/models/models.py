@@ -14,6 +14,7 @@ from fakedata.name import (
     SHORT_NAME_SCHEMA
 )
 from fakedata.phonenumber import PhoneNumber
+from datetime import datetime
 from typing import Union
 from collections import namedtuple
 
@@ -113,6 +114,16 @@ class Note:
                     return
                 yield (y + dy + i, x, l)
             dy += 1
+
+    @classmethod
+    def random(self):
+        title = f"title for note {Note.nid}"
+        return Note(
+            title, 
+            created=datetime.today(), 
+            modified=datetime.today(), 
+            note=fake.text()
+        )
 
     @classmethod
     def from_database(self, nid, title, created, modified, note):

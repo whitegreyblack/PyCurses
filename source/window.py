@@ -324,14 +324,14 @@ class ScrollableWindow(Window):
             border=border, 
             eventmap=eventmap
         )
-        self.data_changed_event = Event()
+        self.on_data_changed = Event()
         self.keypress_up_event = Event()
         self.keypress_down_event = Event()
         self.keypress_a_event = Event()
 
         if data_changed_handlers:
             for handler in data_changed_handlers:
-                self.data_changed_event.append(handler)
+                self.on_data_changed.append(handler)
 
         self.data = data
         self.selected = -1
@@ -344,11 +344,11 @@ class ScrollableWindow(Window):
     @data.setter
     def data(self, data):
         self.__data = data
-        self.on_data_changed()
+        self.data_changed(self)
     
-    def on_data_changed(self):
+    def data_changed(self, sender, **kwargs):
         if self.__data and self.index > -1:
-            self.data_changed_event(self, self.index)
+            self.on_data_changed(self, self.index)
 
     def draw(self):
         if not self.showing:
@@ -486,7 +486,7 @@ class ScrollableWindowWithBar(ScrollableWindow):
         #     except curses.error:
         #         raise Exception(y)
 
-def on_keypress_down(obj):
+def keypress_down(obj):
     t = obj.index + 1
     if t < len(obj.data):
         obj.index = t
@@ -499,7 +499,7 @@ def on_keypress_down(obj):
         #     )
         # )
 
-def on_keypress_up(obj):
+def keypress_up(obj):
     t = obj.index - 1
     if t >= 0:
         obj.index = t
@@ -512,7 +512,7 @@ def on_keypress_up(obj):
         #     )
         # )
 
-def on_keypress_a(obj):
+def keypress_a(obj):
     obj.data.append(str(len(obj.data)))
     obj.calculate_scroll_bar()
 

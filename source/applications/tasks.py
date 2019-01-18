@@ -10,8 +10,8 @@ from source.window import (
     Window,
     ScrollableWindow,
     DisplayWindow,
-    on_keypress_down,
-    on_keypress_up,
+    keypress_down,
+    keypress_up,
 )
 
 class TaskApplication(Application):
