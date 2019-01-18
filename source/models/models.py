@@ -109,11 +109,15 @@ class Note:
         dy = 0
         for line in self.note.replace('\\n', '\\n\\n').split('\\n'):
             frmt = textwrap.wrap(line, mx)
+            print(frmt)
             for i, l in enumerate(frmt):
+                print(my, y, dy, i, y+dy+i)
                 if y + dy + i > my:
-                    return
+                    print('broken')
+                    dy += 1
+                    break
                 yield (y + dy + i, x, l)
-            dy += 1
+            dy += i
 
     @classmethod
     def random(self):

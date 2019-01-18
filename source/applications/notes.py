@@ -42,8 +42,8 @@ class NoteScrollableWindow(ScrollableWindow):
     
     # key event handlers from fired events
     def keypress_btab(self, sender, **kwargs):
-        sender.unfocus()
-        self.focus()
+        sender.unfocus(self)
+        self.focus(self)
 
     def keypress_down(self, sender, **kwargs):
         temp = self.index + 1
@@ -69,8 +69,8 @@ class NoteDisplayWindow(DisplayWindow):
 
     def keypress_tab(self, sender, **kwargs):
         print(f"{sender}: tabbing to {sender}")
-        sender.unfocus()
-        self.focus()
+        sender.unfocus(self)
+        self.focus(self)
 
 
 class NoteApplication(Application):
@@ -97,7 +97,7 @@ class NoteApplication(Application):
             self.data = self.controller.request_notes()
         else:
             self.data = [Note.random() for i in range(10)]
-
+        print(self.data)
         self.window.title = 'Note Viewer Example'
 
         note_display = NoteDisplayWindow(
@@ -108,7 +108,7 @@ class NoteApplication(Application):
                 utils.partition(width, 3, 1)
             ),
             title="Note viewer",
-            dataobj=self.data[0]
+            dataobj=self.data[0] if self.data else None
         )
 
         note_explorer = NoteScrollableWindow(

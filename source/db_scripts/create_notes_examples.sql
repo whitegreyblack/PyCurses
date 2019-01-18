@@ -43,3 +43,15 @@ insert into notes (
     datetime('now'),
     "ali baba had a great meal for those with small bellies. After a while they went to bed.\nPillows look like clouds during your rest."
 );
+
+insert into notes (
+    title,
+    created,
+    modified,
+    note
+) values (
+    'verylongtitleexample 4',
+    datetime('now'),
+    datetime('now'),
+    "ali baba had a great meal for those with small bellies. Testings for the very long example title. After a while they went to bed.\nPillows look like clouds during your rest."
+);

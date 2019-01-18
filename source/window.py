@@ -107,9 +107,11 @@ class Window:
         self.changes.trigger('focused', self)
 
     def focus(self, sender, **kwargs):
+        """Focus event handler"""
         self.focused = True
 
     def unfocus(self, sender, **kwargs):
+        """Focus event handler"""
         self.focused = False
 
     def property_changed(self, prop):
@@ -379,7 +381,10 @@ class ScrollableWindow(Window):
             rows_in_view = self.data
 
         for i, r in enumerate(rows_in_view):
-            l = r[:self.width].ljust(self.width)
+            count_string = f"({s + i + 1}/{len(self.data)})"
+            l = r[:self.width-len(count_string)-1]
+            available = self.width - len(l) - len(count_string)
+            l = f"{l}{' '*(self.width-len(count_string)-len(l))}{count_string}"
             c = curses.color_pair(1)
             if s + i == self.index:
                 if self.focused:
@@ -388,33 +393,6 @@ class ScrollableWindow(Window):
                     c = curses.color_pair(3)
             # c = curses.color_pair((s + i == self.index) * 2)
             self.window.addstr(i + 1, 1, l, c)
-
-    # def handle_key(self, key):
-    #     self.eventmap[key](self)
-    #     if key == curses.KEY_DOWN:
-    #         self.eventmap[key](self)
-    #     elif key == curses.KEY_UP:
-    #         self.eventmap[key](self)
-    #     elif key == 27:
-    #         self.eventmap[key](self)
-    #     elif key == ord('a'):
-    #         self.keypress_a_event(self)
-    #     elif key == ord('\t'):
-    #         self.keypress_tab_event(self)
-    #     elif key == curses.KEY_BTAB:
-    #         self.keypress_btab_event(self)
-
-    # def increment_index(self):
-    #     t = self.index + 1
-    #     if t < len(self.data):
-    #         self.index = t
-    #         self.on_data_changed()
-    
-    # def decrement_index(self):
-    #     t = self.index - 1
-    #     if t >= 0:
-    #         self.index = t
-    #         self.on_data_changed()
 
 class ScrollableWindowWithBar(ScrollableWindow):
     def __init__(
@@ -434,31 +412,12 @@ class ScrollableWindowWithBar(ScrollableWindow):
             data_changed_handlers
         )
         self.offset = 1
-        # self.scrollbar_height = 0
-        # self.scrollbar_column = 0
-        # self.scrollbar_offset = 0
-        # self.calculate_scroll_bar()
 
     def draw(self):
         super().draw()
         self.draw_scroll_bar()
 
-    # def calculate_scroll_bar(self):
-    #     percentage = self.offset / len(self.data)
-    #     self.scrollbar_height = min(
-    #         int(ceil(self.height * self.height / len(self.data))), 
-    #         self.height
-    #     )
-
-    #     self.offset = int(len(self.data) * percentage)
-    #     self.offset = min(self.offset, len(self.data) - self.height)
-    #     if len(self.data) <= self.height: self.offset = 0
-
     def draw_scroll_bar(self):
-        # determine size of bar
-        # determine bar position
-        # determine step size
-        # basically turn a progress
         if len(self.data) <= self.height:
             return
 
@@ -491,39 +450,13 @@ def keypress_down(obj):
     if t < len(obj.data):
         obj.index = t
         obj.on_data_changed()
-        # obj.offset = max(
-        #     0, 
-        #     min(
-        #         obj.height - 1,
-        #         obj.offset + 1
-        #     )
-        # )
 
 def keypress_up(obj):
     t = obj.index - 1
     if t >= 0:
         obj.index = t
         obj.on_data_changed()
-        # obj.offset = min(
-        #     obj.height-2, 
-        #     max(
-        #         1,
-        #         obj.offset - 1
-        #     )
-        # )
-
+        
 def keypress_a(obj):
     obj.data.append(str(len(obj.data)))
     obj.calculate_scroll_bar()
-
-# def increment_index(scrollobj):
-#     t = scrollobj.index + 1
-#     if t < len(scrollobj.data):
-#         scrollobj.index = t
-#         scrollobj.self.on_data_changed()
-
-# def decrement_index(self):
-#     t = self.index - 1
-#     if t >= 0:
-#         self.index = t
-#         self.on_data_changed()

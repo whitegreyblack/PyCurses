@@ -36,7 +36,14 @@ class Connection:
     TODO: make this more abstract for different connections
     """
     rebuild = False
+    database_path = None
+    clean_script_path = None
+    rebuild_script_path = None
+
     def __init__(self, database, schema=None, rebuild=None):
+        print(database, schema, rebuild)
+        if not database:
+            raise Exception("Connection should have a database argument passed in")
         self._connection = sqlite3.connect(
             database,
             detect_types=sqlite3.PARSE_DECLTYPES
@@ -48,9 +55,15 @@ class Connection:
         self.conn.close()
 
     def rebuild_database(self, rebuild):
-        if not rebuild:
+        """
+        If table needs rebuilding, the rebuild script path linked to the
+        rebuild script will be opened and each statement in the script 
+        executed.
+        """
+        if not rebuild or not self.rebuild_script_path:
             return
-        with open(rebuild, 'r') as sql:
+
+        with open(self.rebuild_script_path, 'r') as sql:
             for stmt in ''.join(sql.readlines()).split(';'):
                 self._connection.execute(f"{stmt};")
 
@@ -60,9 +73,11 @@ class ReceiptConnection(Connection):
     clean_script = config.CONNECTION_CLEAN_SCRIPT_RECEIPTS
     rebuild_script = config.CONNECTION_REBUILD_SCRIPT_RECEIPTS
 
-    def __init__(self, database=None, rebuild=False):
+    def __init__(self, database=None, schema=None, rebuild=False):
         if database:
             self.database = database
+        if schema:
+            self.schema = schema
         if rebuild:
             self.rebuild = rebuild
 
@@ -190,10 +205,10 @@ class ReceiptConnection(Connection):
         store = namedtuple("StoreName", "store cid")
 
         c = f"""
-select store, id_category
-from stores
-where id_store = {store_id};
-"""
+        select store, id_category
+        from stores
+        where id_store = {store_id};
+        """[1:]
         cursor = self._connection.execute(c)
         for info in unpack(cursor):
             return store(*info)
@@ -215,31 +230,32 @@ where id_store = {store_id};
     def select_receipt_products(self, receipt_id):
         product = namedtuple("ProductInfo", "product price")
         c = f"""
-SELECT product, price 
-from recieptproducts rp 
-join products p 
-on rp.id_product = p.id_product
-where rp.id_recieptproduct = {receipt_id};
-"""[1:]
+        SELECT product, price 
+        from recieptproducts rp 
+        join products p 
+        on rp.id_product = p.id_product
+        where rp.id_recieptproduct = {receipt_id};
+        """[1:]
         cursor = self._connection.execute(c)
         for info in unpack(cursor):
             yield product(*info)
 
 class NoteConnection(Connection):
     
-    database = config.DATABASE_POINTER_NOTES
-    clean_script = config.CONNECTION_CLEAN_SCRIPT_NOTES
-    rebuild_script = config.CONNECTION_REBUILD_SCRIPT_NOTES
+    schema = None
+    database_path = config.DATABASE_POINTER_NOTES
+    clean_script_path = config.CONNECTION_CLEAN_SCRIPT_NOTES
+    rebuild_script_path = config.CONNECTION_REBUILD_SCRIPT_NOTES
 
     def __init__(self, database=None, schema=None, rebuild=False):
         if database:
-            self.database = database
+            self.database_path = database
         if schema:
             self.schema = schema
         if rebuild:
             self.rebuild = rebuild
         
-        super().__init__(self.database, self.schema, self.rebuild)
+        super().__init__(self.database_path, self.schema, self.rebuild)
 
         self.fields = list(self.tables_info())
         if not self.fields:
