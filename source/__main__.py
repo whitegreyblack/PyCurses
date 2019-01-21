@@ -5,16 +5,19 @@ curses settings then sends the screen into the application to be built
 
 __author__ = "Samuel Whang"
 
+import curses
 import os
 import sys
+
 import click
-import curses
+
 import source.utils as utils
 from source.application import Application
 from source.applications.contacts import ContactsApplication
 from source.applications.notes import NoteApplication
-from source.applications.tasks import TaskApplication
 from source.applications.quiz import QuizApplication
+from source.applications.tasks import TaskApplication
+
 
 def initialize_curses_settings(logger=None):
     """Sets settings for cursor visibility and color pairings"""

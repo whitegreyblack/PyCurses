@@ -2,27 +2,21 @@
 
 __author__ = "Samuel Whang"
 
-import sqlite3
-import logging
 import datetime
-import source.config as config
+import logging
+import sqlite3
 from collections import namedtuple
+
+import source.config as config
 from source.logger import Loggable
+from source.schema import (SQLType, Table, build_products_table,
+                           build_receipts_table)
+from source.utils import filename_and_extension as fileonly
+from source.utils import format_date as date
+from source.utils import format_float as real
+from source.utils import logargs, setup_logger, setup_logger_from_logargs
 from source.YamlObjects import receipt
-from source.schema import (
-    Table, 
-    SQLType, 
-    build_products_table, 
-    build_receipts_table
-)
-from source.utils import (
-    logargs, 
-    setup_logger, 
-    setup_logger_from_logargs, 
-    format_date as date,
-    format_float as real, 
-    filename_and_extension as fileonly
-)
+
 spacer = "  "
 
 def unpack(cursor):

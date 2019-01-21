@@ -1,25 +1,12 @@
 """Datacontroller.py"""
-import os
 import json
+import os
+
 import source.config as config
-from source.database import (
-    NoteConnection,
-    ReceiptConnection,
-)
-from source.models.models import (
-    Person,
-    Transaction,
-    Note,
-    Product,
-    Receipt
-)
-from source.utils import (
-    setup_logger,
-    Event, 
-    EventArg,
-    parse_date_from_database,
-    format_date
-)
+from source.database import NoteConnection, ReceiptConnection
+from source.models.models import Note, Person, Product, Receipt, Transaction
+from source.utils import (Event, EventArg, format_date,
+                          parse_date_from_database, setup_logger)
 
 
 class Node:

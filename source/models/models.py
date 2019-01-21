@@ -5,18 +5,17 @@ Data models to hold data from db
 
 __author__ = "Samuel Whang"
 
-import textwrap
 import random
-from faker import Faker
-from faker.providers import job, phone_number
-from fakedata.name import (
-    Name,
-    SHORT_NAME_SCHEMA
-)
-from fakedata.phonenumber import PhoneNumber
+import textwrap
+from collections import namedtuple
 from datetime import datetime
 from typing import Union
-from collections import namedtuple
+
+from faker import Faker
+from faker.providers import job, phone_number
+
+from fakedata.name import SHORT_NAME_SCHEMA, Name
+from fakedata.phonenumber import PhoneNumber
 
 Currency = Union[int, float]
 

@@ -1,48 +1,32 @@
 """Application.py: 
 Main class that builds all other objects and runs the curses loop
 """
-import os
-import yaml
-import math
-import random
 import curses
-import logging
 import datetime
+import logging
+import math
+import os
+import random
+
 import cerberus
-from source.keymap import EventMap
-import source.utils as utils
+import yaml
+
 import source.config as config
+import source.utils as utils
+from source.controllers import (ExplorerController, NotesController,
+                                PersonController, ReceiptController)
+from source.database import Connection, NoteConnection, ReceiptConnection
+from source.keymap import EventMap
 from source.logger import Loggable
-from source.controllers import (
-    PersonController,
-    ExplorerController,
-    NotesController,
-    ReceiptController
-)
-from source.schema import (
-    Table, 
-    SQLType, 
-    build_products_table,
-    build_receipts_table
-)
-from source.yamlchecker import YamlChecker
-from source.database import (
-    Connection,
-    NoteConnection,
-    ReceiptConnection
-)
-from source.models.models import Receipt, Transaction, Task, Text
+from source.models.models import Receipt, Task, Text, Transaction
 from source.models.product import Product
+from source.schema import (SQLType, Table, build_products_table,
+                           build_receipts_table)
+from source.window import (DisplayWindow, PromptWindow, ScrollableWindow,
+                           Window, WindowProperty, keypress_down, keypress_up)
+from source.yamlchecker import YamlChecker
 from source.YamlObjects import receipt as Yamlreceipt
-from source.window import (
-    Window,
-    WindowProperty,
-    ScrollableWindow,
-    PromptWindow,
-    DisplayWindow,
-    keypress_down,
-    keypress_up
-)
+
 
 class Application(Loggable):
     """

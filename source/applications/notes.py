@@ -1,21 +1,13 @@
 import curses
 import curses.textpad
-from source.application import Application
-from source.window import (
-    Window,
-    ScrollableWindow,
-    DisplayWindow,
-    HelpWindow,
-    WindowProperty,
-    keypress_a
-)
-from source.models.models import (
-    Text,
-    Note
-)
+
 import source.utils as utils
+from source.application import Application
 from source.controllers import NotesController
 from source.database import NoteConnection
+from source.models.models import Note, Text
+from source.window import (DisplayWindow, HelpWindow, ScrollableWindow, Window,
+                           WindowProperty, keypress_a)
 
 
 class NewNoteWindow(Window):
