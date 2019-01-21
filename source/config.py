@@ -33,12 +33,16 @@ DATE_FORMATS = {
 
 DATE_FORMAT = DATE_FORMATS['USA']
 
-DATABASE_POINTER_QUIZ = "data/quiz.db"
 DATABASE_POINTER_NOTES = "data/notes.db"
+DATA_FILE_PATH_NOTES = "data/notes.json"
+CONNECTION_CLEAN_SCRIPT_NOTES = "source/db_scripts/create_notes.sql"
+CONNECTION_REBUILD_SCRIPT_NOTES = "source/db_scripts/create_notes_examples.sql"
+
+DATA_FILE_PATH_QUIZ = "data/quiz.json"
+DATABASE_POINTER_QUIZ = "data/quiz.db"
+
 DATABASE_POINTER_RECEIPTS = "data/receipts.db"
 CONNECTION_CLEAN_SCRIPT_QUIZ = "source/db_scripts/create_quiz.sql"
 CONNECTION_REBUILD_SCRIPT_QUIZ = "source/db_scripts/create_quiz_examples.sql"
-CONNECTION_CLEAN_SCRIPT_NOTES = "source/db_scripts/create_notes.sql"
-CONNECTION_REBUILD_SCRIPT_NOTES = "source/db_scripts/create_notes_examples.sql"
 CONNECTION_CLEAN_SCRIPT_RECEIPTS = "source/db_scripts/create_receipts.sql"
 CONNECTION_REBUILD_SCRIPT_RECEIPTS = "source/db_scripts/create_receipts_examples.sql"

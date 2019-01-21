@@ -87,13 +87,16 @@ class NoteApplication(Application):
             self.focused = self.window
         print(f"Changed to {self.focused}")
 
-    def build_application(self, rebuild=False, examples=False):
+    def build_application(self, rebuild=False, reinsert=False, examples=False):
         """Builds an application to view all notes"""
         screen = self.screen
         height, width = screen.getmaxyx()
 
         if not examples:
-            self.controller = NotesController(NoteConnection(rebuild=rebuild))
+            self.controller = NotesController(
+                NoteConnection(rebuild=rebuild), 
+                reinsert=reinsert
+            )
             self.data = self.controller.request_notes()
         else:
             self.data = [Note.random() for i in range(10)]

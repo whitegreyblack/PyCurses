@@ -32,7 +32,7 @@ def initialize_environment_settings(logger=None):
     # Reduce the delay when pressing escape key on keyboard.
     os.environ.setdefault('ESCDELAY', '25')
 
-def run_application(screen, folderpath, app, demo, rebuild, logger=None):
+def run_application(screen, folderpath, app, demo, rebuild, reinsert, logger=None):
     """Initializes the Application object which builds the rest of the
     necessary frontend/backend objects.
 
@@ -56,7 +56,7 @@ def run_application(screen, folderpath, app, demo, rebuild, logger=None):
     # app.setup() -- each demo will setup their own database
     #app.build_windows(screen)
     # app.build_windows()
-    a.build_application(rebuild, demo)
+    a.build_application(rebuild, reinsert, demo)
     # if not rebuild:
     #     getattr(app, demo)()
     # else:
@@ -76,7 +76,9 @@ def run_application(screen, folderpath, app, demo, rebuild, logger=None):
               help="Use fake data to build the app")
 @click.option('-r', "rebuild", nargs=1, is_flag=True, default=False,
               help="Rebuild tables before inserting files")
-def main(folder, app, demo, rebuild):
+@click.option('-i', "reinsert", nargs=1, is_flag=True, default=False,
+              help="Reinsert data for specified application")
+def main(folder, app, demo, rebuild, reinsert):
     """Handles argument parsing using click framework before calling the
     curses wrapper handler function
     """
@@ -122,7 +124,7 @@ def main(folder, app, demo, rebuild):
     # logger class before we enter main curses loop
     logargs = utils.logargs(application, __file__)
     logger = utils.setup_logger_from_logargs(logargs)
-    curses.wrapper(run_application, folder, application, demo, rebuild, logger)
+    curses.wrapper(run_application, folder, application, demo, rebuild, reinsert, logger)
 
 if __name__ == "__main__":
     main()

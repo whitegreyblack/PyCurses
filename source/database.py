@@ -74,6 +74,15 @@ class Connection:
                 self._connection.execute(f"{stmt};")
         self._connection.commit()
 
+    def insert(self, obj):
+        if not self.model_name:
+            raise NotImplementedError
+        fn_name = 'insert_' + self.model_name
+        if hasattr(self, 'insert_' + self.model_name):
+            getattr(self, fn_name)(obj)
+        else:
+            raise Exception(f"function name not found {fn_name}")
+
 class QuizConnection(Connection):
     database = config.DATABASE_POINTER_QUIZ
     clean_script = config.CONNECTION_CLEAN_SCRIPT_QUIZ
@@ -85,6 +94,9 @@ class QuizConnection(Connection):
 
     def select_questions(self):
         return []
+
+    def insert_question(self):
+        pass
 
 class ReceiptConnection(Connection):
     
@@ -260,7 +272,7 @@ class ReceiptConnection(Connection):
             yield product(*info)
 
 class NoteConnection(Connection):
-    
+    model_name = "note"
     schema = None
     database_path = config.DATABASE_POINTER_NOTES
     clean_script_path = config.CONNECTION_CLEAN_SCRIPT_NOTES
@@ -293,6 +305,17 @@ class NoteConnection(Connection):
         for note in self._connection.execute(statement).fetchall():
             yield note
     
+    def insert_note(self, obj):
+        s = f"""
+INSERT INTO NOTES ({', '.join(obj.keys())}) VALUES (
+'{obj['title']}', 
+'{datetime.datetime(*obj['created'])}', 
+'{datetime.datetime(*obj['modified'])}',
+'{obj['note']}');
+"""[1:]
+        self._connection.execute(s)
+        self._connection.commit()
+
 if __name__ == "__main__":
     # args = logargs(type("db_main", (), dict()))
     # logger = setup_logger_from_logargs(args)

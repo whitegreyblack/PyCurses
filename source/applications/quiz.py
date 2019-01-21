@@ -87,16 +87,19 @@ class QuizApplication(Application):
             self.focused = self.window
         print(f"Changed to {self.focused}")
 
-    def build_application(self, rebuild=False, examples=False):
+    def build_application(self, rebuild=False, reinsert=False, examples=False):
         """Builds an application to view all quizs"""
         screen = self.screen
         height, width = screen.getmaxyx()
 
         if not examples:
-            self.controller = QuizController(QuizConnection(rebuild=rebuild))
+            self.controller = QuizController(
+                QuizConnection(rebuild=rebuild),
+                reinsert=reinsert
+            )
             self.data = list(self.controller.request_questions())
         else:
-            self.data = [Question.random() for i in range(10)]
+            self.data = [Question.random() for i in range(100)]
 
         print(self.data)
         self.window.title = 'Quiz Viewer Example'

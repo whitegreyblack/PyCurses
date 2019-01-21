@@ -1,5 +1,7 @@
 """Datacontroller.py"""
 import os
+import json
+import source.config as config
 from source.database import (
     NoteConnection,
     ReceiptConnection,
@@ -36,18 +38,28 @@ class Controller:
     logger_file = 'controller.log'
     logger_args = {'currentfile': __file__}
     # def __init__(self, connection=None, logger=None):
-    def __init__(self, connection=None):
-        print(self.__class__.__name__)
+    def __init__(self, connection=None, reinsert=False):
+        print(self.__class__.__name__, reinsert)
         self.connection = connection
-        # if not logger:
-        #     logger = setup_logger(
-        #         self.logger_name, 
-        #         self.logger_file, 
-        #         extra=self.logger_args
-        #     )
-        # self.logger = logger
+
+        if reinsert:
+            self.read_data_file()
+
+    def read_data_file(self):
+        if not self.data_file_path:
+            raise NotImplementedError
+        try:
+            with open(self.data_file_path, "r") as f:
+                d = json.loads(f.read())
+        except FileNotFoundError:
+            print("Could not open file. File does not exist.")
+        else:
+            for obj in d:
+                print(obj)
+                self.connection.insert(obj)
 
 class QuizController(Controller):
+    data_file_path = config.DATA_FILE_PATH_QUIZ
     def request_questions(self):
         for qdata in self.connection.select_questions():
             yield qdata
@@ -64,6 +76,7 @@ class NotesController(Controller):
         modified datetime, -- last modified or every modification?
         note     varchar(250),
     """
+    data_file_path = config.DATA_FILE_PATH_NOTES
     def request_note(self, nid):
         pass
     

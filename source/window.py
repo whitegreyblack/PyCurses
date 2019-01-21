@@ -259,7 +259,7 @@ class DisplayWindow(Window):
             if strings:
                 for y, x, s in strings:
                     if len(s) > mx:
-                        raise BaseException(s)
+                        raise Exception("Length of string is greater than width of window", s)
                     self.window.addstr(y, x, s)
         else:
             self.window.addstr(1, 1, "No data present")

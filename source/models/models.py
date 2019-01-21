@@ -55,7 +55,7 @@ class ModelABC(object):
         return NotImplemented
 
     def display(self) -> None:
-        return NotImplemented
+        yield 1, 1, "Not Yet Implemented"
 
 def coinflip():
     return bool(random.randint(0, 1))
@@ -86,7 +86,7 @@ Question(
 
     @classmethod
     def random(cls):
-        q = ". ".join(fake.text() for _ in range(1))
+        q = "Question: " + ". ".join(fake.text() for _ in range(1))
         c = [
             f"{char_from_index(i)}. {fake.text()[:random.randint(25, 65)]}" 
                 for i in range(random.randint(4, 5))
@@ -98,8 +98,15 @@ Question(
         return cls(q, c, a)
 
     def display(self, x, y, mx, my, indent):
-        yield 1, 1, "Not Implemented"
+        dy = 0
+        q = textwrap.wrap(self.question, mx-2)
+        for j, s in enumerate(q):
+            yield y + j, x, s
+        dy += len(q) + 1
 
+        for j, c in enumerate(self.choices):
+            t = c.replace('\n', '')
+            yield y + dy + j, x, t[:mx]
 
 class Text:
     def __init__(self, text):
