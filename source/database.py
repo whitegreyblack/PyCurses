@@ -83,6 +83,13 @@ class Connection:
         else:
             raise Exception(f"function name not found {fn_name}")
 
+class PersonConnection(Connection):
+    database = config.DATABASE_POINTER_CONTACTS
+
+    def __init__(self, database=None, schema=None, rebuild=False):
+        """Wrapper to pass in contact connection specific attributes"""
+        super().__init__(database, schema, rebuild)
+
 class QuizConnection(Connection):
     database = config.DATABASE_POINTER_QUIZ
     clean_script = config.CONNECTION_CLEAN_SCRIPT_QUIZ

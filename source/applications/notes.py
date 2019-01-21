@@ -1,4 +1,5 @@
 import curses
+import curses.textpad
 from source.application import Application
 from source.window import (
     Window,
@@ -17,10 +18,25 @@ from source.controllers import NotesController
 from source.database import NoteConnection
 
 
-class NoteWindow(Window):
-    def on_keypress_f1(self):
-        self.keypresses.trigger(curses.KEY_F1, self)
+class NewNoteWindow(Window):
+    def keypress_a(self, sender, **kwargs):
+        self.show(self)
+        self.focus(self)
+        self.clear()
+        self.draw()
+        self.window.refresh()
+        self.window.move(1, 1)
+        print(self.width, self.height)
+        print(self.window.getmaxyx())
+        textbox = curses.textpad.Textbox(self.window, insert_mode=True)
+        text = textbox.edit()
+        self.draw()
+        self.window.addstr(1, 1, "Added note")
+        self.window.refresh()
+        self.window.getch()
 
+    def keypress_escape(self, sender, **kwargs):
+        exit()
 
 class NoteHelpWindow(HelpWindow):
     def keypress_f1(self, sender, **kwargs):
@@ -100,7 +116,9 @@ class NoteApplication(Application):
             self.data = self.controller.request_notes()
         else:
             self.data = [Note.random() for i in range(10)]
+
         print(self.data)
+
         self.window.title = 'Note Viewer Example'
 
         note_display = NoteDisplayWindow(
@@ -139,6 +157,17 @@ class NoteApplication(Application):
             dataobj=Text.random()
         )
 
+        create_window = NewNoteWindow(
+            screen.subwin(
+                height // 3,
+                utils.partition(width, 4, 2),
+                utils.partition(height, 3, 1),
+                utils.partition(width, 4, 1)
+            ),
+            title="Add Note Window",
+            showing=False
+        )
+
         # application change event
         # self.on_data_changed.append(note_display.data_changed)
 
@@ -154,6 +183,7 @@ class NoteApplication(Application):
         note_explorer.keypresses.on(curses.KEY_F1, help_window.keypress_f1)
         note_explorer.keypresses.on(curses.KEY_DOWN, note_explorer.keypress_down)
         note_explorer.keypresses.on(curses.KEY_UP, note_explorer.keypress_up)
+        note_explorer.keypresses.on(ord('a'), create_window.keypress_a)
 
         # display window key press handlers
         self.on_data_changed.append(note_display.data_changed)
@@ -167,7 +197,13 @@ class NoteApplication(Application):
         help_window.keypresses.on(27, help_window.keypress_f1)
         help_window.keypresses.on(curses.KEY_F1, help_window.keypress_f1)
 
-        self.window.add_windows(note_explorer, note_display, help_window)
+        self.window.add_windows(
+            note_explorer, 
+            note_display, 
+            help_window, 
+            create_window
+        )
+
         self.focused = self.window.currently_focused
     
     def build_application_with_properties(self, rebuild):

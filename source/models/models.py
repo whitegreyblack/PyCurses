@@ -200,12 +200,12 @@ class Note:
         return Note(title, nid, created, modified, note)
 
 class Person:
-    def __init__(self, name=None, address=None, job=None, phone_number=None):
+    def __init__(self, name=None, address=None, job=None, phone_number=None, description=None):
         self.name = name
-        self.address = address if address else fake.address()
-        self.job = job if job else fake.job()
-        self.phone_number = phone_number if phone_number else PhoneNumber.random()
-        self.description = fake.text()
+        self.address = address
+        self.job = job
+        self.phone_number = phone_number
+        self.description = description
     
     def display(self, x, y, mx, my, indent=None):
         space = ''

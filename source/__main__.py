@@ -83,6 +83,8 @@ def main(folder, app, demo, rebuild, reinsert):
     curses wrapper handler function
     """
     demos = {
+        "contacts": ContactsApplication,
+        "contact": ContactsApplication,
         "notes": NoteApplication,
         "note": NoteApplication,
         "tree": Application,

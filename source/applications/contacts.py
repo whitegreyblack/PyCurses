@@ -1,13 +1,16 @@
 import random
-from source.utils import unicode
 from source.application import Application
 from source.window import (
     Window,
     WindowProperty,
     DisplayWindow,
-    ScrollableWindow
+    ScrollableWindow,
+    PromptWindow
 )
-import source.utils
+from source.database import PersonConnection
+from source.controllers import PersonController 
+from source.models.models import Person
+import source.utils as utils
 
 sample_first_male = [
     "Bob",
@@ -33,22 +36,24 @@ class Name:
         except:
             self.first, self.last = names
             self.middle = None
+
     def __str__(self):
         if self.middle:
             fullname = f"{self.first} {self.middle} {self.last}"
         else:
             fullname = f"{self.first} {self.last}"
         return fullname
+
     def __repr__(self):
         f, m, l = self.first, self.middle, self.last
         return f"Name(first={f}, middle={m}, last={l})"
+
     def __lt__(self, other):
         return unicode(self.first) < unicode(other.first)
+
     @staticmethod
     def random(self):
-        if random.randint(0, 1):
-            return random
-
+        pass
 
 class Contact:
     def __init__(self, name, number, company=None):
@@ -61,15 +66,24 @@ class Contact:
         return f"Contact(name={self.name}, number={self.number})"
 
 class ContactsApplication(Application):
-    def build_application(self, rebuild=False):
+    def build_application(self, rebuild=False, reinsert=False, examples=False):
         """Work on window recursion and tree"""
         screen = self.screen
         height, width = screen.getmaxyx()
-        self.controller = PersonController()
-        self.data = [
-            self.controller.request_person(pid)
-                for pid in range(10)
-        ]
+
+        self.controller = PersonController(
+            PersonConnection(rebuild=rebuild), 
+            reinsert=reinsert
+        )
+
+        if rebuild:
+            self.data = [
+                self.controller.request_persons()
+            ]
+        else:
+            self.data = [
+                Person.random() for _ in range(10)
+            ]
         # main window
         self.window.title = 'Application Example 1'
 
@@ -83,7 +97,7 @@ class ContactsApplication(Application):
             ),
             title="Profile"
         )
-        self.data_changed_event.append(display.on_data_changed)
+        # self.on_data_changed.append(display.on_data_changed)
 
         # scroll window
         scroller = ScrollableWindow(
@@ -96,7 +110,7 @@ class ContactsApplication(Application):
             title="Directory",
             data=[str(n.name) for n in self.data],
             focused=True,
-            data_changed_handlers=(self.on_data_changed,)
+            # data_changed_handlers=(self.on_data_changed,)
         )
 
         # secondary display -- currently unused
@@ -114,12 +128,12 @@ class ContactsApplication(Application):
         # prompt screen
         prompt = PromptWindow(screen.subwin(3, width, height - 4, 0))
 
-        self.window.add_windows([
+        self.window.add_windows(
             scroller,
             display,
             unused,
             prompt
-        ])
+        )
 
     def build_application_with_properties(self, rebuild=False):
         pass

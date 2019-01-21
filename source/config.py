@@ -33,6 +33,8 @@ DATE_FORMATS = {
 
 DATE_FORMAT = DATE_FORMATS['USA']
 
+DATABASE_POINTER_CONTACTS = "data/contacts.db"
+
 DATABASE_POINTER_NOTES = "data/notes.db"
 DATA_FILE_PATH_NOTES = "data/notes.json"
 CONNECTION_CLEAN_SCRIPT_NOTES = "source/db_scripts/create_notes.sql"
