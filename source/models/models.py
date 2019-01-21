@@ -43,6 +43,20 @@ fake.add_provider(job)
 fake.add_provider(phone_number)
 
 
+class ModelABC(object):
+    def __init__(self) -> None:
+        pass
+
+    def __repr__(self) -> str:
+        return self.__class__.__name__
+
+    @classmethod
+    def random(cls) -> object:
+        return NotImplemented
+
+    def display(self) -> None:
+        return NotImplemented
+
 def coinflip():
     return bool(random.randint(0, 1))
 
@@ -71,7 +85,7 @@ Question(
 """[1:]
 
     @classmethod
-    def random(self):
+    def random(cls):
         q = ". ".join(fake.text() for _ in range(1))
         c = [
             f"{char_from_index(i)}. {fake.text()[:random.randint(25, 65)]}" 
@@ -81,7 +95,7 @@ Question(
             a = char_from_index(random.randint(1, len(c)-1))
         else:
             a = [char_from_index(i) for i in range(len(c)) if coinflip()]
-        return Question(q, c, a)
+        return cls(q, c, a)
 
 class Text:
     def __init__(self, text):
@@ -98,8 +112,8 @@ class Text:
             dy += 1
 
     @classmethod
-    def random(self):
-        return Text(''.join(fake.text() for _ in range(random.randint(1, 5))))
+    def random(cls):
+        return cls(''.join(fake.text() for _ in range(random.randint(1, 5))))
 
 class Task:
     tid = 0
@@ -122,6 +136,7 @@ class Task:
         else:
             self.nid = Task.tid
             Task.tid += 1
+
     def display(self, x, y, mx, my, indent):
         text = textwrap.wrap(self.description, mx)
         for i, line in enumerate(text):
@@ -160,9 +175,9 @@ class Note:
             dy += i
 
     @classmethod
-    def random(self):
+    def random(cls):
         title = f"title for note {Note.nid}"
-        return Note(
+        return cls(
             title, 
             created=datetime.today(), 
             modified=datetime.today(), 
@@ -175,7 +190,7 @@ class Note:
 
 class Person:
     def __init__(self, name=None, address=None, job=None, phone_number=None):
-        self.name = name if name else Name.random(SHORT_NAME_SCHEMA)
+        self.name = name
         self.address = address if address else fake.address()
         self.job = job if job else fake.job()
         self.phone_number = phone_number if phone_number else PhoneNumber.random()
@@ -212,6 +227,16 @@ class Person:
         for line in desc[:my-dy]:
             yield (y + dy, dx, line)
             dy += 1
+
+    @classmethod
+    def random(cls):
+        n = Name.random(SHORT_NAME_SCHEMA)
+        a = fake.address()
+        j = fake.job()
+        p = PhoneNumber.random()
+        d = fake.text()
+        return cls(n, a, j, p, d)
+
 
 class Transaction:
     properties = ["subtotal", "tax", "total", "payment"]
