@@ -14,6 +14,7 @@ from source.application import Application
 from source.applications.contacts import ContactsApplication
 from source.applications.notes import NoteApplication
 from source.applications.tasks import TaskApplication
+from source.applications.quiz import QuizApplication
 
 def initialize_curses_settings(logger=None):
     """Sets settings for cursor visibility and color pairings"""
@@ -31,7 +32,7 @@ def initialize_environment_settings(logger=None):
     # Reduce the delay when pressing escape key on keyboard.
     os.environ.setdefault('ESCDELAY', '25')
 
-def application(screen, folderpath, app, demo, rebuild, logger=None):
+def run_application(screen, folderpath, app, demo, rebuild, logger=None):
     """Initializes the Application object which builds the rest of the
     necessary frontend/backend objects.
 
@@ -46,21 +47,9 @@ def application(screen, folderpath, app, demo, rebuild, logger=None):
     """
     # curses only options.
     initialize_curses_settings()
-    
-    # determine which application to run
-    application = Application
-    if app == "notes":
-        application = NoteApplication
-    elif app == "tasks":
-        application = TaskApplication
-    elif app == "contacts":
-        application = ContactsApplication
+      
     # initialize application object and build front/back end
-    a = application(
-        folderpath,
-        screen=screen,
-        logger=logger
-    )
+    a = app(folderpath, screen=screen, logger=logger)
 
     # should we create a new function that calls all 4 functions?
     # or manually call individual functions in here?
@@ -82,7 +71,7 @@ def application(screen, folderpath, app, demo, rebuild, logger=None):
 @click.option('-f', "folder", nargs=1,
               help="Folder containing yaml data files")
 @click.option('--app', "app", nargs=1,
-              help="Specified which demo application to run")
+              help="Specified which demo application to run [notes, tree, tasks, reciepts, quiz]")
 @click.option('-x', "demo", nargs=1, is_flag=True, default=False,
               help="Use fake data to build the app")
 @click.option('-r', "rebuild", nargs=1, is_flag=True, default=False,
@@ -91,7 +80,19 @@ def main(folder, app, demo, rebuild):
     """Handles argument parsing using click framework before calling the
     curses wrapper handler function
     """
-
+    demos = {
+        "notes": NoteApplication,
+        "note": NoteApplication,
+        "tree": Application,
+        "todo": TaskApplication,
+        "todos": TaskApplication,
+        "tasks": TaskApplication,
+        "task": TaskApplication,
+        "receipts": Application,
+        "receipt": Application,
+        "quiz": QuizApplication,
+        "questions": QuizApplication,
+    }
     # special case. Dot notation usually means current folder within the file
     # system. Prevent this case in order to stop importing all subfiles
     # within the currently selected folder.
@@ -99,19 +100,13 @@ def main(folder, app, demo, rebuild):
         print("Invalid folder specified: cannot use dot")
         return
 
-    if app and app not in ("notes", "note", "tree", "todos", "todo", "tasks", "task", "receipts", "receipt"):
-        print("Invalid demo specified: not found in demo list")
-        return
-    elif app in ("receipt", "receipts"):
-        app = "build_receipt_viewer"
-    elif app in ("todo", "todos", "tasks", "task"):
-        app = "tasks"
-    elif app in ("notes", "note"):
-        app = "notes"
-    elif app in ("tree",):
-        app = "build_file_explorer"
-    else:
-        app = "build_windows"
+    # determine which application to run
+    application = Application
+    if app:
+        if app not in demos.keys():
+            print("Invalid demo specified: not found in demo list")
+            return
+        application = demos[app]
     # Format the given path for the correct path delimiter and the check if
     # that path exists as a directory within the filesystem. Exit early if
     # false.
@@ -127,7 +122,7 @@ def main(folder, app, demo, rebuild):
     # logger class before we enter main curses loop
     logargs = utils.logargs(application, __file__)
     logger = utils.setup_logger_from_logargs(logargs)
-    curses.wrapper(application, folder, app, demo, rebuild, logger)
+    curses.wrapper(run_application, folder, application, demo, rebuild, logger)
 
 if __name__ == "__main__":
     main()

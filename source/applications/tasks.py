@@ -15,7 +15,7 @@ from source.window import (
 )
 
 class TaskApplication(Application):
-    def build_application(self, rebuild):
+    def build_application(self, rebuild=False, examples=False):
         """Build window objects and handlers for a todo task list app"""
         screen = self.screen
         height, width = screen.getmaxyx()
@@ -35,7 +35,7 @@ class TaskApplication(Application):
                 0
             )
         )
-        self.data_changed_event.append(task_win.on_data_changed)
+        self.on_data_changed.append(task_win.on_data_changed)
 
         none_win = ScrollableWindow(
             screen.subwin(

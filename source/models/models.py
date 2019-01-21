@@ -97,6 +97,10 @@ Question(
             a = [char_from_index(i) for i in range(len(c)) if coinflip()]
         return cls(q, c, a)
 
+    def display(self, x, y, mx, my, indent):
+        yield 1, 1, "Not Implemented"
+
+
 class Text:
     def __init__(self, text):
         self.text = text

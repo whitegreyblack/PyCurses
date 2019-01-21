@@ -254,10 +254,13 @@ class DisplayWindow(Window):
         super().draw()
         if self.dataobject:
             mx, my = self.width, self.height
-            for y, x, s in self.dataobject.display(1, 1, mx, my, 2):
-                if len(s) > mx:
-                    raise BaseException(s)
-                self.window.addstr(y, x, s)
+            strings = list(self.dataobject.display(1, 1, mx, my, 2))
+            print(strings)
+            if strings:
+                for y, x, s in strings:
+                    if len(s) > mx:
+                        raise BaseException(s)
+                    self.window.addstr(y, x, s)
         else:
             self.window.addstr(1, 1, "No data present")
 

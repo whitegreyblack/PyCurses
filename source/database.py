@@ -35,24 +35,30 @@ class Connection:
     Database Connection Object
     TODO: make this more abstract for different connections
     """
+    schema = None
     rebuild = False
     database_path = None
     clean_script_path = None
     rebuild_script_path = None
 
-    def __init__(self, database, schema=None, rebuild=None):
-        print(database, schema, rebuild)
-        if not database:
-            raise Exception("Connection should have a database argument passed in")
+    def __init__(self, database, schema=None, rebuild=False):
+        if database:
+            self.database = database
+        if schema:
+            self.schema = schema
+        if rebuild:
+            self.rebuild = rebuild
+
         self._connection = sqlite3.connect(
-            database,
+            self.database,
             detect_types=sqlite3.PARSE_DECLTYPES
         )
         self.schema = schema
         self.rebuild_database(rebuild)
     
-    def __exit__(self):
-        self.conn.close()
+    def __del__(self):
+        print(self.database_path)
+        self._connection.close()
 
     def rebuild_database(self, rebuild):
         """
@@ -66,6 +72,19 @@ class Connection:
         with open(self.rebuild_script_path, 'r') as sql:
             for stmt in ''.join(sql.readlines()).split(';'):
                 self._connection.execute(f"{stmt};")
+        self._connection.commit()
+
+class QuizConnection(Connection):
+    database = config.DATABASE_POINTER_QUIZ
+    clean_script = config.CONNECTION_CLEAN_SCRIPT_QUIZ
+    rebuild_script = config.CONNECTION_REBUILD_SCRIPT_QUIZ
+
+    def __init__(self, database=None, schema=None, rebuild=False):
+        """Wrapper to pass in quiz connection specific attributes"""
+        super().__init__(database, schema, rebuild)
+
+    def select_questions(self):
+        return []
 
 class ReceiptConnection(Connection):
     
@@ -259,7 +278,7 @@ class NoteConnection(Connection):
 
         self.fields = list(self.tables_info())
         if not self.fields:
-            self._connection.execute()
+            raise Exception("Table not initialized for notes app")
 
     def tables_info(self):
         table_info = []

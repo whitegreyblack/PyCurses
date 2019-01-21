@@ -62,8 +62,9 @@ class Application(Loggable):
     before reaching destination window from source window.
     """
     def __init__(self, folder, screen=None, logger=None):
+        print(self.__class__.__name__)
         super().__init__(self, logger=logger)
-        
+
         self.continue_app = True
         
         self.screen = screen

@@ -37,6 +37,7 @@ class Controller:
     logger_args = {'currentfile': __file__}
     # def __init__(self, connection=None, logger=None):
     def __init__(self, connection=None):
+        print(self.__class__.__name__)
         self.connection = connection
         # if not logger:
         #     logger = setup_logger(
@@ -46,6 +47,12 @@ class Controller:
         #     )
         # self.logger = logger
 
+class QuizController(Controller):
+    def request_questions(self):
+        for qdata in self.connection.select_questions():
+            yield qdata
+        else:
+            yield None
 
 class NotesController(Controller):
     """
