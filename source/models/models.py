@@ -43,6 +43,46 @@ fake.add_provider(job)
 fake.add_provider(phone_number)
 
 
+def coinflip():
+    return bool(random.randint(0, 1))
+
+def char_from_index(index):
+    return chr(ord('A') + index)
+
+class Question:
+    
+    def __init__(self, question, choices, answer):
+        self.question = question
+        self.choices = choices
+        self.answer = answer
+
+    def __repr__(self):
+        q = "\n\t".join(textwrap.wrap(self.question, 70))
+        c = "\n\t".join("\n\t".join(textwrap.wrap(c, 70)) 
+                for c in self.choices)
+        return f"""
+Question(
+    question: 
+        {q}
+    choices: 
+        {c}
+    answer: {self.answer}
+)
+"""[1:]
+
+    @classmethod
+    def random(self):
+        q = ". ".join(fake.text() for _ in range(1))
+        c = [
+            f"{char_from_index(i)}. {fake.text()[:random.randint(25, 65)]}" 
+                for i in range(random.randint(4, 5))
+        ]
+        if coinflip():
+            a = char_from_index(random.randint(1, len(c)-1))
+        else:
+            a = [char_from_index(i) for i in range(len(c)) if coinflip()]
+        return Question(q, c, a)
+
 class Text:
     def __init__(self, text):
         self.text = text
