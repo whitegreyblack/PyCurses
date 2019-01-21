@@ -19,18 +19,26 @@ from source.database import NoteConnection
 
 
 class NewNoteWindow(Window):
+    def __init__(self, screen, title, showing=False):
+        super().__init__(screen, title, showing=False)
+        self.subwin = screen.derwin(self.height, self.width, 2, 2)
+
     def keypress_a(self, sender, **kwargs):
         self.show(self)
         self.focus(self)
         self.clear()
         self.draw()
         self.window.refresh()
-        self.window.move(1, 1)
+        # self.subwin.border()
+        curses.curs_set(1)
         print(self.width, self.height)
         print(self.window.getmaxyx())
-        textbox = curses.textpad.Textbox(self.window, insert_mode=True)
+        # self.subwin.move(1, 1)
+        textbox = curses.textpad.Textbox(self.subwin, insert_mode=True)
         text = textbox.edit()
+        curses.curs_set(1)
         self.draw()
+        self.subwin.border()
         self.window.addstr(1, 1, "Added note")
         self.window.refresh()
         self.window.getch()
@@ -167,7 +175,12 @@ class NoteApplication(Application):
             title="Add Note Window",
             showing=False
         )
-
+        create_window.subwin = screen.subwin(
+            (height // 3) - 2,
+            utils.partition(width, 4, 2) - 2,
+            utils.partition(height, 3, 1) + 1,
+            utils.partition(width, 4, 1) + 1
+        )
         # application change event
         # self.on_data_changed.append(note_display.data_changed)
 
