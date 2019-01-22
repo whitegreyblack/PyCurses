@@ -89,6 +89,12 @@ def check_or_create_folder(foldername):
     return formatted_path
 
 
+def divider(width):
+    yield curses.ACS_LTEE
+    for _ in range(width):
+        yield curses.ACS_HLINE
+    yield curses.ACS_RTEE
+
 args = namedtuple("Logargs", "name file extra")
 
 

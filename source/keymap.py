@@ -33,8 +33,9 @@ class KeyMap(MutableMapping):
         return key
 
 class EventMap(KeyMap):
-    def on(self, key, handler):
-        self[key].append(handler)
+    def on(self, *args):
+        for (key, handler) in args:
+            self[key].append(handler)
 
     def trigger(self, key, sender, **kwargs):
         print(f"{sender}: triggered {self[key]}")

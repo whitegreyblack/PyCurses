@@ -1,6 +1,8 @@
 import curses
 import curses.textpad
 
+import datetime
+
 import source.utils as utils
 from source.application import Application
 from source.controllers import NotesController
@@ -10,33 +12,56 @@ from source.window import (DisplayWindow, HelpWindow, ScrollableWindow, Window,
                            WindowProperty, keypress_a)
 
 
-class NewNoteWindow(Window):
-    def __init__(self, screen, title, showing=False):
+class NewNoteWindow(HelpWindow):
+    def __init__(self, screen, title_input, note_input, title, showing=False):
         super().__init__(screen, title, showing=False)
+        self.title_input = title_input
+        self.note_input = note_input
         self.subwin = screen.derwin(self.height, self.width, 2, 2)
+        self.note_created = utils.Event()
 
     def keypress_a(self, sender, **kwargs):
+        self.opener = sender
         self.show(self)
         self.focus(self)
+
+        # show the cursor for editing
+        curses.curs_set(1)
+
         self.clear()
         self.draw()
+        self.window.addstr(1, 1, "Title for new note:")
+        for i, c in enumerate(utils.divider(self.width)):
+            self.window.addch(2, i, c)
         self.window.refresh()
-        # self.subwin.border()
-        curses.curs_set(1)
-        print(self.width, self.height)
-        print(self.window.getmaxyx())
-        # self.subwin.move(1, 1)
-        textbox = curses.textpad.Textbox(self.subwin, insert_mode=True)
-        text = textbox.edit()
-        curses.curs_set(1)
+        textbox = curses.textpad.Textbox(self.title_input, insert_mode=True)
+        title = textbox.edit()
+
+        self.clear()
         self.draw()
-        self.subwin.border()
-        self.window.addstr(1, 1, "Added note")
+        self.window.addstr(1, 1, "Note for new note. (Ctrl-G to finish)")
+        for i, c in enumerate(utils.divider(self.width)):
+            self.window.addch(2, i, c)
         self.window.refresh()
-        self.window.getch()
+        textbox = curses.textpad.Textbox(self.note_input, insert_mode=True)
+        note = textbox.edit()
+
+        date = datetime.datetime.today()
+        self.on_note_created(Note(title, created=date, modified=date, note=note))
+
+        # turn cursor off again
+        curses.curs_set(0)
+
+        self.unfocus(self)
+        self.hide(self)
+        self.refocus_opener(self)
+
+    def on_note_created(self, note):
+        self.note_created(self, data=note)
 
     def keypress_escape(self, sender, **kwargs):
         exit()
+
 
 class NoteHelpWindow(HelpWindow):
     def keypress_f1(self, sender, **kwargs):
@@ -52,6 +77,10 @@ class NoteHelpWindow(HelpWindow):
 
 
 class NoteScrollableWindow(ScrollableWindow):
+    # data added event
+    def data_added(self, sender, **kwargs):
+        self.data = [d.title for d in kwargs['data']]
+
     # key events that fire on keypress
     def on_keypress_tab(self):
         self.keypresses.trigger(9, self)
@@ -164,43 +193,59 @@ class NoteApplication(Application):
                 utils.partition(height, 3, 1),
                 utils.partition(width, 4, 1)
             ),
+            screen.subwin(
+                (height // 3) - 7,
+                utils.partition(width, 4, 2) - 2,
+                utils.partition(height, 3, 1) + 3,
+                utils.partition(width, 4, 1) + 1
+            ),
+            screen.subwin(
+                (height // 3) - 4,
+                utils.partition(width, 4, 2) - 2,
+                utils.partition(height, 3, 1) + 3,
+                utils.partition(width, 4, 1) + 1
+            ),
             title="Add Note Window",
             showing=False
         )
-        create_window.subwin = screen.subwin(
-            (height // 3) - 2,
-            utils.partition(width, 4, 2) - 2,
-            utils.partition(height, 3, 1) + 1,
-            utils.partition(width, 4, 1) + 1
-        )
+        create_window.note_created.append(self.data_added)
         # application change event
         # self.on_data_changed.append(note_display.data_changed)
 
         # main window key press handlers
-        self.window.changes.on('focused', self.focus_changed)
-        self.window.keypresses.on(27, self.keypress_escape)
-        self.window.keypresses.on(curses.KEY_F1, help_window.keypress_f1)
+        self.window.changes.on(('focused', self.focus_changed))
+        self.window.keypresses.on(
+            (27, self.keypress_escape),
+            (curses.KEY_F1, help_window.keypress_f1)
+        )
 
         # scroll window key press handlers
-        note_explorer.changes.on('focused', self.focus_changed)
-        note_explorer.keypresses.on(27, self.keypress_escape)
-        note_explorer.keypresses.on(9, note_display.keypress_tab)
-        note_explorer.keypresses.on(curses.KEY_F1, help_window.keypress_f1)
-        note_explorer.keypresses.on(curses.KEY_DOWN, note_explorer.keypress_down)
-        note_explorer.keypresses.on(curses.KEY_UP, note_explorer.keypress_up)
-        note_explorer.keypresses.on(ord('a'), create_window.keypress_a)
+        note_explorer.changes.on(('focused', self.focus_changed))
+        note_explorer.keypresses.on(
+            (27, self.keypress_escape),
+            (9, note_display.keypress_tab),
+            (curses.KEY_F1, help_window.keypress_f1),
+            (curses.KEY_DOWN, note_explorer.keypress_down),
+            (curses.KEY_UP, note_explorer.keypress_up),
+            (ord('a'), create_window.keypress_a)
+        )
+        self.on_data_added.append(note_explorer.data_added)
 
         # display window key press handlers
         self.on_data_changed.append(note_display.data_changed)
-        note_display.changes.on('focused', self.focus_changed)
-        note_display.keypresses.on(27, self.keypress_escape)
-        note_display.keypresses.on(351, note_explorer.keypress_btab)
-        note_display.keypresses.on(curses.KEY_F1, help_window.keypress_f1)
+        note_display.changes.on(
+            ('focused', self.focus_changed),
+            (27, self.keypress_escape),
+            (351, note_explorer.keypress_btab),
+            (curses.KEY_F1, help_window.keypress_f1)
+        )
 
         # help window key press handlers
-        help_window.changes.on('focused', self.focus_changed)
-        help_window.keypresses.on(27, help_window.keypress_f1)
-        help_window.keypresses.on(curses.KEY_F1, help_window.keypress_f1)
+        help_window.changes.on(('focused', self.focus_changed))
+        help_window.keypresses.on(
+            (27, help_window.keypress_f1),
+            (curses.KEY_F1, help_window.keypress_f1)
+        )
 
         self.window.add_windows(
             note_explorer, 

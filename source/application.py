@@ -68,6 +68,7 @@ class Application(Loggable):
         self.controller = None
 
         self.on_data_changed = utils.Event()
+        self.on_data_added = utils.Event()
 
     def setup(self):
         # TODO: need a setting to determine behavior of previously loaded data
@@ -295,6 +296,11 @@ class Application(Loggable):
     def data_changed(self, sender, arg):
         self.on_data_changed(sender, model=self.data[arg])
 
+    def data_added(self, sender, *args, **kwargs):
+        data = kwargs['data']
+        self.data.append(data)
+        self.on_data_added(self, data=self.data)
+
     def keypress_escape(self, sender, arg=None):
         self.continue_app = False
 
@@ -311,7 +317,7 @@ class Application(Loggable):
         self.events[curses.KEY_DOWN].append(scroller.handle_key)
         self.events[curses.KEY_UP].append(scroller.handle_key)
 
-    def build_application(self, rebuild=False, examples=False):
+    def build_application(self, rebuild=False, reinsert=False, examples=False):
         """Work on window recursion and tree"""
         screen = self.screen
         height, width = screen.getmaxyx()
@@ -334,7 +340,7 @@ class Application(Loggable):
         # second window quarter screen top right
         sub2 = DisplayWindow(
             screen.subwin(
-                utils.partition(height, 2, 1),
+                utils.partition(height-1, 2, 1),
                 utils.partition(width, 2, 1), 
                 0,
                 utils.partition(width, 2, 1), 
@@ -344,9 +350,9 @@ class Application(Loggable):
 
         sub3 = DisplayWindow(
             screen.subwin(
-                utils.partition(height, 2, 1),
+                utils.partition(height-2, 2, 1),
                 utils.partition(width, 2, 1), 
-                utils.partition(height, 2, 1),
+                utils.partition(height-1, 2, 1),
                 utils.partition(width, 2, 1), 
             ),
             title="Sub-win 3"
