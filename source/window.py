@@ -1,7 +1,7 @@
 """window.py"""
 
 import curses
-from source.utils import Event
+from source.utils import EventHandler
 from source.keymap import EventMap
 from math import ceil, floor
 
@@ -78,7 +78,7 @@ class Window:
 
         self.keypresses = keypresses if keypresses else EventMap()
 
-        self.on_focus_changed = Event()
+        self.on_focus_changed = EventHandler()
 
     def __repr__(self):
         return f"{self.__class__.__name__}({self.title if self.title else self.wid})"
@@ -221,7 +221,7 @@ class Window:
     
     def add_handler(self, key, handler):
         if key not in self.keypresses.keys():
-            self.keypress[key] = Event()
+            self.keypress[key] = EventHandler()
         self.keypresses[key].append(handler)
 
     def add_handlers(self, key, *handlers):
@@ -329,10 +329,10 @@ class ScrollableWindow(Window):
             border=border, 
             eventmap=eventmap
         )
-        self.on_data_changed = Event()
-        self.keypress_up_event = Event()
-        self.keypress_down_event = Event()
-        self.keypress_a_event = Event()
+        self.on_data_changed = EventHandler()
+        self.keypress_up_event = EventHandler()
+        self.keypress_down_event = EventHandler()
+        self.keypress_a_event = EventHandler()
 
         if data_changed_handlers:
             for handler in data_changed_handlers:

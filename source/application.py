@@ -67,8 +67,11 @@ class Application(Loggable):
 
         self.controller = None
 
-        self.on_data_changed = utils.Event()
-        self.on_data_added = utils.Event()
+        self.on_data_changed = utils.EventHandler()
+        self.on_data_added = utils.EventHandler()
+
+    def __del__(self):
+        print(self.data)
 
     def setup(self):
         # TODO: need a setting to determine behavior of previously loaded data

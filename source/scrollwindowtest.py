@@ -1,5 +1,5 @@
 import curses
-from source.utils import Event
+from source.utils import EventHandler
 from source.window import (
     ScrollableWindowWithBar, 
     on_keypress_up, 
@@ -19,9 +19,9 @@ def initialize_curses_settings(logger=None):
 
 def application(screen):
     events = {
-        curses.KEY_UP: Event(),
-        curses.KEY_DOWN: Event(),
-        ord('a'): Event()
+        curses.KEY_UP: EventHandler(),
+        curses.KEY_DOWN: EventHandler(),
+        ord('a'): EventHandler()
     }
     s = ScrollableWindowWithBar(screen, data=[str(i) for i in range(25)])
     s.keypress_up_event.append(on_keypress_up)

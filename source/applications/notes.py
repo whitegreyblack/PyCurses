@@ -18,33 +18,54 @@ class NewNoteWindow(HelpWindow):
         self.title_input = title_input
         self.note_input = note_input
         self.subwin = screen.derwin(self.height, self.width, 2, 2)
-        self.note_created = utils.Event()
+        self.note_created = utils.EventHandler()
 
     def keypress_a(self, sender, **kwargs):
         self.opener = sender
         self.show(self)
         self.focus(self)
 
-        # show the cursor for editing
-        curses.curs_set(1)
-
         self.clear()
         self.draw()
         self.window.addstr(1, 1, "Title for new note:")
         for i, c in enumerate(utils.divider(self.width)):
             self.window.addch(2, i, c)
+        self.title_input.move(0, 0)
+
+        # show the cursor for editing
+        curses.curs_set(1)
+
         self.window.refresh()
         textbox = curses.textpad.Textbox(self.title_input, insert_mode=True)
         title = textbox.edit()
+        curses.curs_set(0)
+        while not title.strip():
+            self.clear()
+            self.draw()
+            self.window.addstr(1, 1, "Title for new note: ")
+            self.window.addstr(6, 1, "Title cannot be empty!", curses.color_pair(3))
+            for i, c in enumerate(utils.divider(self.width)):
+                self.window.addch(2, i, c)
+                self.window.addch(5, i, c)
+
+            # show the cursor for editing
+            curses.curs_set(1)
+            self.title_input.move(0, 0)
+            self.window.refresh()
+            textbox = curses.textpad.Textbox(self.title_input, insert_mode=True)
+            title = textbox.edit()
 
         self.clear()
         self.draw()
         self.window.addstr(1, 1, "Note for new note. (Ctrl-G to finish)")
         for i, c in enumerate(utils.divider(self.width)):
             self.window.addch(2, i, c)
+        self.note_input.move(0, 0)
         self.window.refresh()
         textbox = curses.textpad.Textbox(self.note_input, insert_mode=True)
         note = textbox.edit()
+
+        print(note)
 
         date = datetime.datetime.today()
         self.on_note_created(Note(title, created=date, modified=date, note=note))

@@ -24,7 +24,7 @@ __author__ = "Samuel Whang"
 import curses
 from collections import namedtuple
 from source.utils import (
-    Event,
+    EventHandler,
     border, 
     format_float as Money
 )

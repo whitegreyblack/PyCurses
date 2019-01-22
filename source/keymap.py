@@ -3,7 +3,7 @@
 Handles key inputs to actions for curses applications
 """
 import curses
-from source.utils import Event
+from source.utils import EventHandler
 from collections.abc import MutableMapping
 
 def function_called(sender, *args):
@@ -51,14 +51,14 @@ class EventMap(KeyMap):
     def __getitem__(self, key):
         tkey = self.__keytransform__(key)
         if not tkey in self.store.keys():
-            self.store[tkey] = Event()
+            self.store[tkey] = EventHandler()
         return self.store[tkey]
 
     @staticmethod
     def fromkeys(seq, value=None):
         t = EventMap()
         for key in seq:
-            t.store[key] = value if value else Event()
+            t.store[key] = value if value else EventHandler()
         return t
 
 if __name__ == "__main__":

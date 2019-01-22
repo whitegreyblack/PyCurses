@@ -29,7 +29,7 @@ box = namedtuple('Box', 'x y width height')
 EventArg = namedtuple('EventArg', 'sender msg')
 
 
-class Event(list):
+class EventHandler(list):
     # def __call__(self, sender, event):
     #     for fn in self:
     #         fn(sender, event)
@@ -39,7 +39,7 @@ class Event(list):
             f(sender, *args, **kwargs)
 
     def __repr__(self):
-        return f"Event({', '.join(f.__name__ for f in self)})"
+        return f"EventHandler({', '.join(f.__name__ for f in self)})"
 '''
 class Permissions(Enum): 
     flags = {

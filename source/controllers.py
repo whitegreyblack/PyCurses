@@ -5,7 +5,7 @@ import os
 import source.config as config
 from source.database import NoteConnection, ReceiptConnection
 from source.models.models import Note, Person, Product, Receipt, Transaction
-from source.utils import (Event, EventArg, format_date,
+from source.utils import (EventHandler, EventArg, format_date,
                           parse_date_from_database, setup_logger)
 
 

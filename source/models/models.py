@@ -171,6 +171,9 @@ class Note:
         return f"Note({self.nid}, '{self.title}')"
 
     def display(self, x, y, mx, my, indent):
+        if not self.note:
+            yield 0, 0, ""
+            return
         dy = 0
         for line in self.note.replace('\\n', '\\n\\n').split('\\n'):
             frmt = textwrap.wrap(line, mx)
