@@ -37,7 +37,7 @@ class NewNoteWindow(HelpWindow):
 
         self.window.refresh()
         textbox = curses.textpad.Textbox(self.title_input, insert_mode=True)
-        title = textbox.edit()
+        title = textbox.edit().strip()
         curses.curs_set(0)
         while not title.strip():
             self.clear()
@@ -53,7 +53,7 @@ class NewNoteWindow(HelpWindow):
             self.title_input.move(0, 0)
             self.window.refresh()
             textbox = curses.textpad.Textbox(self.title_input, insert_mode=True)
-            title = textbox.edit()
+            title = textbox.edit().strip()
 
         self.clear()
         self.draw()
@@ -65,10 +65,12 @@ class NewNoteWindow(HelpWindow):
         textbox = curses.textpad.Textbox(self.note_input, insert_mode=True)
         note = textbox.edit()
 
-        print(note)
-
+        print('title: ', title)
+        print('note: ', note)
         date = datetime.datetime.today()
-        self.on_note_created(Note(title, created=date, modified=date, note=note))
+        
+        model = Note(title, created=date, modified=date, note=note)
+        self.on_note_created(model)
 
         # turn cursor off again
         curses.curs_set(0)

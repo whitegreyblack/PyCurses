@@ -301,6 +301,7 @@ class Application(Loggable):
 
     def data_added(self, sender, *args, **kwargs):
         data = kwargs['data']
+        self.controller.add_to_database(data)
         self.data.append(data)
         self.on_data_added(self, data=self.data)
 

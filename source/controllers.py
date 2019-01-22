@@ -44,7 +44,7 @@ class Controller:
             for obj in d:
                 print(obj)
                 self.connection.insert(obj)
-
+    
 class QuizController(Controller):
     data_file_path = config.DATA_FILE_PATH_QUIZ
     def request_questions(self):
@@ -71,6 +71,9 @@ class NotesController(Controller):
         notes = self.connection.select_from_table()
         return [Note.from_database(*n) for n in notes]
 
+
+    def add_to_database(self, obj):
+        self.connection.insert_note(obj)
 
 class ExplorerController(Controller):
     ignore_folders = ['.git', '.vscode','tests', '__pycache__']

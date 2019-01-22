@@ -307,15 +307,14 @@ class NoteConnection(Connection):
             yield note
     
     def insert_note(self, obj):
+        print(obj)
         s = f"""
-INSERT INTO NOTES ({', '.join(obj.keys())}) VALUES (
-'{obj['title']}', 
-'{datetime.datetime(*obj['created'])}', 
-'{datetime.datetime(*obj['modified'])}',
-'{obj['note']}');
+INSERT INTO NOTES (id_note, title, created, modified, note) VALUES (
+'{obj.nid}', '{obj.title}', '{obj.created}', '{obj.modified}', '{obj.note}');
 """[1:]
         self._connection.execute(s)
         self._connection.commit()
+        print(obj, "written to db")
 
 if __name__ == "__main__":
     # args = logargs(type("db_main", (), dict()))
