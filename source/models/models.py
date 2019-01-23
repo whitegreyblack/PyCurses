@@ -160,6 +160,7 @@ class Note:
         self.modified = modified
         self.note = note
 
+
         if nid:
             self.nid = nid
             Note.nid = max(Note.nid, nid) + 1

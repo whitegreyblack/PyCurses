@@ -16,6 +16,7 @@ from source.utils import format_date as date
 from source.utils import format_float as real
 from source.utils import logargs, setup_logger, setup_logger_from_logargs
 from source.YamlObjects import receipt
+from source.models.models import Note
 
 spacer = "  "
 
@@ -299,6 +300,12 @@ class NoteConnection(Connection):
         for colnum, colname, coltype, _, _, autoincrement in cursor:
             yield (colname, coltype)
     
+    def select_max_note_id(self):
+        statement = "SELECT MAX(id_note) FROM NOTES;"
+        cursor = self._connection.execute(statement)
+        for max_id in cursor.fetchone():
+            return max_id
+
     def select_from_table(self):
         table = "notes"
         fields = ", ".join(n for (n, t) in self.fields)
@@ -308,10 +315,16 @@ class NoteConnection(Connection):
     
     def insert_note(self, obj):
         print(obj)
-        s = f"""
-INSERT INTO NOTES (id_note, title, created, modified, note) VALUES (
-'{obj.nid}', '{obj.title}', '{obj.created}', '{obj.modified}', '{obj.note}');
+        if isinstance(obj, Note):
+            attr = f"""
+'{obj.title}', '{obj.created}', '{obj.modified}', '{obj.note}'
 """[1:]
+        else:
+            attr = f"""
+'{obj['title']}', '{datetime.datetime(*obj['created'])}', '{datetime.datetime(*obj['modified'])}', '{obj['note']}'
+"""[1:]
+        print('Attr:', attr)
+        s = f"INSERT INTO NOTES (title, created, modified, note) VALUES ({attr});"
         self._connection.execute(s)
         self._connection.commit()
         print(obj, "written to db")

@@ -29,8 +29,13 @@ class Controller:
         print(self.__class__.__name__, reinsert)
         self.connection = connection
 
+        print(self.get_next_note_id())
+
         if reinsert:
             self.read_data_file()
+
+    def get_next_note_id(self):
+        return self.connection.select_max_note_id()
 
     def read_data_file(self):
         if not self.data_file_path:
@@ -41,8 +46,14 @@ class Controller:
         except FileNotFoundError:
             print("Could not open file. File does not exist.")
         else:
+            # Note.nid = self.get_next_note_id() + 1
             for obj in d:
-                print(obj)
+                # o = Note(
+                #     obj['title'],
+                #     created=obj['created'], 
+                #     modified=obj['modified'], 
+                #     note=obj['note']
+                # )
                 self.connection.insert(obj)
     
 class QuizController(Controller):
