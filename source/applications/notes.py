@@ -11,6 +11,11 @@ from source.models.models import Note, Text
 from source.window import (DisplayWindow, HelpWindow, ScrollableWindow, Window,
                            WindowProperty, keypress_a)
 
+def parse_note(note):
+    return '\n'.join([
+        n.replace('\n', '') 
+            for n in note[:len(note)-2].split(' \n')
+    ])
 
 class NewNoteWindow(HelpWindow):
     def __init__(self, screen, title_input, note_input, title, showing=False):
@@ -38,7 +43,6 @@ class NewNoteWindow(HelpWindow):
         self.window.refresh()
         textbox = curses.textpad.Textbox(self.title_input, insert_mode=True)
         title = textbox.edit().strip()
-        curses.curs_set(0)
         while not title.strip():
             self.clear()
             self.draw()
@@ -52,7 +56,7 @@ class NewNoteWindow(HelpWindow):
             curses.curs_set(1)
             self.title_input.move(0, 0)
             self.window.refresh()
-            textbox = curses.textpad.Textbox(self.title_input, insert_mode=True)
+            textbox = curses.textpad.Textbox(self.title_input)
             title = textbox.edit().strip()
 
         self.clear()
@@ -62,14 +66,27 @@ class NewNoteWindow(HelpWindow):
             self.window.addch(2, i, c)
         self.note_input.move(0, 0)
         self.window.refresh()
-        textbox = curses.textpad.Textbox(self.note_input, insert_mode=True)
+        textbox = curses.textpad.Textbox(self.note_input)
+        print('stripspaces', textbox.stripspaces)
         note = textbox.edit()
 
-        print('title: ', title)
-        print('note: ', note)
+        # note = parse_note(note)
+
+        # print('--------- title: ', title)
+        # print('--------- note: ', note, repr(note))
+        # print('--------- note: ', note.replace('\n', '\\n'), repr(note.replace('\n', '\\n')))
+        # print('--------- \\n-\\n\\n: ')
+        # print('          ', note.replace('\\n', '\\n\\n'))
+        # print('          ', repr(note.replace('\\n', '\\n\\n')))
+        # print('--------- join: ')
+        # print('        : ', [n.replace('\n', '') for n in note[:len(note)-2].split(' \n')])
+        # print('        : ', '\n'.join([n.replace('\n', '') for n in note[:len(note)-2].split(' \n')])) 
+        # note.replace('\\n', '\\n\\n')
+        
+        # print('--------- note: ', note, repr(note))
         date = datetime.datetime.today()
         
-        model = Note(title, created=date, modified=date, note=note)
+        model = Note(title, created=date, modified=date, note=parse_note(note))
         self.on_note_created(model)
 
         # turn cursor off again
@@ -104,6 +121,12 @@ class NoteScrollableWindow(ScrollableWindow):
     def data_added(self, sender, **kwargs):
         self.data = [d.title for d in kwargs['data']]
 
+    def data_delete(self, sender, **kwargs):
+        self.data = [d.title for d in kwargs['data']]
+
+    def data_refresh(self, sender, **kwargs):
+        return [x.title for x in kwargs['data']]
+
     # key events that fire on keypress
     def on_keypress_tab(self):
         self.keypresses.trigger(9, self)
@@ -125,6 +148,8 @@ class NoteScrollableWindow(ScrollableWindow):
             self.index = temp
             self.data_changed(self)
 
+    def keypress_d(self, sender, **kwargs):
+        self.keypresses.trigger(ord('d'), self)
 
 class NoteDisplayWindow(DisplayWindow):
     # key events that fire on keypress
@@ -250,9 +275,11 @@ class NoteApplication(Application):
             (curses.KEY_F1, help_window.keypress_f1),
             (curses.KEY_DOWN, note_explorer.keypress_down),
             (curses.KEY_UP, note_explorer.keypress_up),
-            (ord('a'), create_window.keypress_a)
+            (ord('a'), create_window.keypress_a),
+            (ord('d'), self.data_deleted)
         )
         self.on_data_added.append(note_explorer.data_added)
+        self.on_data_changed.append(note_explorer.data_removed)
 
         # display window key press handlers
         self.on_data_changed.append(note_display.data_changed)

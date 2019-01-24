@@ -160,7 +160,6 @@ class Note:
         self.modified = modified
         self.note = note
 
-
         if nid:
             self.nid = nid
             Note.nid = max(Note.nid, nid) + 1
@@ -176,9 +175,11 @@ class Note:
             yield 0, 0, ""
             return
         dy = 0
+        print("raw string:", self.note, repr(self.note))
+        print("          :", repr(self.note.replace('\n', '\n\n')))
         for line in self.note.replace('\\n', '\\n\\n').split('\\n'):
             frmt = textwrap.wrap(line, mx)
-            print(frmt)
+            print('formatted line', frmt)
             for i, l in enumerate(frmt):
                 print(my, y, dy, i, y+dy+i)
                 if y + dy + i > my:

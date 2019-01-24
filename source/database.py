@@ -317,11 +317,14 @@ class NoteConnection(Connection):
         print(obj)
         if isinstance(obj, Note):
             attr = f"""
-'{obj.title}', '{obj.created}', '{obj.modified}', '{obj.note}'
+'{obj.title}', '{obj.created}', '{obj.modified}', {repr(obj.note)}
 """[1:]
         else:
             attr = f"""
-'{obj['title']}', '{datetime.datetime(*obj['created'])}', '{datetime.datetime(*obj['modified'])}', '{obj['note']}'
+'{obj['title']}', 
+'{datetime.datetime(*obj['created'])}', 
+'{datetime.datetime(*obj['modified'])}', 
+{repr(obj['note'])}
 """[1:]
         print('Attr:', attr)
         s = f"INSERT INTO NOTES (title, created, modified, note) VALUES ({attr});"

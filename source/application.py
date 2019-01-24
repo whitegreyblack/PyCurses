@@ -307,6 +307,12 @@ class Application(Loggable):
         self.data.append(data)
         self.on_data_added(self, data=self.data)
 
+    def data_deleted(self, sender, *args, **kwargs):
+        data = kwargs['data']
+        self.controller.remove_from_database(data)
+        self.data.remove(data)
+        self.on_data_removed(self, data=self.data)
+
     def keypress_escape(self, sender, arg=None):
         self.continue_app = False
 
