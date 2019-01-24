@@ -346,7 +346,7 @@ class Application(Loggable):
         # second window quarter screen top right
         sub2 = DisplayWindow(
             screen.subwin(
-                utils.partition(height-1, 2, 1),
+                utils.partition(height-1, 2, 1, math.ceil),
                 utils.partition(width, 2, 1), 
                 0,
                 utils.partition(width, 2, 1), 
@@ -358,7 +358,7 @@ class Application(Loggable):
             screen.subwin(
                 utils.partition(height-2, 2, 1),
                 utils.partition(width, 2, 1), 
-                utils.partition(height-1, 2, 1),
+                utils.partition(height-1, 2, 1, math.ceil),
                 utils.partition(width, 2, 1), 
             ),
             title="Sub-win 3"
