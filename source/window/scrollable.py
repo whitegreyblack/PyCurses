@@ -1,5 +1,6 @@
 """scrollable.py"""
 from source.window.base import Window
+from source.utils import EventHandler
 
 class ScrollableWindow(Window):
     def __init__(

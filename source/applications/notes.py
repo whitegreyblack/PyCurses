@@ -4,7 +4,7 @@ import curses.textpad
 import datetime
 
 import source.utils as utils
-from source.application import Application
+from source.applications.application import Application
 from source.controllers import NotesController
 from source.database import NoteConnection
 from source.models.models import Note, Text
@@ -167,6 +167,7 @@ class NoteDisplayWindow(DisplayWindow):
 
 
 class NoteApplication(Application):
+    CLI_NAMES = ('note', 'notes')
     def unfocused(self):
         self.focused = None
 

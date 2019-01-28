@@ -6,17 +6,17 @@ curses settings then sends the screen into the application to be built
 __author__ = "Samuel Whang"
 
 import curses
+import pprint
 import os
 import sys
 
 import click
 
 import source.utils as utils
-from source.application import Application
-from source.applications.contacts import ContactsApplication
-from source.applications.notes import NoteApplication
-from source.applications.quiz import QuizApplication
-from source.applications.tasks import TaskApplication
+from source.applications import (Application, Applications,
+                                 ContactsApplication, Encyclopedia,
+                                 NoteApplication, QuizApplication,
+                                 TaskApplication)
 
 
 def initialize_curses_settings(logger=None):
@@ -85,21 +85,20 @@ def main(folder, app, demo, rebuild, reinsert):
     """Handles argument parsing using click framework before calling the
     curses wrapper handler function
     """
-    demos = {
-        "contacts": ContactsApplication,
-        "contact": ContactsApplication,
-        "notes": NoteApplication,
-        "note": NoteApplication,
+    demos = dict()
+    for a in Applications:
+        if hasattr(a, 'CLI_NAMES'):
+            for name in getattr(a, 'CLI_NAMES'):
+                demos.update({name: a})
+
+    # these apps have not been built yet but we want to keep their names in the 
+    # demo list for future use. For now they will call the default app program
+    demos.update({
         "tree": Application,
-        "todo": TaskApplication,
-        "todos": TaskApplication,
-        "tasks": TaskApplication,
-        "task": TaskApplication,
         "receipts": Application,
         "receipt": Application,
-        "quiz": QuizApplication,
-        "questions": QuizApplication,
-    }
+    })
+    pprint.pprint(demos)
     # special case. Dot notation usually means current folder within the file
     # system. Prevent this case in order to stop importing all subfiles
     # within the currently selected folder.

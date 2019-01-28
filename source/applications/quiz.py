@@ -1,5 +1,5 @@
 import curses
-from source.application import Application
+from source.applications.application import Application
 from source.window import (
     Window,
     ScrollableWindow,
@@ -74,6 +74,7 @@ class QuizDisplayWindow(DisplayWindow):
 
 
 class QuizApplication(Application):
+    CLI_NAMES = ('question', 'questions', 'quiz', 'quizzes')
     def unfocused(self):
         self.focused = None
 

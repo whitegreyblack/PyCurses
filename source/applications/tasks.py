@@ -5,7 +5,7 @@ import datetime
 import source.utils as utils
 from source.keymap import EventMap
 from source.models.models import Task
-from source.application import Application
+from source.applications.application import Application
 from source.window import (
     Window,
     ScrollableWindow,
@@ -15,6 +15,7 @@ from source.window import (
 )
 
 class TaskApplication(Application):
+    CLI_NAMES = ('task', 'tasks', 'todo', 'todos',)
     def build_application(self, rebuild=False, examples=False):
         """Build window objects and handlers for a todo task list app"""
         screen = self.screen

@@ -1,5 +1,5 @@
 import random
-from source.application import Application
+from source.applications.application import Application
 from source.window import (
     Window,
     WindowProperty,
@@ -66,6 +66,7 @@ class Contact:
         return f"Contact(name={self.name}, number={self.number})"
 
 class ContactsApplication(Application):
+    CLI_NAMES = ('contact', 'contacts', 'names', 'people')
     def build_application(self, rebuild=False, reinsert=False, examples=False):
         """Work on window recursion and tree"""
         screen = self.screen
