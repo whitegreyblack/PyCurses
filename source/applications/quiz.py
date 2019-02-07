@@ -89,13 +89,15 @@ class QuizApplication(Application):
         print(f"Changed to {self.focused}")
 
     def build_application(self, rebuild=False, reinsert=False, examples=False):
-        """Builds an application to view all quizs"""
+        """
+        Builds an application to view all quizzes
+        """
         screen = self.screen
         height, width = screen.getmaxyx()
 
         if not examples:
             self.controller = QuizController(
-                QuizConnection(rebuild=rebuild),
+                connection=QuizConnection(rebuild=rebuild),
                 reinsert=reinsert
             )
             self.data = list(self.controller.request_questions())

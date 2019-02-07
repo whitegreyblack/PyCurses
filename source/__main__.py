@@ -98,7 +98,9 @@ def main(folder, app, demo, rebuild, reinsert):
         "receipts": Application,
         "receipt": Application,
     })
-    pprint.pprint(demos)
+
+    # pprint.pprint(demos)
+
     # special case. Dot notation usually means current folder within the file
     # system. Prevent this case in order to stop importing all subfiles
     # within the currently selected folder.

@@ -28,15 +28,10 @@ class Controller:
     def __init__(self, connection=None, reinsert=False):
         print(self.__class__.__name__, reinsert)
         self.connection = connection
-
-        print(self.get_next_note_id())
-
+    
         if reinsert:
             self.read_data_file()
-
-    def get_next_note_id(self):
-        return self.connection.select_max_note_id()
-
+    
     def read_data_file(self):
         if not self.data_file_path:
             raise NotImplementedError
@@ -75,6 +70,9 @@ class NotesController(Controller):
         note     varchar(250),
     """
     data_file_path = config.DATA_FILE_PATH_NOTES
+    def get_next_note_id(self):
+        return self.connection.select_max_note_id()
+    
     def request_note(self, nid):
         pass
     
