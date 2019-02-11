@@ -300,9 +300,9 @@ class NoteApplication(Application):
 
         self.window.add_windows(
             note_explorer, 
-            note_display, 
-            help_window, 
-            create_window
+            # note_display, 
+            # help_window, 
+            # create_window
         )
 
         self.focused = self.window.currently_focused

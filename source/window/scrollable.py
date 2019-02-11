@@ -1,4 +1,5 @@
 """scrollable.py"""
+import curses
 from source.window.base import Window
 from source.utils import EventHandler
 
@@ -46,6 +47,12 @@ class ScrollableWindow(Window):
     def data_changed(self, sender, **kwargs):
         if self.__data and self.index > -1:
             self.on_data_changed(self, self.index)
+
+    def data_added(self, sender, **kwargs):
+        print("added")
+
+    def data_removed(self, sender, **kwargs):
+        print("removed")
 
     def draw(self):
         if not self.showing:

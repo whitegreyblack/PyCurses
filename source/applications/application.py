@@ -72,8 +72,9 @@ class Application(Loggable):
         self.on_data_added = utils.EventHandler()
 
     def __del__(self):
-        if self.data:
-            print(self.data)
+        pass
+        # if self.data:
+        #     print(self.data)
 
     def setup(self):
         # TODO: need a setting to determine behavior of previously loaded data
@@ -216,6 +217,27 @@ class Application(Loggable):
         """
         pass
 
+    def on_focus_changed(self, sender, arg=None):
+        self.focused = self.window.currently_focused
+
+    def data_changed(self, sender, arg):
+        self.on_data_changed(sender, model=self.data[arg])
+
+    def data_added(self, sender, *args, **kwargs):
+        data = kwargs['data']
+        self.controller.add_to_database(data)
+        self.data.append(data)
+        self.on_data_added(self, data=self.data)
+
+    def data_deleted(self, sender, *args, **kwargs):
+        data = kwargs['data']
+        self.controller.remove_from_database(data)
+        self.data.remove(data)
+        self.on_data_removed(self, data=self.data)
+
+    def keypress_escape(self, sender, arg=None):
+        self.continue_app = False
+
     def build_receipt_viewer(self, rebuild=False):
         screen = self.screen
         height, width = screen.getmaxyx()
@@ -246,75 +268,6 @@ class Application(Loggable):
         self.focused = self.window.currently_focused
         if not self.focused:
             self.focused = self.window
-        
-    """
-    def build_windows3(self, screen):
-        height, width = screen.getmaxyx()
-        self.screen = screen
-        self.window = Window('Application', width, height)  
-        v1 = View(screen.subwin(1, width, 0, 0))
-        optbar = OptionsBar(v1.width)
-        v1.add_element(optbar)
-        file_options = OptionsList(screen, ("longoption", "shortopt"))
-        optbar.add_option('File', file_options)
-        optbar.add_option('Edit', None)
-        optbar.add_option('Select', None)
-        optbar.add_option('Help', None)
-        self.window.add_view(v1)
-    def build_windows2(self):
-        screen = self.screen
-        y, x = screen.getbegyx() # just a cool way of getting 0, 0
-        height, width = screen.getmaxyx()
-        # TODO: options manager, view manager, component manager
-        self.window = Window('Application', width, height)
-
-        v1 = View(screen.subwin(height - 1, width, 1, 0), columns=2, rows=2)
-
-        receipt_cards = [ Card(r) for r in self.build_receipts() ]
-        scroller = ScrollList(v1.x, v1.y, v1.width // 4, v1.height)
-        scroller.add_items(receipt_cards)
-
-        form = receiptForm(
-            v1.width // 4,
-            v1.y,
-            (v1.width // 4) * 3,
-            v1.height, scroller.model
-        )
-
-        v1.add_element(scroller)
-        v1.add_element(form)
-        # v2 = View(1, 1, width, height - 1)
-
-        optionview1 = View(screen.subwin(4, 14, 1, 0))
-        optionview2 = View(screen.subwin(4, 15, 1, 6))
-        optionview3 = View(screen.subwin(4, 15, 1, 12))
-        self.window.add_view(v1)
-        self.window.add_view(optionview1)
-        self.window.add_view(optionview2)
-        self.window.add_view(optionview3)
-        #self.window.add_view(View(1, 1, width, height - 1))
-    """
-
-    def on_focus_changed(self, sender, arg=None):
-        self.focused = self.window.currently_focused
-
-    def data_changed(self, sender, arg):
-        self.on_data_changed(sender, model=self.data[arg])
-
-    def data_added(self, sender, *args, **kwargs):
-        data = kwargs['data']
-        self.controller.add_to_database(data)
-        self.data.append(data)
-        self.on_data_added(self, data=self.data)
-
-    def data_deleted(self, sender, *args, **kwargs):
-        data = kwargs['data']
-        self.controller.remove_from_database(data)
-        self.data.remove(data)
-        self.on_data_removed(self, data=self.data)
-
-    def keypress_escape(self, sender, arg=None):
-        self.continue_app = False
 
     def build_file_explorer(self):
         """Work on putting folder/file names in window"""

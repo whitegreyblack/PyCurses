@@ -1,5 +1,6 @@
 """prompt.py"""
 from source.window.base import Window
+import curses
 
 class PromptWindow(Window):
     def __init__(self, window, title=None, focused=False, showing=True):

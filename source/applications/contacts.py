@@ -127,13 +127,13 @@ class ContactsApplication(Application):
         )
 
         # prompt screen
-        prompt = PromptWindow(screen.subwin(3, width, height - 4, 0))
+        # prompt = PromptWindow(screen.subwin(3, width, height - 4, 0))
 
         self.window.add_windows(
             scroller,
             display,
             unused,
-            prompt
+            # prompt
         )
 
     def build_application_with_properties(self, rebuild=False):

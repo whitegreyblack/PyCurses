@@ -16,7 +16,7 @@ from source.window import (
 
 class TaskApplication(Application):
     CLI_NAMES = ('task', 'tasks', 'todo', 'todos',)
-    def build_application(self, rebuild=False, examples=False):
+    def build_application(self, rebuild=False, examples=False, demo=None):
         """Build window objects and handlers for a todo task list app"""
         screen = self.screen
         height, width = screen.getmaxyx()
