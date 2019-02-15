@@ -42,16 +42,17 @@ class ScrollableWindow(Window):
     @data.setter
     def data(self, data):
         self.__data = data
-        self.data_changed(self)
+        self.data_changed()
     
-    def data_changed(self, sender, **kwargs):
+    def data_changed(self, sender=None, **kwargs):
+        print("error?")
         if self.__data and self.index > -1:
             self.on_data_changed(self, self.index)
 
-    def data_added(self, sender, **kwargs):
+    def data_added(self, sender=None, **kwargs):
         print("added")
 
-    def data_removed(self, sender, **kwargs):
+    def data_removed(self, sender=None, **kwargs):
         print("removed")
 
     def draw(self):

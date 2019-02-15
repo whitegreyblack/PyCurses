@@ -217,25 +217,25 @@ class Application(Loggable):
         """
         pass
 
-    def on_focus_changed(self, sender, arg=None):
+    def on_focus_changed(self, sender=None, **kwargs):
         self.focused = self.window.currently_focused
 
-    def data_changed(self, sender, arg):
+    def data_changed(self, sender=None, **kwargs):
         self.on_data_changed(sender, model=self.data[arg])
 
-    def data_added(self, sender, *args, **kwargs):
+    def data_added(self, sender=None, *args, **kwargs):
         data = kwargs['data']
         self.controller.add_to_database(data)
         self.data.append(data)
         self.on_data_added(self, data=self.data)
 
-    def data_deleted(self, sender, *args, **kwargs):
+    def data_deleted(self, sender=None, *args, **kwargs):
         data = kwargs['data']
         self.controller.remove_from_database(data)
         self.data.remove(data)
         self.on_data_removed(self, data=self.data)
 
-    def keypress_escape(self, sender, arg=None):
+    def keypress_escape(self, sender=None, **kwargs):
         self.continue_app = False
 
     def build_receipt_viewer(self, rebuild=False):

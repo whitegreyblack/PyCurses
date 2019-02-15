@@ -11,6 +11,13 @@ from source.models.models import Note, Text
 from source.window import (DisplayWindow, HelpWindow, ScrollableWindow, Window,
                            WindowProperty, keypress_a)
 
+
+HELP_STRING = """
+Welcome to the Notes App ASDASd <UP><DOWN> - Navigate by scrolling 
+through the notes list
+"""[1:]
+print(Text(HELP_STRING).text)
+
 def parse_note(note):
     return '\n'.join([
         n.replace('\n', '') 
@@ -25,10 +32,10 @@ class NewNoteWindow(HelpWindow):
         self.subwin = screen.derwin(self.height, self.width, 2, 2)
         self.note_created = utils.EventHandler()
 
-    def keypress_a(self, sender, **kwargs):
+    def keypress_a(self, sender=None, **kwargs):
         self.opener = sender
-        self.show(self)
-        self.focus(self)
+        self.show()
+        self.focus()
 
         self.clear()
         self.draw()
@@ -92,19 +99,19 @@ class NewNoteWindow(HelpWindow):
         # turn cursor off again
         curses.curs_set(0)
 
-        self.unfocus(self)
-        self.hide(self)
-        self.refocus_opener(self)
+        self.unfocus()
+        self.hide()
+        self.refocus_opener()
 
     def on_note_created(self, note):
         self.note_created(self, data=note)
 
-    def keypress_escape(self, sender, **kwargs):
+    def keypress_escape(self, sender=None, **kwargs):
         exit()
 
 
 class NoteHelpWindow(HelpWindow):
-    def keypress_f1(self, sender, **kwargs):
+    def keypress_f1(self, sender=None, **kwargs):
         if sender != self:
             sender.unfocus()
             self.set_opener = sender
@@ -113,18 +120,18 @@ class NoteHelpWindow(HelpWindow):
         else:
             self.unfocus()
             self.hide()
-            self.refocus_opener()
+            self.refocus_opener(sender)
 
 
 class NoteScrollableWindow(ScrollableWindow):
     # data added event
-    def data_added(self, sender, **kwargs):
+    def data_added(self, sender=None, **kwargs):
         self.data = [d.title for d in kwargs['data']]
 
-    def data_delete(self, sender, **kwargs):
+    def data_delete(self, sender=None, **kwargs):
         self.data = [d.title for d in kwargs['data']]
 
-    def data_refresh(self, sender, **kwargs):
+    def data_refresh(self, sender=None, **kwargs):
         return [x.title for x in kwargs['data']]
 
     # key events that fire on keypress
@@ -132,24 +139,25 @@ class NoteScrollableWindow(ScrollableWindow):
         self.keypresses.trigger(9, self)
     
     # key event handlers from fired events
-    def keypress_btab(self, sender, **kwargs):
+    def keypress_btab(self, sender=None, **kwargs):
         sender.unfocus(self)
         self.focus(self)
 
-    def keypress_down(self, sender, **kwargs):
+    def keypress_down(self, sender=None, **kwargs):
         temp = self.index + 1
         if temp < len(self.data):
             self.index = temp
-            self.data_changed(self)
+            self.data_changed()
     
-    def keypress_up(self, sender, **kwargs):
+    def keypress_up(self, sender=None, **kwargs):
         temp = self.index - 1
         if temp >= 0:
             self.index = temp
-            self.data_changed(self)
+            self.data_changed()
 
-    def keypress_d(self, sender, **kwargs):
+    def keypress_d(self, sender=None, **kwargs):
         self.keypresses.trigger(ord('d'), self)
+
 
 class NoteDisplayWindow(DisplayWindow):
     # key events that fire on keypress
@@ -157,10 +165,10 @@ class NoteDisplayWindow(DisplayWindow):
         self.keypresses.trigger(curses.KEY_BTAB, self)
 
     # key event handlers from fired events
-    def data_changed(self, sender, **kwargs):
+    def data_changed(self, sender=None, *args, **kwargs):
         self.dataobject = kwargs['model']
 
-    def keypress_tab(self, sender, **kwargs):
+    def keypress_tab(self, sender=None, *args, **kwargs):
         print(f"{sender}: tabbing to {sender}")
         sender.unfocus(self)
         self.focus(self)
@@ -171,10 +179,10 @@ class NoteApplication(Application):
     def unfocused(self):
         self.focused = None
 
-    def focused(self, sender):
+    def focused(self, sender=None):
         self.focused = sender
 
-    def focus_changed(self, sender, *args, **kwargs):
+    def focus_changed(self, sender=None, *args, **kwargs):
         print(f"{self.focused}: changing focus in application.focus_changed")
         self.focused = self.window.currently_focused
         if self.focused == None:
@@ -195,7 +203,7 @@ class NoteApplication(Application):
         else:
             self.data = [Note.random() for i in range(10)]
 
-        print(self.data)
+        # print(self.data)
 
         self.window.title = 'Note Viewer Example'
 
@@ -224,6 +232,8 @@ class NoteApplication(Application):
             data_changed_handlers=(self.data_changed,)
         )
 
+        print("error here?")
+
         help_window = NoteHelpWindow(
             screen.subwin(
                 height // 3,
@@ -232,6 +242,19 @@ class NoteApplication(Application):
                 utils.partition(width, 4, 1)
             ),
             title="Help Window",
+            dataobj=Text(HELP_STRING)
+        )   
+        
+        print(help_window.width)
+
+        delete_window = NoteHelpWindow(
+            screen.subwin(
+                height // 3,
+                utils.partition(width, 4, 2),
+                utils.partition(height, 3, 1),
+                utils.partition(width, 4, 1)
+            ),
+            title="Delete Note",
             dataobj=Text.random()
         )
 
@@ -258,6 +281,7 @@ class NoteApplication(Application):
             showing=False
         )
         create_window.note_created.append(self.data_added)
+
         # application change event
         # self.on_data_changed.append(note_display.data_changed)
 
@@ -298,15 +322,21 @@ class NoteApplication(Application):
             (curses.KEY_F1, help_window.keypress_f1)
         )
 
+        print("finish adding handlers")
+
         self.window.add_windows(
             note_explorer, 
-            # note_display, 
-            # help_window, 
-            # create_window
+            note_display, 
+            help_window, 
+            create_window
         )
 
+        print('add windows')
+
         self.focused = self.window.currently_focused
-    
+
+        print('finish init')
+
     def build_application_with_properties(self, rebuild):
         """Uses window properties to initialize the windows"""
         pass

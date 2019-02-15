@@ -76,11 +76,11 @@ class Window:
         print(f"{self}: setting focus is now {value}")
         self.changes.trigger('focused', self)
 
-    def focus(self, sender, **kwargs):
+    def focus(self, sender=None, **kwargs):
         """Focus event handler"""
         self.focused = True
 
-    def unfocus(self, sender, **kwargs):
+    def unfocus(self, sender=None, **kwargs):
         """Focus event handler"""
         self.focused = False
 
@@ -131,10 +131,10 @@ class Window:
         else:
             self.show_window()
 
-    def show(self, sender):
+    def show(self, sender=None):
         self.showing = True
 
-    def hide(self, sender):
+    def hide(self, sender=None):
         self.showing = False
 
     def draw(self):

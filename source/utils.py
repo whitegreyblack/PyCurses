@@ -35,7 +35,7 @@ class EventHandler(list):
     #         fn(sender, event)
     def __call__(self, sender, *args, **kwargs):
         for f in self:
-            print(f"{sender}: calling {f.__name__}")
+            print(f"{sender}: calling {f.__name__}({args}, {kwargs})")
             f(sender, *args, **kwargs)
 
     def __repr__(self):
