@@ -16,7 +16,7 @@ HELP_STRING = """
 Welcome to the Notes App ASDASd <UP><DOWN> - Navigate by scrolling 
 through the notes list
 """[1:]
-print(Text(HELP_STRING).text)
+# print(Text(HELP_STRING).text)
 
 def parse_note(note):
     return '\n'.join([

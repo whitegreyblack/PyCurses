@@ -4,5 +4,13 @@ from source.applications.encyclopedia import Encyclopedia
 from source.applications.notes import NoteApplication
 from source.applications.quiz import QuizApplication
 from source.applications.tasks import TaskApplication
+from source.applications.system import SystemApplication
 
-Applications = (ContactsApplication, NoteApplication, QuizApplication, TaskApplication, Encyclopedia)
+Applications = (
+    ContactsApplication, 
+    NoteApplication, 
+    QuizApplication, 
+    TaskApplication, 
+    Encyclopedia, 
+    SystemApplication
+)

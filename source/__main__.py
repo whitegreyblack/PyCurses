@@ -6,8 +6,8 @@ curses settings then sends the screen into the application to be built
 __author__ = "Samuel Whang"
 
 import curses
-import pprint
 import os
+import pprint
 import sys
 
 import click
@@ -16,7 +16,7 @@ import source.utils as utils
 from source.applications import (Application, Applications,
                                  ContactsApplication, Encyclopedia,
                                  NoteApplication, QuizApplication,
-                                 TaskApplication)
+                                 SystemApplication, TaskApplication)
 
 
 def initialize_curses_settings(logger=None):
@@ -94,7 +94,6 @@ def main(folder, app, demo, rebuild, reinsert):
     # these apps have not been built yet but we want to keep their names in the 
     # demo list for future use. For now they will call the default app program
     demos.update({
-        "tree": Application,
         "receipts": Application,
         "receipt": Application,
     })
@@ -115,6 +114,7 @@ def main(folder, app, demo, rebuild, reinsert):
             print("Invalid demo specified: not found in demo list")
             return
         application = demos[app]
+
     # Format the given path for the correct path delimiter and the check if
     # that path exists as a directory within the filesystem. Exit early if
     # false.

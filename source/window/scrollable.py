@@ -83,9 +83,10 @@ class ScrollableWindow(Window):
             s = 0
             rows_in_view = self.data
 
+        # TODO: refactor with better namings and shorter formulas
         for i, r in enumerate(rows_in_view):
             count_string = f"({s + i + 1}/{len(self.data)})"
-            l = r[:self.width-len(count_string)-1]
+            l = r[:self.width - len(count_string) - 1]
             available = self.width - len(l) - len(count_string)
             l = f"{l}{' '*(self.width-len(count_string)-len(l))}{count_string}"
             c = curses.color_pair(1)
@@ -152,13 +153,13 @@ def keypress_down(obj):
     t = obj.index + 1
     if t < len(obj.data):
         obj.index = t
-        obj.on_data_changed()
+        obj.on_data_changed(obj)
 
 def keypress_up(obj):
     t = obj.index - 1
     if t >= 0:
         obj.index = t
-        obj.on_data_changed()
+        obj.on_data_changed(obj)
         
 def keypress_a(obj):
     obj.data.append(str(len(obj.data)))
