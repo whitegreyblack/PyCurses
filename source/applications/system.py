@@ -40,6 +40,53 @@ def parse_system_structure(data):
 # unlimited number (not really) of children elements
 # Ex. Tree(n1(n4, n5), n2(), n3(n6))
 
+class SystemWindow(ScrollableWindow):
+    def draw(self):
+        if not self.showing:
+            return
+
+        super().draw()
+
+        if not self.data:
+            self.window.addstr(1, 1, "No data")
+            return
+
+        rows_in_view = None
+        s, e = 0, self.height
+        halfscreen = self.height // 2
+
+        if len(self.data) > self.height:
+            if self.index < halfscreen:
+                pass
+            elif self.index > len(self.data) - halfscreen - 1:
+                s = len(self.data) - self.height
+                e = s + self.height + 1
+            else:
+                s = self.index - halfscreen
+                e = s + self.height
+            rows_in_view = self.data[s:e]
+        else:
+            s = 0
+            rows_in_view = self.data
+
+        for i, r in enumerate(rows_in_view):
+            # count_string = f"({s + i + 1}/{len(self.data)})"
+            print(r)
+            if not isinstance(r, str):
+                r = str(r)
+
+            l = r[:self.width - len(count_string) - 1]
+            available = self.width - len(l) - len(count_string)
+            l = f"{l}{' '*(self.width-len(count_string)-len(l))}{count_string}"
+            c = curses.color_pair(1)
+            if s + i == self.index:
+                if self.focused:
+                    c = curses.color_pair(2)
+                else:
+                    c = curses.color_pair(3)
+            # c = curses.color_pair((s + i == self.index) * 2)
+            self.window.addstr(i + 1, 1, l, c)
+
 class SystemObject(object):
     def __init__(self, name:str):
         self.name = name
@@ -61,7 +108,8 @@ class SystemObject(object):
             space_remaining -= len(display_name) - 1
             space_empty = " " * space_remaining
         
-        return x, y, f"{indentation}{self.name}{space_empty}"
+        print(display_name)
+        return x, y, f"{indentation}{display_name}{space_empty}"
 
 
 class File(SystemObject):
@@ -112,11 +160,11 @@ class SystemApplication(Application):
         self.window.title = 'File System Example'
 
         # scroll window
-        scroller = ScrollableWindow(
+        scroller = SystemWindow(
             screen.subwin(height - 2, width, 1, 0),
             title="File Explorer",
-            data=[str(n) for n in self.data],
-            focused=True,
+            data=data,
+            focused=True
             # data_changed_handlers=(self.on_data_changed,)
         )
 
