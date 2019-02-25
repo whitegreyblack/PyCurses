@@ -41,6 +41,22 @@ def parse_system_structure(data):
 # Ex. Tree(n1(n4, n5), n2(), n3(n6))
 
 class SystemWindow(ScrollableWindow):
+    def keypress_enter(self, *arg, **kwargs):
+        if hasattr(self.data[self.index], 'children'):
+            data = self.data[self.index].children
+            if data:
+                self.data = data
+                self.index = 0
+            else:
+                self.data = None
+
+    def keypress_escape(self, *arg, **kwargs):
+        data = self.data[self.index].parent
+        if data:
+            self.data = data
+        else:
+            exit()
+
     def draw(self):
         if not self.showing:
             return
@@ -90,6 +106,7 @@ class SystemWindow(ScrollableWindow):
 class SystemObject(object):
     def __init__(self, name:str):
         self.name = name
+        self.parent = None
 
     def __str__(self):
         return self.name
@@ -121,6 +138,9 @@ class Folder(SystemObject):
     def __init__(self, name:str, children:list=None):
         super().__init__(name)
         if children:
+            print(children)
+            for child in children:
+                child.parent = self
             self.children = children
         else:
             self.children = []
@@ -138,8 +158,8 @@ data = [
     Folder("Music"),
     Folder("Pictures", [
         Folder("Family Pictures", [
-            "Photo_1.png",
-            "Photo_2.png"
+            File("Photo_1.png"),
+            File("Photo_2.png")
         ]),
         File("Random_Photo.png")
     ]),
@@ -170,9 +190,11 @@ class SystemApplication(Application):
         )
 
         scroller.keypresses.on(
-            (27, self.keypress_escape),
-            (curses.KEY_DOWN, keypress_up),
-            (curses.KEY_UP, keypress_down)
+            (27, scroller.keypress_escape),
+            (curses.KEY_DOWN, keypress_down),
+            (curses.KEY_UP, keypress_up),
+            (curses.KEY_ENTER, scroller.keypress_enter),
+            (10, scroller.keypress_enter)
         )
 
         self.window.add_windows(
@@ -182,6 +204,9 @@ class SystemApplication(Application):
         self.window.keypresses.on(
             (27, self.keypress_escape),
         )
+
+        self.focused = self.window.currently_focused
+
 
 if __name__ == "__main__":
     pass
