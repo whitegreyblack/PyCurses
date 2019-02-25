@@ -13,7 +13,8 @@ class ScrollableWindow(Window):
             focused=False,
             border=True,
             data_changed_handlers=None,
-            eventmap=None):
+            eventmap=None
+        ):
         super().__init__(
             window, 
             title=title, 
@@ -34,6 +35,17 @@ class ScrollableWindow(Window):
         self.data = data
         self.selected = -1
         self.index = 0 if self.data else -1
+
+    def add_scroll_handlers(self, curses=True):
+        handlers = set()
+        if curses:
+            handlers = (
+                (curses.KEY_UP, keypress_up), 
+                (curses.KEY_DOWN, keypress_down)
+            )
+        # else: (blt keypresses)
+        for key, handler in handlers:
+            self.add_handler(key, handler)
 
     @property
     def data(self):

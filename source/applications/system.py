@@ -45,7 +45,7 @@ class SystemWindow(ScrollableWindow):
         if not self.showing:
             return
 
-        super().draw()
+        Window.draw(self)
 
         if not self.data:
             self.window.addstr(1, 1, "No data")
@@ -70,14 +70,14 @@ class SystemWindow(ScrollableWindow):
             rows_in_view = self.data
 
         for i, r in enumerate(rows_in_view):
-            # count_string = f"({s + i + 1}/{len(self.data)})"
-            print(r)
             if not isinstance(r, str):
-                r = str(r)
+                _, _, r = r.display(1, 1, self.width, self.height, 0)
 
-            l = r[:self.width - len(count_string) - 1]
-            available = self.width - len(l) - len(count_string)
-            l = f"{l}{' '*(self.width-len(count_string)-len(l))}{count_string}"
+            print(r)
+
+            l = r[:self.width]
+            available = self.width - len(l)
+            l = f"{l}{' ' * (self.width - len(l))}"
             c = curses.color_pair(1)
             if s + i == self.index:
                 if self.focused:
@@ -144,6 +144,7 @@ data = [
         File("Random_Photo.png")
     ]),
     File("Out_Of_Place_File.txt"),
+    File("VeryLongFileName" + "_" * 60 + ".txt")
 ]
 
 
