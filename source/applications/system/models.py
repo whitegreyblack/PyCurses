@@ -1,4 +1,3 @@
-# system.py (tree/fileexplorer)
 import curses
 import random
 
@@ -7,7 +6,6 @@ from source.applications.application import Application
 from source.window import (DisplayWindow, PromptWindow, ScrollableWindow,
                            Window, WindowProperty)
 from source.window.scrollable import (keypress_up, keypress_down)
-
 
 """
 Currently we manually build the file system during runtime.
@@ -103,6 +101,14 @@ class SystemWindow(ScrollableWindow):
             # c = curses.color_pair((s + i == self.index) * 2)
             self.window.addstr(i + 1, 1, l, c)
 
+class Directory(object):
+    def __init__(self, sysobjs=None):
+        self.sysobjs = sysobjs if sysobjs else []
+    
+    def items(self):
+        return len(self.sysobjs)
+
+
 class SystemObject(object):
     def __init__(self, name:str):
         self.name = name
@@ -138,7 +144,6 @@ class Folder(SystemObject):
     def __init__(self, name:str, children:list=None):
         super().__init__(name)
         if children:
-            print(children)
             for child in children:
                 child.parent = self
             self.children = children
@@ -146,67 +151,3 @@ class Folder(SystemObject):
             self.children = []
     def __repr__(self):
         return f"Folder({self.name})"
-
-
-# TODO: fake data for use in testing -- move or delete later
-data = [
-    Folder("Documents", [
-        File("Projects"),
-        File("Games"),
-        File("History 101"),
-    ]),
-    Folder("Music"),
-    Folder("Pictures", [
-        Folder("Family Pictures", [
-            File("Photo_1.png"),
-            File("Photo_2.png")
-        ]),
-        File("Random_Photo.png")
-    ]),
-    File("Out_Of_Place_File.txt"),
-    File("VeryLongFileName" + "_" * 60 + ".txt")
-]
-
-
-class SystemApplication(Application):
-    CLI_NAMES = ('tree', 'system', 'file', 'files', 'filesystem')
-    def build_application(self, rebuild=False, reinsert=False, examples=False):
-        """Work on window recursion and tree"""
-        screen = self.screen
-        height, width = screen.getmaxyx()
-
-        self.data = data
-        
-        # main window
-        self.window.title = 'File System Example'
-
-        # scroll window
-        scroller = SystemWindow(
-            screen.subwin(height - 2, width, 1, 0),
-            title="File Explorer",
-            data=data,
-            focused=True
-            # data_changed_handlers=(self.on_data_changed,)
-        )
-
-        scroller.keypresses.on(
-            (27, scroller.keypress_escape),
-            (curses.KEY_DOWN, keypress_down),
-            (curses.KEY_UP, keypress_up),
-            (curses.KEY_ENTER, scroller.keypress_enter),
-            (10, scroller.keypress_enter)
-        )
-
-        self.window.add_windows(
-            scroller,
-        )
-
-        self.window.keypresses.on(
-            (27, self.keypress_escape),
-        )
-
-        self.focused = self.window.currently_focused
-
-
-if __name__ == "__main__":
-    pass
