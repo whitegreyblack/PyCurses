@@ -1,7 +1,7 @@
 """
 system.py: Data representation of a filesystem
 
-End Goal:
+End Goal: (using either B+ tree or Array based directory)
     After structuring, should become:
     Directory
     |__ Documents/
