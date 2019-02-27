@@ -6,7 +6,7 @@ from source.yamlchecker import YamlChecker
 from source.database import Connection 
 
 hi, bd, li, key, limit = None, None, None, None, 30
-tabnames = ["RECIEPT",
+tabnames = ["receipt",
             "GROCERY",
             ]
 
@@ -63,7 +63,7 @@ class Window:
         self.parent = parent
 
     def toggle_on(self):
-        if self.parent.title.lower() == "reciept":
+        if self.parent.title.lower() == "receipt":
             i = 2
             for store, date, _, _, _, _, total in self.datahead.data:
                 if i // 2 - 1 == self.datahead.pos:
@@ -102,7 +102,7 @@ class Window:
         self.window.border(bd, bd, bd, bd, bd, bd, bd, bd)
 
     def load(self):
-        if self.parent.title.lower() == "reciept":
+        if self.parent.title.lower() == "receipt":
             self.datahead = Data([row 
                                     for row in self.parent.parent.conn.load()])
 

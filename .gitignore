@@ -22,3 +22,6 @@ __pycache__/
 
 # pyc files
 *.pyc
+
+# .cache files from pytest
+.cache/*

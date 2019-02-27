@@ -1,6 +1,6 @@
 import curses
 from collections import namedtuple
-from source.viewrouter import Router
+# from source.viewrouter import Router
 from source.utils import border
 from source.utils import format_float as Money
 

@@ -17,14 +17,17 @@ Window:
     Move to json?
 """
 
+
 __author__ = "Samuel Whang"
+
 
 import curses
 from collections import namedtuple
-from source.utils import border
-from source.utils import format_float as Money
-
-
+from source.utils import (
+    EventHandler,
+    border, 
+    format_float as Money
+)
 line = namedtuple("Line", "x y line")
 
 
@@ -112,89 +115,6 @@ class View:
     def border(self):
         self.window.border()
 
-class Window:
-    def __init__(self, title, x, y):
-        self.title = title
-        self.term_width = x
-        self.term_height = y
-        self.width = x - 2
-        self.height = y - 2
-        self.components = []
-        self.windows = []
-        self.views = []
-        self.index = 0
-
-    def add_component(self, component):
-        self.components.append(component)
-
-    @property
-    def window(self):
-        for window in self.windows:
-            if hasattr(window, 'selected') and window.selected:
-                return window
-
-    def add_view(self, view):
-        self.views.append(view)
-
-    def add_window(self, window):
-        self.windows.append(window)
-
-    def add_windows(self, windows):
-        for window in windows:
-            self.windows.append(window)
-
-    def add_keymap(self, keymap):
-        self.keymap = keymap
-
-    def change_window(self):
-        self.window.selected = False
-
-    def get_window(self, window_id):
-        for window in self.windows:
-            if window.wid == window_id:
-                return window
-
-    def send_signal(self, command, debug=False):
-        if (command, self.window.wid) in self.keymap:
-            retval = self.window.get_signal(command)
-            
-            if retval is False:
-                return retval
-
-            if self.window.wid == 'ScrollList':
-                self.get_window('Form').model = self.window.model
-
-            next_window_id = self.keymap[(command, self.window.wid)]
-
-            if next_window_id is None:
-                return False
-           
-            if next_window_id is not self.window.wid:
-                next_window = self.get_window(next_window_id)
-                self.window.selected = False
-                next_window.selected = True
-                if next_window.wid == 'Prompt':
-                    next_window.visible = True
-        return True
-
-    def draw(self):
-        # screen.addstr(0, 1, self.title)
-        # dimensions = f"{self.term_width}, {self.term_height}"
-        # screen.addstr(0, self.term_width - len(dimensions) - 1, dimensions)
-        # for window in self.windows:
-        #     window.draw(screen)
-
-        # for view in self.views:
-        #     # view.window.border()
-        #     view.draw()
-
-        for comp in self.components:
-            comp.draw()
-
-    def clear(self):
-        for view in self.views:
-            view.clear()
-
 class Label:
     def __init__(self, x, y, string):
         self.x = x
@@ -209,7 +129,7 @@ class OptionsBar:
         def __init__(self, screen, options):
             self.options = options
             self.maxlen = max(map(len, options))
-            self.view = View(screen.subwin(len(options), self.maxlen + 4, 1, 1))
+            self.view = View(screen.subwin(len(options), self.maxlen+4, 1, 1))
             self.show = False
 
         def draw(self):
@@ -222,7 +142,7 @@ class OptionsBar:
 
     def __init__(self, screen, options=None):
         # should create the subwin internally
-        h, w = screen.getmaxyx()
+        h, w = screen
         self.x = 0
         self.y = 0
         self.width = w
@@ -246,10 +166,12 @@ class OptionsBar:
 
         # draw stuff
         for opt, win in self.options.items():
-            self.screen.addstr(0, 
-                               1 + len(prevopt) + step, 
-                               opt, 
-                               curses.color_pair(2))
+            self.screen.addstr(
+                0, 
+                1 + len(prevopt) + step, 
+                opt, 
+                curses.color_pair(2)
+            )
             prevopt += opt + ' ' * step
             if self.showlabel and self.options[self.showlabel].show:
                 self.options[self.showlabel].draw()
@@ -336,18 +258,22 @@ class Prompt(UIControl):
         self.visible = False
         self.logger = logger
         longerlabel = max(len(confirm), len(cancel))
-        self.confirm = Button(self.x + 1, 
-                              self.height - 4, 
-                              longerlabel + 2, 
-                              2, 
-                              confirm, 
-                              True)
+        self.confirm = Button(
+            self.x + 1, 
+            self.height - 4, 
+            longerlabel + 2, 
+            2, 
+            confirm, 
+            True
+        )
 
-        self.cancel = Button(self.width - 3 - longerlabel - 1, 
-                             self.height - 4, 
-                             longerlabel + 2, 
-                             2, 
-                             cancel)
+        self.cancel = Button(
+            self.width - longerlabel -4, 
+            self.height - 4, 
+            longerlabel + 2, 
+            2, 
+            cancel
+        )
 
         # TODO should be changeable through constructor
         # class button: property isSelected/Selected
@@ -358,6 +284,29 @@ class Prompt(UIControl):
         for button in [self.confirm, self.cancel]:
             if button.selected:
                 return button
+
+    def send_signal(self, command, debug=False):
+        if (command, self.window.wid) in self.keymap:
+            retval = self.window.get_signal(command)
+            
+            if retval is False:
+                return retval
+
+            if self.window.wid == 'ScrollList':
+                self.get_window('Form').model = self.window.model
+
+            next_window_id = self.keymap[(command, self.window.wid)]
+
+            if next_window_id is None:
+                return False
+           
+            if next_window_id is not self.window.wid:
+                next_window = self.get_window(next_window_id)
+                self.window.selected = False
+                next_window.selected = True
+                if next_window.wid == 'Prompt':
+                    next_window.visible = True
+        return True
 
     def get_signal(self, command, debug=False):
         # unselect first then select in all cases
@@ -562,7 +511,7 @@ class Form:
         self.title = title
         self.selected = False
 
-class RecieptForm(Form):
+class receiptForm(Form):
     #def __init__(self, x, y, width, height, model, title=None):
     #    super().__init__(wid, x, y, width, height, model, title)
 
@@ -580,7 +529,7 @@ class RecieptForm(Form):
         """
         if self.model:
             vertical_offset = 1
-            title = self.title if self.title else "Reciept"
+            title = self.title if self.title else "receipt"
             self.lines.append(line(self.x + 1, self.y + vertical_offset, title))
             vertical_offset += 2
             

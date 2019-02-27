@@ -7,11 +7,18 @@ drawer, and variable formatting.
 __author__ = "Samuel Whang"
 
 import os
+import yaml
 import curses
 import logging
 import datetime
+import textwrap
+import cerberus
+from math import floor, ceil
+from source.YamlObjects import receipt
+from source.config import YAML_FILE_NAME_REGEX
 from typing import Union, Tuple
 from collections import namedtuple
+from itertools import chain
 
 Currency = Union[int, float]
 
@@ -19,15 +26,20 @@ point = namedtuple('Point', 'x y')
 size = namedtuple('Size', 'width height')
 box = namedtuple('Box', 'x y width height')
 
-
 EventArg = namedtuple('EventArg', 'sender msg')
 
 
-class Event(list):
-    def __call__(self, sender, event):
-        for fn in self:
-            fn(sender, event)
+class EventHandler(list):
+    # def __call__(self, sender, event):
+    #     for fn in self:
+    #         fn(sender, event)
+    def __call__(self, sender, *args, **kwargs):
+        for f in self:
+            print(f"{sender}: calling {f.__name__}({args}, {kwargs})")
+            f(sender, *args, **kwargs)
 
+    def __repr__(self):
+        return f"EventHandler({', '.join(f.__name__ for f in self)})"
 '''
 class Permissions(Enum): 
     flags = {
@@ -76,6 +88,12 @@ def check_or_create_folder(foldername):
         os.makedirs(formatted_path)
     return formatted_path
 
+
+def divider(width):
+    yield curses.ACS_LTEE
+    for _ in range(width):
+        yield curses.ACS_HLINE
+    yield curses.ACS_RTEE
 
 args = namedtuple("Logargs", "name file extra")
 
@@ -248,3 +266,34 @@ def unicode(word):
 def sort_unicode(words, keyfunc=lambda x: unicode(x)):
     """Returns a list of words sorted by unicode value of their strings"""
     return sorted(words, key=keyfunc)
+
+def load_yaml_object(path, doc=False):
+    with open(path, 'r') as f:
+        lines = f.read()
+        o = yaml.load(lines)
+        if doc:
+            o = o.serialized()
+    return o
+
+
+def validate(document, schema):
+    v = cerberus.Validator()
+    return v.validate(document, schema)
+
+def validate_from_path(doc_path, schema_path):
+    document = load_yaml_object(doc_path, doc=True)
+    schema = load_yaml_object(schema_path)
+    return validate(document, schema)
+
+def validate_filename(filename):
+    schema = {
+        'filename': {
+            'type': 'string', 
+            'regex': YAML_FILE_NAME_REGEX
+        }
+    }
+    v = cerberus.Validator(schema)
+    print(v.validate({'filename': filename}))
+
+def partition(distance, partitions, length=1, operator=round):
+    return operator(distance/partitions*length)

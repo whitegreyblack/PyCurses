@@ -1,4 +1,4 @@
---- !Reciept
+--- !receipt
 store: Date Fail Invalid
 date: [2017,5,a]
 type: fast food

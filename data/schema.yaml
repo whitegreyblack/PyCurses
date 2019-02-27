@@ -1,0 +1,25 @@
+store:
+  type: string
+short:
+  type: string
+date: 
+  type: list
+  items: [
+    type: integer,
+    type: integer,
+    type: integer
+  ]
+category:
+  type: string
+products:
+  type: dict
+  keyschema:
+    type: string
+subtotal:
+  type: float
+tax:
+  type: float
+total:
+  type: float
+payment:
+  type: float

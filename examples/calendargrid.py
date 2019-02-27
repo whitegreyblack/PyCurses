@@ -64,9 +64,7 @@ class String:
             return word
         padding = width - len(word)
         left = right = padding // 2
-        # odd padding
-        if padding % 2 == 1:
-            right += 1
+        right += (padding % 2 == 1)
         return f"{' ' * left}{word}{' ' * right}"
 
 class Days(object):
@@ -616,7 +614,6 @@ class ScrollableCalendar:
         Returns a n x 7 matrix of Node objects from a list of unique date tuples
         """
         graph = []
-        print(self.months)
         for week in grid:
             nodeweek = []
             for date in week:
@@ -653,19 +650,45 @@ class ScrollableCalendar:
             raise ValueError("No indices with start date")
 
     def select_prev_week(self):
+        temp = self.i, self.j
         self.j = max(self.j - 1, 0)
+        if not self.graph[self.j][self.i].selectable:
+            self.i, self.j = temp
+
 
     def select_next_week(self):
+        temp = self.i, self.j
         self.j = min(self.j + 1, len(self.graph) - 1)
+        if not self.graph[self.j][self.i].selectable:
+            self.i, self.j = temp
 
     def select_next_day(self):
+        temp = self.i, self.j
         self.i += 1
         if self.i > 6:
             self.i = 0
             self.select_next_week()
+            # same week, so entire week belongs to the month
+            if self.j == temp[1]:
+                self.i, self.j = temp
+
+        # went forward onde day but it was not selectable
+        if not self.graph[self.j][self.i].selectable:
+            self.i, self.j = temp
 
     def select_prev_day(self):
+        temp = self.i, self.j
         self.i -= 1
+        if self.i < 0:
+            self.i = 6
+            self.select_prev_week()
+            # same week, so entire week belongs to the month
+            if self.j == temp[1]:
+                self.i, self.j = temp
+        
+        # went back one day but it was not selectable
+        if not self.graph[self.j][self.i].selectable:
+            self.i, self.j = temp
 
     def format_blt_header(self, colored=False):
         """No color for WIN10 term. Color only for blt screen"""
@@ -686,10 +709,8 @@ class ScrollableCalendar:
                 if include and not blt:
                     monthstring.append(" ".join(str(day) for day in week))
                 elif include and blt:
-                    for day in week:
-                        if day.day == select:
-                            print(True)
-                    monthstring.append("".join(day.blt(day==curnode, month) for day in week))
+                    monthstring.append("".join(day.blt(day==curnode, month) 
+                                        for day in week))
             return "\n".join(monthstring)
 
         if not blt:
@@ -711,8 +732,7 @@ if __name__ == "__main__":
     sg = ScrollableCalendar(YearMonthDay(2018, 10), YearMonthDay(2018, 12))
     print(sg.format_print(0))
     print()
-    sg = ScrollableCalendar(YearMonthDay(2018, 10), YearMonthDay(2018, 12), YearMonthDay(2018, 11, 13))
+    sg = ScrollableCalendar(YearMonthDay(2018, 10), 
+                            YearMonthDay(2018, 12), 
+                            YearMonthDay(2018, 11, 13))
     print(sg.format_print(0x16))
-    # sg = ScrollableCalendar(YearMonthDay(2018, 10), YearMonthDay(2018, 12), YearMonthDay(2018, 9))
-    # sg = ScrollableCalendar(YearMonthDay(2017, 12), YearMonthDay(2018, 1))
-    # sg = ScrollableCalendar(YearMonthDay(2016, 12), YearMonthDay(2018, 1))

@@ -9,7 +9,7 @@ class Data:
     def __repr__(self):
         return self.__class__.__name__
 
-class RecieptData(Data):
+class receiptData(Data):
     def __init__(self, data, body=None):
         super().__init__(data)
 

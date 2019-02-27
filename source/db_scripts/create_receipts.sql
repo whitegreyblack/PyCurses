@@ -1,0 +1,44 @@
+drop table if exists storecategory;
+drop table if exists stores;
+drop table if exists receipts;
+drop table if exists products;
+
+create table storecategory (
+    id_category     integer PRIMARY KEY AUTOINCREMENT,
+    category        varchar(25)
+);
+
+create table stores (
+    id_store        integer PRIMARY KEY AUTOINCREMENT,
+    store           varchar(25) NOT NULL,
+    id_category     integer NOT NULL,
+    FOREIGN KEY (id_category) REFERENCES storecategory(id_category)
+);
+create table receipts (
+    id_receipt      integer PRIMARY KEY AUTOINCREMENT,
+    id_store        integer NOT NULL,
+    created         timestamp,
+    purchased_on    timestamp,
+    subtotal        float,
+    tax             float,
+    total           float,
+    payment         float,
+    reciept_file    float,
+    FOREIGN KEY (id_store) REFERENCES stores(id_store)
+);
+
+create table products (
+    id_product      integer PRIMARY KEY AUTOINCREMENT,
+    id_store        integer NOT NULL,
+    product         varchar(25),
+    price           float,
+    FOREIGN KEY (id_store) REFERENCES stores(id_store)
+);
+
+create table recieptproducts (
+    id_recieptproduct integer PRIMARY KEY AUTOINCREMENT,
+    id_reciept        integer NOT NULL,
+    id_product        integer NOT NULL,
+    FOREIGN KEY (id_reciept) REFERENCES reciepts(id_receipt),
+    FOREIGN KEY (id_product) REFERENCES products(id_product)
+);

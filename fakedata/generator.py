@@ -8,7 +8,7 @@ import datetime
 import calendar
 import source.utils as utils
 from source.logger import Loggable
-from source.YamlObjects import Reciept
+from source.YamlObjects import receipt
 from source.database import Connection
 from examples.calendar_widget import date, parse_date, iter_months_years
 # This can either go two ways. Building data directly from sql queries with a
@@ -68,7 +68,7 @@ def random_product_data(catalog):
     ]
 
 # TODO: single file option
-internet_build_query = """SELECT * FROM reciepts WHERE short='BEK'"""
+internet_build_query = """SELECT * FROM receipts WHERE short='BEK'"""
 
 class DataGenerator:
     phone_number_regex = r"[1]?[\-\.\ ]??\d{3}?[\-\.\ ]?\d{3}[\-\.\ ]?\d{4}|(?>\(\d{3}\)|\d{3})[\-\.\ ]?\d{3}[\-\.\ ]\d{4}"
@@ -109,7 +109,7 @@ class DataGenerator:
                                             ("utility",))
 
         for datetup, filename in filenames.items():
-            reciept = Reciept('Internet', 
+            receipt = receipt('Internet', 
                               'Net', 
                               list(datetup),
                               'utility',
@@ -119,16 +119,17 @@ class DataGenerator:
                               73.59,
                               73.59)
             with open(self.export_folder + filename, 'w') as yamlfile:
-                yamlfile.write(yaml.dump(reciept))
+                yamlfile.write(yaml.dump(receipt))
 
-    def generate_grocery_data(self):
-        filenames = self.generate_filenames("2017-3-1", 
-                                            "2018-3-1", 
-                                            (8, 22), 
+    def generate_grocery_data(self, output=False):
+        filenames = self.generate_filenames("2017-3-1",
+                                            "2018-3-1",
+                                            (8, 22),
                                             ("groceries",))
-
+        if output:
+            print(f"generator: Grocery data written to:")
         for datetup, filename in filenames.items():
-            reciept = Reciept('Grocery',
+            receipt = receipt('Grocery',
                               'Food',
                               list(datetup),
                               'groceries',
@@ -137,8 +138,11 @@ class DataGenerator:
                               0.0,
                               24.99,
                               24.99)
-            with open(self.export_folder + filename, 'w') as yamlfile:
-                yamlfile.write(yaml.dump(reciept))
+            fullpath = self.export_folder + filename
+            with open(fullpath, 'w') as yamlfile:
+                yamlfile.write(yaml.dump(receipt))
+            if output:
+                print(f"  {filename}")
 
     def generate_fast_food_data(self):
         pass
@@ -151,8 +155,8 @@ class DataGenerator:
     def generate_data(self):
         """
         Step 1:
-        query should build two new tables => generated_reciepts, generate_products
-        table values should be the same as old reciepts, products tables
+        query should build two new tables => generated_receipts, generate_products
+        table values should be the same as old receipts, products tables
         Step 2:
         select data from the old tables and insert them into the new tables
         should act more like a stored proc than a query
@@ -171,7 +175,7 @@ class DataGenerator:
 def main(folder):
     dg = DataGenerator(folder)
     # dg.generate_internet_data()
-    dg.generate_grocery_data()
+    dg.generate_grocery_data(output=True)
 
 if __name__ == "__main__":
     main()

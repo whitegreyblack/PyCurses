@@ -1,0 +1,61 @@
+[
+    {
+        "question": "Which two use cases require a partial copy or full sandbox?\nChoose 2 answers.",
+        "answers": [
+            [0, "Scalability Testing"],
+            [1, "Development Testing"],
+            [2, "Quality Assurance Testing"],
+            [3, "Batch Data Testing"]
+        ],
+        "answer": [0, 3],
+        "questiontype": "multiple"
+    },
+    {
+        "questions":"In the Lightning Component framework, where is client-side controller logic contained?",
+        "answers": [
+            [0, "Apex"],
+            [1, "VisualForce"],
+            [2, "HTML"],
+            [3, "JavaScript"]
+        ],
+        "answer": 3
+    },
+    {
+        "questions": "A developer creates a method in an Apex class and needs to ensure that errors are handled properly. Which three should the developer use?\nChoose 3 answers.",
+        "answers": [
+            [0, "ApexPages.addErrorMessage()"],
+            [1, "A custom exception"],
+            [2, ".addError()"],
+            [3, "Database.handleException()"],
+            [4, "A try/catch construct"]
+        ],
+        "answer": [1, 2, 4]
+    },
+    {
+        "questions": "Which two are valid in the where clause of a SOQL query?\nChoose two answers",
+        "answers": [
+            [0, "A geolocation field"],
+            [1, "An encrypted field"],
+            [2, "An aggregate function"],
+            [3, "An alias notation"]
+        ],
+        "answer": [0, 2]
+    },
+    {
+        "questions": "What is the correct way to describe how Model-View-Controller (MVC) architecture is implemented on the Salesforce platform?",
+        "answers": [
+            [0, "Model: Standard and Custom Objects; View: Visualforce Pages; Controller: sControls"],
+            [1, "Model: Schema Builder; View: List Views; Controller: Setup Console"],
+            [2, "Model: Standard and Custom Objects; View: Visualforce Pages; Controller: Apex Code"],
+            [3, "Model: Apex Code; View: List Views; Controller: Setup Console"]
+        ],
+        "answer": 2
+    },
+    {
+        "questions": "",
+        "answers": [
+
+        ],
+        "answer": -1
+    }
+]

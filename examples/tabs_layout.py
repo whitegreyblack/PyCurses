@@ -7,7 +7,7 @@ import logging
 
 
 hi, bd, li, key = None, None, None, None
-tabnames = ["RECIEPT",
+tabnames = ["receipt",
             "GROCERY",
             "EXERCISE",
             "PAYMENTS",
@@ -73,7 +73,7 @@ class Window:
         self.parent = parent
 
     def toggle_on(self):
-        if self.parent.title.lower() == "reciept":
+        if self.parent.title.lower() == "receipt":
             i = 2
             for store, date, _, _, _, _, total in self.datahead.data:
                 if i // 2 - 1 == self.datahead.pos:
@@ -110,7 +110,7 @@ class Window:
 
     def load(self):
         return
-        if self.parent.title.lower() == "reciept":
+        if self.parent.title.lower() == "receipt":
             self.datahead = Data(
                     [row for row in self.parent.parent.conn.load()])
         elif self.parent.title.lower() == "grocery":

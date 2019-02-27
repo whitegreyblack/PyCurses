@@ -8,33 +8,33 @@ import yaml
 import datetime
 import source.config as config
 
-def validate_reciept_store(filename, storename):
+def validate_receipt_store(filename, storename):
     store_from_filename = filename.split('.')[0].split('-')[1]
     store = storename.replace(" ", "").lower()
     return store_from_filename == store
 
-def validate_reciept_date(filename, date):
+def validate_receipt_date(filename, date):
     try: 
         filedate = datetime.date(*date)
     except:
         return False
     return filedate < datetime.date.today()
 
-def format_reciept_date(filename, date):
+def format_receipt_date(filename, date):
     try:
         filedate = datetime.date(*date)
     except:
         return date
     return filedate.strftime(config.DATE_FORMAT['L'])
 
-class Reciept(yaml.YAMLObject):
-    __doc__ = """Yaml Object Class used to describe a reciept"""
-    yaml_tag = u'!Reciept'
+class receipt(yaml.YAMLObject):
+    __doc__ = """Yaml Object Class used to describe a receipt"""
+    yaml_tag = u'!receipt'
     properties = {
         # [key]: (object type(s), validation_handler, format_handler)
-        'store': (str, validate_reciept_store, None),
+        'store': (str, validate_receipt_store, None),
         'short': (str, None, None),
-        'date': (list, validate_reciept_date, None),
+        'date': (list, validate_receipt_date, None),
         'category': (str, None, None),
         'products': (dict, None, None),
         'subtotal': ((int, float), None, None),
@@ -53,3 +53,9 @@ class Reciept(yaml.YAMLObject):
         self.tax = args[6]
         self.total = args[7]
         self.payment = args[8]
+    
+    def serialized(self):
+        return {
+            k: getattr(self, k)
+                for k in self.properties.keys()
+        }
