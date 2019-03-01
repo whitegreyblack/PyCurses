@@ -1,6 +1,5 @@
 """
-File: calendargridtest.py
-Runs application for the calendar grid class from calendargrid.py
+calendargridtest.py: Runs calendargrid within blt or curses.
 """
 
 import click
@@ -28,6 +27,7 @@ def termprint(options, debug=False):
     else:
         mstring = m.term(options)
     print(mstring)
+
 
 def main_curses(options, debug):
     def wrapped(t):
@@ -116,6 +116,7 @@ def main_blt(options, debug):
             year.month.select_prev_day()
         if char == terminal.TK_RIGHT:
             year.month.select_next_day()
+
 
 if __name__ == "__main__":
     main()
