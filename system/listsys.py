@@ -14,7 +14,6 @@ from collections import namedtuple
             |
             +-> [Text] (id: 6), (gid: 2), (pid: 1), (cid: None)
 ------
-# list structure? (how to represent the empty folder? nid: 9)
 [
     (nid: 0, gid: 0, pid: !, cid: 1, name: Documents),
     (nid: 1, gid: 0, pid: !, cid: 4, name: Music),
