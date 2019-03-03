@@ -50,8 +50,8 @@ def inorder_print(d, curdir, level=0):
         inorder_print(d, subdir, level+1)
 
 if __name__ == "__main__":
-    d = dict({ i: {} for i in range(6) })
-    
+    d = dict({ i: set() for i in range(6) })
+
     d[0].add(node(1, 0, None, 4, "Music/"))
     d[0].add(node(0, 0, None, 1, "Documents/"))
     d[0].add(node(2, 0, None, None, "File"))
