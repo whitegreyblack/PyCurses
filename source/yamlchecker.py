@@ -18,7 +18,7 @@ from collections import namedtuple
 import source.utils as utils
 import source.config as config
 from source.logger import Loggable
-from source.YamlObjects import Reciept
+from source.YamlObjects import receipt
 
 class YamlChecker(Loggable):
     """Processes yaml files in specified folder for both file integrity and
@@ -154,7 +154,7 @@ class YamlChecker(Loggable):
 
                 # some reason the property got an attribute error
                 if attributeError:
-                    error = f"{filename}: missing reciept property '{prop}'"
+                    error = f"{filename}: missing receipt property '{prop}'"
                     self.log(error, level=logging.WARNING)
                     unverified.append(error)
                     continue
@@ -177,8 +177,8 @@ class YamlChecker(Loggable):
                     unverified.append(error)
                     continue
 
-                # these are more Reciept object specific checks. Could place them
-                # in the reciept class as a callback handler after regular checks
+                # these are more receipt object specific checks. Could place them
+                # in the receipt class as a callback handler after regular checks
                 # have finished. For now keep here but remember TODO refactoring.
                 transactionError = False
                 productSumInt = convert_int(sum(yamlobj.products.values()))
@@ -322,9 +322,9 @@ class YamlChecker(Loggable):
     #     obj = self.yaml_read(filepath)
 
     #     # just because no error is raised when checking object does not mean
-    #     # object is a correct Reciept object. Only that all values have been
+    #     # object is a correct receipt object. Only that all values have been
     #     # loaded and no syntax errors found. Still need to check properties.
-    #     valid_yaml = isinstance(obj, Reciept)
+    #     valid_yaml = isinstance(obj, receipt)
     #     self.log(f"Valid YamlObject: {valid_yaml}")
 
     #     for prop in obj.properties:

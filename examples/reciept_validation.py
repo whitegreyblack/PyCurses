@@ -31,6 +31,7 @@ date:
     type: integer
   ]
 """
+
 schema = yaml.load(schema_text)
 print(schema)
 document = {'store': 'a', 'short': 'a', 'date': [1,2,3]}

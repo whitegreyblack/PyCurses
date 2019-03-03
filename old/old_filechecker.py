@@ -5,7 +5,7 @@ import yaml
 import logging
 import datetime
 import functools
-from reciept import Reciept
+from receipt import receipt
 import strings_checker as strings
 
 # logging info
@@ -58,7 +58,7 @@ class YamlChecker:
         verified files to be used in insertion into database 
     """
 
-    def __init__(self, folder='reciepts'):
+    def __init__(self, folder='receipts'):
         """ initialize the folder holding files to check """
         FORMAT = '%(message)s'
         logging.basicConfig(filename='debug.log', format='%(message)s', level=logging.DEBUG)
@@ -117,7 +117,11 @@ class YamlChecker:
     @tryexcept
     def f_load(self, file):
         """ check file is a yaml object after file load """
+<<<<<<< HEAD
         return isinstance(yaml.safe_load(self.f_open(file)), Reciept)
+=======
+        return isinstance(yaml.safe_load(self.f_open(file)), receipt)
+>>>>>>> 0839317a574efa9caf443dbb5a042d2eed3cac6f
 
     #@printer(False)
     @tryexcept

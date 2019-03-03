@@ -28,21 +28,21 @@ if %args%==1 if "%1"=="clean" (
     if exist "__pycache__/" rmdir "__pycache__"
 
     goto :eof
-if %args%==3 if "%1"=="reciept" if "%2"=="test" (
+if %args%==3 if "%1"=="receipt" if "%2"=="test" (
     set "folder=testfolder/"
-    goto recieptsetup
+    goto receiptsetup
 )
-if %args%==3 if "%1"=="reciept" if "%2"=="real" (
-    set "folder=reciepts/"
-    goto recieptsetup
+if %args%==3 if "%1"=="receipt" if "%2"=="real" (
+    set "folder=receipts/"
+    goto receiptsetup
 )
 goto eof
 
 rem Start of goto branching and argument cases
-:recieptsetup
+:receiptsetup
 set "file=%folder%%~3%.yaml"
 echo --- Creating Yaml File: %file% ---
-echo --- !Reciept > %file%
+echo --- !receipt > %file%
 echo store: >> %file%
 echo date: >> %file%
 echo type: >> %file%
@@ -83,7 +83,7 @@ goto parse
 echo incorrect args
 echo USAGE: make [check]
 echo             [clean]
-echo             [reciept] [real/test] [filename]
+echo             [receipt] [real/test] [filename]
 echo        make [test]
 
 rem Done. Program exit.

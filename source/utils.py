@@ -14,7 +14,11 @@ import datetime
 import textwrap
 import cerberus
 from math import floor, ceil
+<<<<<<< HEAD
 from source.YamlObjects import Reciept
+=======
+from source.YamlObjects import receipt
+>>>>>>> 0839317a574efa9caf443dbb5a042d2eed3cac6f
 from source.config import YAML_FILE_NAME_REGEX
 from typing import Union, Tuple
 from collections import namedtuple
@@ -29,6 +33,7 @@ box = namedtuple('Box', 'x y width height')
 EventArg = namedtuple('EventArg', 'sender msg')
 
 
+<<<<<<< HEAD
 class Event(list):
     # def __call__(self, sender, event):
     #     for fn in self:
@@ -38,6 +43,19 @@ class Event(list):
             f(*args, **kwargs)
     def __repr__(self):
         return f"Event({s})"
+=======
+class EventHandler(list):
+    # def __call__(self, sender, event):
+    #     for fn in self:
+    #         fn(sender, event)
+    def __call__(self, sender, *args, **kwargs):
+        for f in self:
+            print(f"{sender}: calling {f.__name__}({args}, {kwargs})")
+            f(sender, *args, **kwargs)
+
+    def __repr__(self):
+        return f"EventHandler({', '.join(f.__name__ for f in self)})"
+>>>>>>> 0839317a574efa9caf443dbb5a042d2eed3cac6f
 '''
 class Permissions(Enum): 
     flags = {
@@ -86,6 +104,12 @@ def check_or_create_folder(foldername):
         os.makedirs(formatted_path)
     return formatted_path
 
+
+def divider(width):
+    yield curses.ACS_LTEE
+    for _ in range(width):
+        yield curses.ACS_HLINE
+    yield curses.ACS_RTEE
 
 args = namedtuple("Logargs", "name file extra")
 

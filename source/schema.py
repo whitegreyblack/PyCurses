@@ -105,9 +105,9 @@ class Table:
         return "Not Yet Implemented"
         
 
-def build_reciepts_table():
+def build_receipts_table():
     """Pre-specified table information used in creating a table object"""
-    return Table("reciepts",
+    return Table("receipts",
                  [
                     ("filename", SQLType.TEXT),
                     ("store", SQLType.VARCHAR()),
@@ -143,5 +143,5 @@ if __name__ == "__main__":
     print(t.insert_command)
     print(t.select_command_on(['a', 'b']))
 
-    print(build_reciepts_table())
+    print(build_receipts_table())
     print(build_products_table())

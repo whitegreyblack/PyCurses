@@ -1,6 +1,5 @@
 """
-File: calendargridtest.py
-Runs application for the calendar grid class from calendargrid.py
+calendargridtest.py: Runs calendargrid within blt or curses.
 """
 
 import click
@@ -14,7 +13,7 @@ def main(debug, options, screen):
     if not screen:
         termprint(options, debug)
     elif screen == "curses" or screen == "c":
-        main_curses()
+        main_curses(options, debug)
     elif screen == "bear" or screen == "b":
         main_blt(options, debug)
     else:
@@ -29,9 +28,23 @@ def termprint(options, debug=False):
         mstring = m.term(options)
     print(mstring)
 
-def main_curses():
+
+def main_curses(options, debug):
     def wrapped(t):
-        t.getch()
+        # q and ESC
+        escape_codes = [ord('q'), 27]
+
+        year = CalendarGrid(2018, startdate=YearMonthDay(2018, 12))
+
+        char = None
+        while True:
+            t.clear()
+
+            t.addstr(1, 2, year.term(options=options))
+
+            t.refresh()
+            t.getch()
+            break
 
     import curses
     curses.wrapper(wrapped)
@@ -44,6 +57,7 @@ def main_blt(options, debug):
     terminal.set("window.title='Calendar Grid'")
     terminal.set("input.filter={keyboard, mouse+}")
 
+    # 224 is gui window exit key
     escape_codes = [terminal.TK_Q, terminal.TK_ESCAPE, 224]
 
     year = CalendarGrid(2018, startdate=YearMonthDay(2018, 12))
@@ -102,6 +116,7 @@ def main_blt(options, debug):
             year.month.select_prev_day()
         if char == terminal.TK_RIGHT:
             year.month.select_next_day()
+
 
 if __name__ == "__main__":
     main()

@@ -511,7 +511,7 @@ class Form:
         self.title = title
         self.selected = False
 
-class RecieptForm(Form):
+class receiptForm(Form):
     #def __init__(self, x, y, width, height, model, title=None):
     #    super().__init__(wid, x, y, width, height, model, title)
 
@@ -529,7 +529,7 @@ class RecieptForm(Form):
         """
         if self.model:
             vertical_offset = 1
-            title = self.title if self.title else "Reciept"
+            title = self.title if self.title else "receipt"
             self.lines.append(line(self.x + 1, self.y + vertical_offset, title))
             vertical_offset += 2
             

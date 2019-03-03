@@ -1,16 +1,27 @@
+<<<<<<< HEAD
 """__main__.py: Reciept Viewer App
+=======
+"""__main__.py: receipt Viewer App
+>>>>>>> 0839317a574efa9caf443dbb5a042d2eed3cac6f
 Handles building application within curses environment. Initializes
 curses settings then sends the screen into the application to be built
 """
 
 __author__ = "Samuel Whang"
 
-import os
-import sys
-import click
 import curses
+import os
+import pprint
+import sys
+
+import click
+
 import source.utils as utils
-from source.application import Application
+from source.applications import (Application, Applications,
+                                 ContactsApplication, Encyclopedia,
+                                 NoteApplication, QuizApplication,
+                                 SystemApplication, TaskApplication)
+
 
 def initialize_curses_settings(logger=None):
     """Sets settings for cursor visibility and color pairings"""
@@ -28,7 +39,11 @@ def initialize_environment_settings(logger=None):
     # Reduce the delay when pressing escape key on keyboard.
     os.environ.setdefault('ESCDELAY', '25')
 
+<<<<<<< HEAD
 def application(screen, folderpath, demo, rebuild, logger=None):
+=======
+def run_application(screen, folderpath, app, demo, rebuild, reinsert, logger=None):
+>>>>>>> 0839317a574efa9caf443dbb5a042d2eed3cac6f
     """Initializes the Application object which builds the rest of the
     necessary frontend/backend objects.
 
@@ -43,8 +58,9 @@ def application(screen, folderpath, demo, rebuild, logger=None):
     """
     # curses only options.
     initialize_curses_settings()
-    
+      
     # initialize application object and build front/back end
+<<<<<<< HEAD
     app = Application(
         folderpath,
         screen=screen,
@@ -60,6 +76,22 @@ def application(screen, folderpath, demo, rebuild, logger=None):
     getattr(app, demo)()
     app.draw()
     app.run()
+=======
+    a = app(folderpath, screen=screen, logger=logger)
+
+    # should we create a new function that calls all 4 functions?
+    # or manually call individual functions in here?
+    # app.setup() -- each demo will setup their own database
+    #app.build_windows(screen)
+    # app.build_windows()
+    a.build_application(rebuild, reinsert, demo)
+    # if not rebuild:
+    #     getattr(app, demo)()
+    # else:
+    #     getattr(app, demo)(rebuild=rebuild)
+    a.draw()
+    a.run()
+>>>>>>> 0839317a574efa9caf443dbb5a042d2eed3cac6f
 
 # TODO: need a way to run main without needing a folder
 # TODO: need a way to run main with multiple folders
@@ -67,14 +99,40 @@ def application(screen, folderpath, demo, rebuild, logger=None):
 @click.command()
 @click.option('-f', "folder", nargs=1,
               help="Folder containing yaml data files")
+<<<<<<< HEAD
 @click.option('--demo', "demo", nargs=1,
               help="Specified which demo application to run")
 @click.option('--rb', "rebuild", is_flag=True, default=False,
               help="Rebuild tables before inserting files")
 def main(folder, demo, rebuild):
+=======
+@click.option('--app', "app", nargs=1,
+              help="Specified which demo application to run [notes, tree, tasks, reciepts, quiz]")
+@click.option('-x', "demo", nargs=1, is_flag=True, default=False,
+              help="Use fake data to build the app")
+@click.option('-r', "rebuild", nargs=1, is_flag=True, default=False,
+              help="Rebuild tables before inserting files")
+@click.option('-i', "reinsert", nargs=1, is_flag=True, default=False,
+              help="Reinsert data for specified application")
+def main(folder, app, demo, rebuild, reinsert):
+>>>>>>> 0839317a574efa9caf443dbb5a042d2eed3cac6f
     """Handles argument parsing using click framework before calling the
     curses wrapper handler function
     """
+    demos = dict()
+    for a in Applications:
+        if hasattr(a, 'CLI_NAMES'):
+            for name in getattr(a, 'CLI_NAMES'):
+                demos.update({name: a})
+
+    # these apps have not been built yet but we want to keep their names in the 
+    # demo list for future use. For now they will call the default app program
+    demos.update({
+        "receipts": Application,
+        "receipt": Application,
+    })
+
+    # pprint.pprint(demos)
 
     # special case. Dot notation usually means current folder within the file
     # system. Prevent this case in order to stop importing all subfiles
@@ -83,6 +141,7 @@ def main(folder, demo, rebuild):
         print("Invalid folder specified: cannot use dot")
         return
 
+<<<<<<< HEAD
     if demo and demo not in ("notes", "note", "tree", "todos", "todo"):
         print("Invalid demo specified: not found in demo list")
         return
@@ -94,6 +153,16 @@ def main(folder, demo, rebuild):
         demo = "build_file_explorer"
     else:
         demo = "build_windows"
+=======
+    # determine which application to run
+    application = Application
+    if app:
+        if app not in demos.keys():
+            print("Invalid demo specified: not found in demo list")
+            return
+        application = demos[app]
+
+>>>>>>> 0839317a574efa9caf443dbb5a042d2eed3cac6f
     # Format the given path for the correct path delimiter and the check if
     # that path exists as a directory within the filesystem. Exit early if
     # false.
@@ -109,7 +178,11 @@ def main(folder, demo, rebuild):
     # logger class before we enter main curses loop
     logargs = utils.logargs(application, __file__)
     logger = utils.setup_logger_from_logargs(logargs)
+<<<<<<< HEAD
     curses.wrapper(application, folder, demo, rebuild, logger)
+=======
+    curses.wrapper(run_application, folder, application, demo, rebuild, reinsert, logger)
+>>>>>>> 0839317a574efa9caf443dbb5a042d2eed3cac6f
 
 if __name__ == "__main__":
     main()

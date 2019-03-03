@@ -5,7 +5,7 @@ import source.utils as utils
 from source.database import Connection
 from source.yamlchecker import YamlChecker
 
-# from data import RecieptData
+# from data import receiptData
 # from tabs import Tab
 # import calendar
 
@@ -15,7 +15,7 @@ li = None
 key = None
 limit = 30
 
-tabnames = ["RECIEPT",]
+tabnames = ["receipt",]
 
 class WinCalendar:
     def __init__(self, parent, window):
@@ -39,7 +39,7 @@ class Window:
         self.parent = parent
 
     def toggle_on(self):
-        if self.parent.title.lower() == "reciept":
+        if self.parent.title.lower() == "receipt":
             i = 2
             for store, date, _, _, _, _, total in self.datahead.data:
                 if i // 2 - 1 == self.datahead.pos:
@@ -80,7 +80,7 @@ class Window:
         self.window.refresh()
 
     def toggleMonths(self):
-        if self.parent.title.lower() == "reciept":
+        if self.parent.title.lower() == "receipt":
             for m in self.datahead.month:
                 i = 40
                 #month = self.months.year.formatmonth(2017, m[0])
@@ -105,8 +105,8 @@ class Window:
         self.window.border(bd, bd, bd, bd, bd, bd, bd, bd)
 
     def load(self):
-        if self.parent.title.lower() == "reciept":
-            self.datahead = RecieptData(
+        if self.parent.title.lower() == "receipt":
+            self.datahead = receiptData(
                 [row for row in self.parent.parent.conn.load()])
             self.databody = self.parent.parent.conn.load_body("asdf")
         elif self.parent.title.lower() == "grocery":

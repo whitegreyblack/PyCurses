@@ -2,20 +2,20 @@
   - fix key bindings for confirm/cancel
   - add cancel button
 
-# Reciept UI Cards:
+# receipt UI Cards:
   - [DONE] add logic for short names
 
-# Yaml Reciept Files:
+# Yaml receipt Files:
   - [DONE] add new property short for short names
   
-# Reciept Folder:
+# receipt Folder:
   - [DONE] Modify to use current mappings
   
 # Date formats: Setting for long and short formats
   - [DONE] Option to keep YYYY-MM-dd or YY-MM-dd
   - [DONE] Change to MM/dd/YY -or- MM/dd/YYYY
  
-# [DONE] Change reciept name format -> [storename]-[date]?
+# [DONE] Change receipt name format -> [storename]-[date]?
 -----
 # Resize prompt on full screen vs 80x25 but keep min/max settings to keep it
 # from being too big
@@ -41,5 +41,5 @@
     
 # Resizing manager
 
-# Format date when all reciepts are within a single year.
-# Format date when all reciepts span more than one year
+# Format date when all receipts are within a single year.
+# Format date when all receipts span more than one year
