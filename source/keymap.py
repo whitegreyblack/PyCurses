@@ -3,15 +3,6 @@
 Handles key inputs to actions for curses applications
 """
 import curses
-<<<<<<< HEAD
-from source.utils import Event
-from collections.abc import MutableMapping
-
-
-class KeyMap(MutableMapping):
-    def __init__(self, *args, **kwargs):
-        self.update(dict(*args, **kwargs))
-=======
 from source.utils import EventHandler
 from collections.abc import MutableMapping
 
@@ -22,7 +13,6 @@ class KeyMap(MutableMapping):
     def __init__(self, *args, **kwargs):
         self.store = dict()
         self.update(dict(*args, **kwargs))  # use the free update to set keys
->>>>>>> 0839317a574efa9caf443dbb5a042d2eed3cac6f
 
     def __getitem__(self, key):
         return self.store[self.__keytransform__(key)]
@@ -41,21 +31,6 @@ class KeyMap(MutableMapping):
 
     def __keytransform__(self, key):
         return key
-<<<<<<< HEAD
-    # def __setitem__(self, )
-    # def add_handler(self, key, curr_win_wid, next_win_wid):
-    #     if (key, curr_win_wid) in self:
-    #         raise ValueError("Duplicate key mapping")
-    #     self[(key, curr_win_wid)] = next_win_wid
-
-    # def add_handler_map(self, keymap):
-    #     self.update(keymap)
-
-if __name__ == "__main__":
-    km = KeyMap()
-    km.keys()
-    # km.add_handler(0, 1, 3)
-=======
 
 class EventMap(KeyMap):
     def on(self, *args):
@@ -92,4 +67,3 @@ if __name__ == "__main__":
         print(k, v)
     em[1].append(function_called)
     em(1, em, 'Got \'em', 1)
->>>>>>> 0839317a574efa9caf443dbb5a042d2eed3cac6f

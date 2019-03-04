@@ -117,11 +117,7 @@ class YamlChecker:
     @tryexcept
     def f_load(self, file):
         """ check file is a yaml object after file load """
-<<<<<<< HEAD
-        return isinstance(yaml.safe_load(self.f_open(file)), Reciept)
-=======
-        return isinstance(yaml.safe_load(self.f_open(file)), receipt)
->>>>>>> 0839317a574efa9caf443dbb5a042d2eed3cac6f
+        return isinstance(yaml.safe_load(self.f_open(file)), Receipt)
 
     #@printer(False)
     @tryexcept

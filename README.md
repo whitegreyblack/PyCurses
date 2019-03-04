@@ -36,7 +36,7 @@
 
 - data: folder holding data files used in app. Includes bulk names, validation schemas and example yaml files.
 
-- reciepts: folder used to hold exported reciept data objects. Currently holds depracted yaml files. Ongoing task to convert them.
+- receipts: folder used to hold exported receipt data objects. Currently holds depracted yaml files. Ongoing task to convert them.
 
 - tests: holds test data to run failure tests.
   - singlefail: holds test which fail in yamlchecker

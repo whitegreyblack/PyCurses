@@ -9,23 +9,6 @@ from collections import namedtuple
 
 import source.config as config
 from source.logger import Loggable
-<<<<<<< HEAD
-from source.YamlObjects import Reciept
-from source.schema import (
-    Table, 
-    SQLType, 
-    build_products_table, 
-    build_reciepts_table
-)
-from source.utils import (
-    logargs, 
-    setup_logger, 
-    setup_logger_from_logargs, 
-    format_date as date,
-    format_float as real, 
-    filename_and_extension as fileonly
-)
-=======
 from source.schema import (SQLType, Table, build_products_table,
                            build_receipts_table)
 from source.utils import filename_and_extension as fileonly
@@ -35,7 +18,6 @@ from source.utils import logargs, setup_logger, setup_logger_from_logargs
 from source.YamlObjects import receipt
 from source.models.models import Note
 
->>>>>>> 0839317a574efa9caf443dbb5a042d2eed3cac6f
 spacer = "  "
 
 def unpack(cursor):
@@ -194,11 +176,7 @@ class ReceiptConnection(Connection):
             self.log("no yaml receipts to insert. returning early")
             return
 
-<<<<<<< HEAD
-        self.log("inserting reciepts data into database.")
-=======
         self.log("inserting receipts data into database.")
->>>>>>> 0839317a574efa9caf443dbb5a042d2eed3cac6f
         inserted_files = self.previously_inserted_files()
         
         receipt_table = self.table("receipts")
@@ -211,11 +189,7 @@ class ReceiptConnection(Connection):
 
                 file_only, _ = fileonly(file_name)
                 self.conn.execute(
-<<<<<<< HEAD
-                    reciept_table.insert_command, 
-=======
                     receipt_table.insert_command, 
->>>>>>> 0839317a574efa9caf443dbb5a042d2eed3cac6f
                     (
                         file_only,
                         yaml_obj.store,
@@ -290,10 +264,10 @@ class ReceiptConnection(Connection):
         product = namedtuple("ProductInfo", "product price")
         c = f"""
         SELECT product, price 
-        from recieptproducts rp 
+        from receiptproducts rp 
         join products p 
         on rp.id_product = p.id_product
-        where rp.id_recieptproduct = {receipt_id};
+        where rp.id_receiptproduct = {receipt_id};
         """[1:]
         cursor = self._connection.execute(c)
         for info in unpack(cursor):

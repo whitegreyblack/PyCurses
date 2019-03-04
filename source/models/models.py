@@ -5,20 +5,8 @@ Data models to hold data from db
 
 __author__ = "Samuel Whang"
 
-<<<<<<< HEAD
-import textwrap
-from faker import Faker
-from faker.providers import job, phone_number
-from fakedata.name import (
-    Name,
-    SHORT_NAME_SCHEMA
-)
-from fakedata.phonenumber import PhoneNumber
-from typing import Union
-=======
 import random
 import textwrap
->>>>>>> 0839317a574efa9caf443dbb5a042d2eed3cac6f
 from collections import namedtuple
 from datetime import datetime
 from typing import Union
@@ -53,8 +41,6 @@ fake = Faker()
 fake.add_provider(job)
 fake.add_provider(phone_number)
 
-<<<<<<< HEAD
-=======
 
 class ModelABC(object):
     def __init__(self) -> None:
@@ -70,11 +56,13 @@ class ModelABC(object):
     def display(self) -> None:
         yield 1, 1, "Not Yet Implemented"
 
+
 def coinflip():
     return bool(random.randint(0, 1))
 
 def char_from_index(index):
     return chr(ord('A') + index)
+
 
 class Question:
     
@@ -121,6 +109,7 @@ Question(
             t = c.replace('\n', '')
             yield y + dy + j, x, t[:mx]
 
+
 class Text:
     def __init__(self, text):
         self.text = text
@@ -139,7 +128,6 @@ class Text:
     def random(cls):
         return cls(''.join(fake.text() for _ in range(random.randint(1, 5))))
 
->>>>>>> 0839317a574efa9caf443dbb5a042d2eed3cac6f
 class Task:
     tid = 0
     statuses = {
@@ -189,14 +177,8 @@ class Note:
         return f"Note({self.nid}, '{self.title}')"
 
     def display(self, x, y, mx, my, indent):
-<<<<<<< HEAD
-        text = textwrap.wrap(self.note, mx)
-        for i, line in enumerate(text):
-            yield (y + i, 1, line)
-=======
         if not self.note:
             yield 0, 0, ""
-            return
         dy = 0
         print("raw string:", self.note, repr(self.note))
         print("          :", repr(self.note.replace('\n', '\n\n')))
@@ -221,28 +203,25 @@ class Note:
             modified=datetime.today(), 
             note=fake.text()
         )
->>>>>>> 0839317a574efa9caf443dbb5a042d2eed3cac6f
 
     @classmethod
     def from_database(self, nid, title, created, modified, note):
         return Note(title, nid, created, modified, note)
 
 class Person:
-<<<<<<< HEAD
-    def __init__(self, name=None, address=None, job=None, phone_number=None):
-        self.name = name if name else Name.random(SHORT_NAME_SCHEMA)
-        self.address = address if address else fake.address()
-        self.job = job if job else fake.job()
-        self.phone_number = phone_number if phone_number else PhoneNumber.random()
-        self.description = fake.text()
-=======
-    def __init__(self, name=None, address=None, job=None, phone_number=None, description=None):
+    def __init__(
+            self, 
+            name=None, 
+            address=None, 
+            job=None, 
+            phone_number=None, 
+            description=None
+        ):
         self.name = name
         self.address = address
         self.job = job
         self.phone_number = phone_number
         self.description = description
->>>>>>> 0839317a574efa9caf443dbb5a042d2eed3cac6f
     
     def display(self, x, y, mx, my, indent=None):
         space = ''
@@ -276,8 +255,6 @@ class Person:
             yield (y + dy, dx, line)
             dy += 1
 
-<<<<<<< HEAD
-=======
     @classmethod
     def random(cls):
         n = Name.random(SHORT_NAME_SCHEMA)
@@ -288,7 +265,6 @@ class Person:
         return cls(n, a, j, p, d)
 
 
->>>>>>> 0839317a574efa9caf443dbb5a042d2eed3cac6f
 class Transaction:
     properties = ["subtotal", "tax", "total", "payment"]
     def __init__(
@@ -335,11 +311,7 @@ class Product:
         for n, p in zip(Product.test_names, Product.test_prices):
             yield Product(n, p) 
 
-<<<<<<< HEAD
-class Reciept:
-=======
 class Receipt:
->>>>>>> 0839317a574efa9caf443dbb5a042d2eed3cac6f
     def __init__(
             self, 
             store: str, 
@@ -349,11 +321,7 @@ class Receipt:
             category: str, 
             products: list, 
             transaction: Transaction):
-<<<<<<< HEAD
-        """Initialize fields used in reciept"""
-=======
         """Initialize fields used in receipt"""
->>>>>>> 0839317a574efa9caf443dbb5a042d2eed3cac6f
         self.store = store
         self.store_short = store_short
         self.date = date

@@ -2,7 +2,7 @@ drop table if exists storecategory;
 drop table if exists stores;
 drop table if exists receipts;
 drop table if exists products;
-drop table if exists recieptproducts;
+drop table if exists receiptproducts;
 
 create table storecategory (
     id_category     integer PRIMARY KEY AUTOINCREMENT,
@@ -25,7 +25,7 @@ create table receipts (
     tax             float,
     total           float,
     payment         float,
-    reciept_file    float,
+    receipt_file    float,
     FOREIGN KEY (id_store) REFERENCES stores(id_store)
 );
 
@@ -37,11 +37,11 @@ create table products (
     FOREIGN KEY (id_store) REFERENCES stores(id_store)
 );
 
-create table recieptproducts (
-    id_recieptproduct integer PRIMARY KEY AUTOINCREMENT,
-    id_reciept        integer NOT NULL,
+create table receiptproducts (
+    id_receiptproduct integer PRIMARY KEY AUTOINCREMENT,
+    id_receipt        integer NOT NULL,
     id_product        integer NOT NULL,
-    FOREIGN KEY (id_reciept) REFERENCES reciepts(id_receipt),
+    FOREIGN KEY (id_receipt) REFERENCES receipts(id_receipt),
     FOREIGN KEY (id_product) REFERENCES products(id_product)
 );
 
@@ -56,4 +56,4 @@ insert into receipts (id_store, created, purchased_on, subtotal, tax, total, pay
 -- example products
 insert into products (id_store, product, price) values (1, "product 1", 10.0), (2, "product 2", 20.0);
 -- example receieptproducts
-insert into recieptproducts (id_reciept, id_product) values (1, 2), (2, 1);
+insert into receiptproducts (id_receipt, id_product) values (1, 2), (2, 1);

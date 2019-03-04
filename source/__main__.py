@@ -1,8 +1,4 @@
-<<<<<<< HEAD
-"""__main__.py: Reciept Viewer App
-=======
-"""__main__.py: receipt Viewer App
->>>>>>> 0839317a574efa9caf443dbb5a042d2eed3cac6f
+"""__main__.py: Receipt Viewer App
 Handles building application within curses environment. Initializes
 curses settings then sends the screen into the application to be built
 """
@@ -39,11 +35,7 @@ def initialize_environment_settings(logger=None):
     # Reduce the delay when pressing escape key on keyboard.
     os.environ.setdefault('ESCDELAY', '25')
 
-<<<<<<< HEAD
-def application(screen, folderpath, demo, rebuild, logger=None):
-=======
 def run_application(screen, folderpath, app, demo, rebuild, reinsert, logger=None):
->>>>>>> 0839317a574efa9caf443dbb5a042d2eed3cac6f
     """Initializes the Application object which builds the rest of the
     necessary frontend/backend objects.
 
@@ -60,23 +52,6 @@ def run_application(screen, folderpath, app, demo, rebuild, reinsert, logger=Non
     initialize_curses_settings()
       
     # initialize application object and build front/back end
-<<<<<<< HEAD
-    app = Application(
-        folderpath,
-        screen=screen,
-        logger=logger,
-        rebuild=rebuild
-    )
-
-    # should we create a new function that calls all 4 functions?
-    # or manually call individual functions in here?
-    app.setup()
-    #app.build_windows(screen)
-    # app.build_windows()
-    getattr(app, demo)()
-    app.draw()
-    app.run()
-=======
     a = app(folderpath, screen=screen, logger=logger)
 
     # should we create a new function that calls all 4 functions?
@@ -91,7 +66,6 @@ def run_application(screen, folderpath, app, demo, rebuild, reinsert, logger=Non
     #     getattr(app, demo)(rebuild=rebuild)
     a.draw()
     a.run()
->>>>>>> 0839317a574efa9caf443dbb5a042d2eed3cac6f
 
 # TODO: need a way to run main without needing a folder
 # TODO: need a way to run main with multiple folders
@@ -99,15 +73,8 @@ def run_application(screen, folderpath, app, demo, rebuild, reinsert, logger=Non
 @click.command()
 @click.option('-f', "folder", nargs=1,
               help="Folder containing yaml data files")
-<<<<<<< HEAD
-@click.option('--demo', "demo", nargs=1,
-              help="Specified which demo application to run")
-@click.option('--rb', "rebuild", is_flag=True, default=False,
-              help="Rebuild tables before inserting files")
-def main(folder, demo, rebuild):
-=======
 @click.option('--app', "app", nargs=1,
-              help="Specified which demo application to run [notes, tree, tasks, reciepts, quiz]")
+              help="Specified which demo application to run [notes, tree, tasks, receipts, quiz]")
 @click.option('-x', "demo", nargs=1, is_flag=True, default=False,
               help="Use fake data to build the app")
 @click.option('-r', "rebuild", nargs=1, is_flag=True, default=False,
@@ -115,7 +82,6 @@ def main(folder, demo, rebuild):
 @click.option('-i', "reinsert", nargs=1, is_flag=True, default=False,
               help="Reinsert data for specified application")
 def main(folder, app, demo, rebuild, reinsert):
->>>>>>> 0839317a574efa9caf443dbb5a042d2eed3cac6f
     """Handles argument parsing using click framework before calling the
     curses wrapper handler function
     """
@@ -141,19 +107,6 @@ def main(folder, app, demo, rebuild, reinsert):
         print("Invalid folder specified: cannot use dot")
         return
 
-<<<<<<< HEAD
-    if demo and demo not in ("notes", "note", "tree", "todos", "todo"):
-        print("Invalid demo specified: not found in demo list")
-        return
-    elif demo in ("todo", "todos"):
-        demo = "build_todo_tasks"
-    elif demo in ("notes", "note"):
-        demo = "build_note_viewer"
-    elif demo in ("tree",):
-        demo = "build_file_explorer"
-    else:
-        demo = "build_windows"
-=======
     # determine which application to run
     application = Application
     if app:
@@ -162,7 +115,6 @@ def main(folder, app, demo, rebuild, reinsert):
             return
         application = demos[app]
 
->>>>>>> 0839317a574efa9caf443dbb5a042d2eed3cac6f
     # Format the given path for the correct path delimiter and the check if
     # that path exists as a directory within the filesystem. Exit early if
     # false.
@@ -178,11 +130,7 @@ def main(folder, app, demo, rebuild, reinsert):
     # logger class before we enter main curses loop
     logargs = utils.logargs(application, __file__)
     logger = utils.setup_logger_from_logargs(logargs)
-<<<<<<< HEAD
-    curses.wrapper(application, folder, demo, rebuild, logger)
-=======
     curses.wrapper(run_application, folder, application, demo, rebuild, reinsert, logger)
->>>>>>> 0839317a574efa9caf443dbb5a042d2eed3cac6f
 
 if __name__ == "__main__":
     main()

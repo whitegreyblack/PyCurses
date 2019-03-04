@@ -14,11 +14,7 @@ import datetime
 import textwrap
 import cerberus
 from math import floor, ceil
-<<<<<<< HEAD
-from source.YamlObjects import Reciept
-=======
-from source.YamlObjects import receipt
->>>>>>> 0839317a574efa9caf443dbb5a042d2eed3cac6f
+from source.YamlObjects import Receipt
 from source.config import YAML_FILE_NAME_REGEX
 from typing import Union, Tuple
 from collections import namedtuple
@@ -33,17 +29,6 @@ box = namedtuple('Box', 'x y width height')
 EventArg = namedtuple('EventArg', 'sender msg')
 
 
-<<<<<<< HEAD
-class Event(list):
-    # def __call__(self, sender, event):
-    #     for fn in self:
-    #         fn(sender, event)
-    def __call__(self, *args, **kwargs):
-        for f in self:
-            f(*args, **kwargs)
-    def __repr__(self):
-        return f"Event({s})"
-=======
 class EventHandler(list):
     # def __call__(self, sender, event):
     #     for fn in self:
@@ -55,7 +40,6 @@ class EventHandler(list):
 
     def __repr__(self):
         return f"EventHandler({', '.join(f.__name__ for f in self)})"
->>>>>>> 0839317a574efa9caf443dbb5a042d2eed3cac6f
 '''
 class Permissions(Enum): 
     flags = {
