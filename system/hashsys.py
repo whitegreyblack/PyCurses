@@ -49,6 +49,12 @@ def inorder_print(d, curdir, level=0):
         subdir = d.get(file_or_folder.cid, None)
         inorder_print(d, subdir, level+1)
 
+def preorder_print(d, curdir, level=0):
+    pass
+
+def postfix_print(d, curdir, level=0):
+    pass
+
 if __name__ == "__main__":
     d = dict({ i: set() for i in range(6) })
 

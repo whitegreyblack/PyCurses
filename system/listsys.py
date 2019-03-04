@@ -40,6 +40,12 @@ def inorder_print(l, curdir, level=0):
             subdir = dirfilter(l, file_or_folder.cid)
             inorder_print(l, subdir, level+1)
 
+def preorder_print(l, curdir, level=0):
+    pass
+
+def postfix_print(l, curdir, level=0):
+    pass
+
 if __name__ == "__main__":
     l = [
         node(1, 0, None, 4, "Music/"),
