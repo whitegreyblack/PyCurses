@@ -55,9 +55,9 @@ def deserialize(data, i=0, sublevel=1):
         i += 1
         while s:
             k, v, l, j, p = s.pop(0)
-            if v:
+            if v is not None:
                 # print(j, l, p, sublevel, k)
-                t.append(node(j, l, p, sublevel, k))
+                t.append(node(j, l, p, sublevel, k+"/"))
                 if isinstance(v, list):
                     for f in v:
                         if isinstance(f, str):
@@ -67,36 +67,36 @@ def deserialize(data, i=0, sublevel=1):
                             for fk, fv in f.items():
                                 s.append((fk, fv, sublevel, i, j))
                                 i += 1
-                elif isinstance(v, dict):
-                    for vk, vv in v.items():
-                        s.append((vk, vv, sublevel, i, j))
-                        i += 1
                 sublevel += 1
             else:
-                # print(j, l, p, '$', k)
-                t.append(node(j, l, p, sublevel, k))
-    print()
-    for n in t:
-        print(el_repr(n))
-    print()
+                # print(j, l, p, sublevel, k)
+                t.append(node(j, l, p, None, k))
+    # print()
+    # for n in t:
+    #     print(el_repr(n))
+    # print()
     return t
 
+def els_repr(ns):
+    return [el_repr(n) for n in ns]
+
 def el_repr(n):
-    return f"{n.nid} {n.gid} {n.cid} {n.name}"
+    return f"{n.nid} {n.gid} {n.cid if n.cid else '|'} {n.name}"
 
 def elements(t, i):
     elms = sorted(dirfilter(t, i), key=dirsort, reverse=True)
-    print([el_repr(e) for e in elms])
+    # print([el_repr(e) for e in elms])
     return elms
 
 def print_inorder(t):
     *ns, n = elements(t, 0)
+    print('n g c')
     while n:
-        print(n.nid, n.cid, n.name)
+        print(el_repr(n))
         if n.cid:
             for e in elements(t, n.cid):
                 ns.append(e)
-            print([el_repr(n) for n in ns])
+            # print([el_repr(n) for n in ns])
         n = None
         if ns:
             n = ns.pop()
@@ -151,6 +151,22 @@ def deserialize_hash(data):
 def serialize_hash(data):
     pass
 
+def to_hashsys(t):
+    max_cid = max(-1 if not n.cid else n.cid for n in t)
+    d = dict({ i: dirfilter(t, i) for i in range(max_cid) })
+    return d
+
+def to_hashlistsys(t):
+    d, l = dict(), list()
+    max_cid = max(-1 if not n.cid else n.cid for n in t)
+    for i in range(max_cid):
+        d[i] = set()
+        ns = [n for n in dirfilter(t, i)]
+        for n in ns:
+            d[i].add(n.nid)
+            l.append(n)
+    return d, l
+
 if __name__ == "__main__":
     print("""
     Documents/:
@@ -163,12 +179,13 @@ if __name__ == "__main__":
     - Playlist/
     - Favorites/: []"""[1:])
     structure = parse(filepath)
-    # print(structure)
+    print(structure)
+    
+    t = deserialize(structure)
 
-    # print("Traverse inorder after printing entire group ('BFS')")
-    # deserialize_inorder_group(structure)
-    # print()
-    # print("Traverse inorder after printing entire level ('DFS')")
-    # deserialize_inorder_level(structure)
+    print_inorder(t)
 
-    print_inorder(deserialize(structure))
+    to_hashsys(t)
+
+    d, l = to_hashlistsys(t)
+    print(d)
