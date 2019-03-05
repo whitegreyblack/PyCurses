@@ -34,21 +34,28 @@ Ex:
 """
 node = namedtuple("Node", "nid gid cid name")
 dirsort = lambda x: (x.cid is None, x.name)
+dirfilter = lambda l, ns: list(filter(lambda x: x.nid in ns, l))
 
-def inorder_print(d, l, id_dir=0, indent=0):
-    if id_dir is None or id_dir not in d:
+def print_nodes_indented(d, l, id_dir=0, indent=0):
+    nodes = d.get(id_dir, None)
+    if nodes is None:
         return
-    files_or_folders = sorted(filter(lambda n: n.gid == id_dir, l), key=dirsort)
+    curdir = dirfilter(l, nodes)
+    files_or_folders = sorted(curdir, key=dirsort)
     for file_or_folder in files_or_folders:
-        print(" " * (indent * 4), file_or_folder.nid, file_or_folder.name)
-        if file_or_folder.cid:
-            inorder_print(d, l, file_or_folder.cid, indent+1)
+        indentation = f"{(' ' * (indent * 4))}"
+        print(f"{indentation}{file_or_folder.nid} {file_or_folder.name}")
+        print_nodes_indented(d, l, file_or_folder.cid, indent+1)
 
-def preorder_print(d, l, id_dir=0, indent):
-    pass
-
-def postfix_print(d, l, id_dir=0, indent):
-    pass
+def print_nodes_full_path(d, l, id_dir=0, path=""):
+    nodes = d.get(id_dir, None)
+    if nodes is None:
+        return
+    curdir = dirfilter(l, nodes)
+    files_or_folders = sorted(curdir, key=dirsort)
+    for file_or_folder in files_or_folders:
+        print(f"{file_or_folder.nid} {path + file_or_folder.name}")
+        print_nodes_full_path(d, l, file_or_folder.cid, path+file_or_folder.name)
 
 if __name__ == "__main__":
     d = dict()
@@ -73,4 +80,5 @@ if __name__ == "__main__":
     ]
 
     current_directory_id = 0
-    inorder_print(d, l, current_directory_id)
+    print_nodes_indented(d, l, current_directory_id)
+    print_nodes_full_path(d, l, current_directory_id)

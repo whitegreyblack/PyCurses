@@ -41,19 +41,22 @@ from collections import namedtuple
 node = namedtuple("Node", "nid gid pid cid name")
 dirsort = lambda x: (x.cid is None, x.name)
 
-def inorder_print(d, curdir, level=0):
-    if not curdir:
+def print_nodes_indented(d, id_dir=0, indent=0):
+    curdir = d.get(id_dir, None)
+    if curdir is None:
         return
     for file_or_folder in sorted(curdir, key=dirsort):
-        print(" " * (level * 4), file_or_folder.nid, file_or_folder.name)
-        subdir = d.get(file_or_folder.cid, None)
-        inorder_print(d, subdir, level+1)
+        indentation = f"{(' ' * (indent * 4))}"
+        print(f"{indentation}{file_or_folder.nid} {file_or_folder.name}")
+        print_nodes_indented(d, file_or_folder.cid, indent+1)
 
-def preorder_print(d, curdir, level=0):
-    pass
-
-def postfix_print(d, curdir, level=0):
-    pass
+def print_nodes_full_path(d, id_dir=0, path=""):
+    curdir = d.get(id_dir, None)
+    if curdir is None:
+        return
+    for file_or_folder in sorted(curdir, key=dirsort):
+        print(f"{file_or_folder.nid} {path + file_or_folder.name}")
+        print_nodes_full_path(d, file_or_folder.cid, path+file_or_folder.name)
 
 if __name__ == "__main__":
     d = dict({ i: set() for i in range(6) })
@@ -75,5 +78,5 @@ if __name__ == "__main__":
     d[4].add(node(9, 4, 0, 5, "Favorites/"))
 
     current_directory_id = 0
-    current_directory = d[0]
-    inorder_print(d, current_directory)
+    print_nodes_indented(d, current_directory_id)
+    print_nodes_full_path(d, current_directory_id)

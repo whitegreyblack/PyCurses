@@ -27,24 +27,33 @@ from collections import namedtuple
     (nid: 9, gid: 4, pid: 0, cid: 5, name; Favorites)
 ]
 """
+
 node = namedtuple("Node", "nid gid pid cid name")
 dirsort = lambda x: (x.cid is None, x.name)
-dirfilter = lambda l, i: list(filter(lambda x: x.gid == i, l))
+dirfilter = lambda l, i: list(filter(lambda n: n.gid == i, l))
 
-def inorder_print(l, curdir, level=0):
+def print_nodes_indented(l, id_dir=0, indent=0):
+    if id_dir == None:
+        return
+    curdir = dirfilter(l, id_dir)
     if not curdir:
         return
-    for file_or_folder in sorted(curdir, key=dirsort):
-        print(" " * (level * 4), file_or_folder.nid, file_or_folder.name)
-        if file_or_folder.cid:
-            subdir = dirfilter(l, file_or_folder.cid)
-            inorder_print(l, subdir, level+1)
+    files_or_folders = sorted(curdir, key=dirsort)
+    for file_or_folder in files_or_folders:
+        indentation = f"{(' ' * (indent * 4))}"
+        print(f"{indentation}{file_or_folder.nid} {file_or_folder.name}")
+        print_nodes_indented(l, file_or_folder.cid, indent+1)
 
-def preorder_print(l, curdir, level=0):
-    pass
-
-def postfix_print(l, curdir, level=0):
-    pass
+def print_nodes_full_path(l, id_dir=0, path=""):
+    if id_dir == None:
+        return
+    curdir = dirfilter(l, id_dir)
+    if not curdir:
+        return
+    files_or_folders = sorted(curdir, key=dirsort)
+    for file_or_folder in files_or_folders:
+        print(f"{file_or_folder.nid} {path + file_or_folder.name}")
+        print_nodes_full_path(l, file_or_folder.cid, path+file_or_folder.name)
 
 if __name__ == "__main__":
     l = [
@@ -63,4 +72,5 @@ if __name__ == "__main__":
 
     current_directory_id = 0
     current_directory = dirfilter(l, current_directory_id)
-    inorder_print(l, current_directory)
+    print_nodes_indented(l, current_directory_id)
+    print_nodes_full_path(l, current_directory_id)
