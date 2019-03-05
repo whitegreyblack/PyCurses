@@ -38,6 +38,7 @@ from collections import namedtuple
     5: {} # empty directory representation
 }
 """
+
 node = namedtuple("Node", "nid gid pid cid name")
 dirsort = lambda x: (x.cid is None, x.name)
 
@@ -60,20 +61,15 @@ def print_nodes_full_path(d, id_dir=0, path=""):
 
 if __name__ == "__main__":
     d = dict({ i: set() for i in range(6) })
-
     d[0].add(node(1, 0, None, 4, "Music/"))
     d[0].add(node(0, 0, None, 1, "Documents/"))
     d[0].add(node(2, 0, None, None, "File"))
-    
     d[1].add(node(3, 1, 0, None, "File"))
     d[1].add(node(4, 1, 0, 2, "Folder/"))
     d[1].add(node(5, 1, 0, 3, "Directory/"))
-    
     d[2].add(node(6, 2, 1, None, "Text"))
     d[2].add(node(10, 2, 1, None, "Abstract"))
-
     d[3].add(node(7, 3, 1, None, "Image"))
-
     d[4].add(node(8, 4, 0, None, "Playlist"))
     d[4].add(node(9, 4, 0, 5, "Favorites/"))
 

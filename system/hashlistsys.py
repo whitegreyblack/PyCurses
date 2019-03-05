@@ -32,6 +32,7 @@ Ex:
         (5, FIle, None)
         ]
 """
+
 node = namedtuple("Node", "nid gid cid name")
 dirsort = lambda x: (x.cid is None, x.name)
 dirfilter = lambda l, ns: list(filter(lambda x: x.nid in ns, l))
