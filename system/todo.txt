@@ -1,8 +1,0 @@
-TODOS:
-# hashlistsys, hashsys, and listsys all use directory as an input. Try to
-# remove the directory parameter and use only the id_current_directory to
-# process tree.
-
-# We have all 3 algos using inorder. Now the hard part is preorder and 
-# postfix traversals. Implementations of these two traversals in all 3
-# algos will determine the effeciency and usability the data structures.
