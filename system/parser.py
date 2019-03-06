@@ -1,4 +1,5 @@
 # parser.py
+import os
 import yaml
 from system import *
 """
@@ -36,7 +37,7 @@ dict(list(dict(list())))
 # determine which of the three is the most efficient.
 """
 
-filepath = "system\structure.yaml"
+filepath = "system" + os.path.sep + "structure.yaml"
 node = namedtuple("Node", "nid gid pid cid name")
 
 def parse(filepath):
