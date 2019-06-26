@@ -5,17 +5,17 @@ Data models to hold data from db
 
 __author__ = "Samuel Whang"
 
-import textwrap
 import random
+import textwrap
+from collections import namedtuple
+from datetime import datetime
+from typing import Union
+
 from faker import Faker
 from faker.providers import job, phone_number
-from fakedata.name import (
-    Name,
-    SHORT_NAME_SCHEMA
-)
+
+from fakedata.name import SHORT_NAME_SCHEMA, Name
 from fakedata.phonenumber import PhoneNumber
-from typing import Union
-from collections import namedtuple
 
 Currency = Union[int, float]
 
@@ -42,6 +42,74 @@ fake.add_provider(job)
 fake.add_provider(phone_number)
 
 
+class ModelABC(object):
+    def __init__(self) -> None:
+        pass
+
+    def __repr__(self) -> str:
+        return self.__class__.__name__
+
+    @classmethod
+    def random(cls) -> object:
+        return NotImplemented
+
+    def display(self) -> None:
+        yield 1, 1, "Not Yet Implemented"
+
+
+def coinflip():
+    return bool(random.randint(0, 1))
+
+def char_from_index(index):
+    return chr(ord('A') + index)
+
+
+class Question:
+    
+    def __init__(self, question, choices, answer):
+        self.question = question
+        self.choices = choices
+        self.answer = answer
+
+    def __repr__(self):
+        q = "\n\t".join(textwrap.wrap(self.question, 70))
+        c = "\n\t".join("\n\t".join(textwrap.wrap(c, 70)) 
+                for c in self.choices)
+        return f"""
+Question(
+    question: 
+        {q}
+    choices: 
+        {c}
+    answer: {self.answer}
+)
+"""[1:]
+
+    @classmethod
+    def random(cls):
+        q = "Question: " + ". ".join(fake.text() for _ in range(1))
+        c = [
+            f"{char_from_index(i)}. {fake.text()[:random.randint(25, 65)]}" 
+                for i in range(random.randint(4, 5))
+        ]
+        if coinflip():
+            a = char_from_index(random.randint(1, len(c)-1))
+        else:
+            a = [char_from_index(i) for i in range(len(c)) if coinflip()]
+        return cls(q, c, a)
+
+    def display(self, x, y, mx, my, indent):
+        dy = 0
+        q = textwrap.wrap(self.question, mx-2)
+        for j, s in enumerate(q):
+            yield y + j, x, s
+        dy += len(q) + 1
+
+        for j, c in enumerate(self.choices):
+            t = c.replace('\n', '')
+            yield y + dy + j, x, t[:mx]
+
+
 class Text:
     def __init__(self, text):
         self.text = text
@@ -57,8 +125,8 @@ class Text:
             dy += 1
 
     @classmethod
-    def random(self):
-        return Text(''.join(fake.text() for _ in range(random.randint(1, 5))))
+    def random(cls):
+        return cls(''.join(fake.text() for _ in range(random.randint(1, 5))))
 
 class Task:
     tid = 0
@@ -81,6 +149,10 @@ class Task:
         else:
             self.nid = Task.tid
             Task.tid += 1
+<<<<<<< HEAD
+=======
+
+>>>>>>> 0839317a574efa9caf443dbb5a042d2eed3cac6f
     def display(self, x, y, mx, my, indent):
         text = textwrap.wrap(self.description, mx)
         for i, line in enumerate(text):
@@ -105,26 +177,51 @@ class Note:
         return f"Note({self.nid}, '{self.title}')"
 
     def display(self, x, y, mx, my, indent):
+        if not self.note:
+            yield 0, 0, ""
         dy = 0
+        print("raw string:", self.note, repr(self.note))
+        print("          :", repr(self.note.replace('\n', '\n\n')))
         for line in self.note.replace('\\n', '\\n\\n').split('\\n'):
             frmt = textwrap.wrap(line, mx)
+            print('formatted line', frmt)
             for i, l in enumerate(frmt):
+                print(my, y, dy, i, y+dy+i)
                 if y + dy + i > my:
-                    return
+                    print('broken')
+                    dy += 1
+                    break
                 yield (y + dy + i, x, l)
-            dy += 1
+            dy += i
+
+    @classmethod
+    def random(cls):
+        title = f"title for note {Note.nid}"
+        return cls(
+            title, 
+            created=datetime.today(), 
+            modified=datetime.today(), 
+            note=fake.text()
+        )
 
     @classmethod
     def from_database(self, nid, title, created, modified, note):
         return Note(title, nid, created, modified, note)
 
 class Person:
-    def __init__(self, name=None, address=None, job=None, phone_number=None):
-        self.name = name if name else Name.random(SHORT_NAME_SCHEMA)
-        self.address = address if address else fake.address()
-        self.job = job if job else fake.job()
-        self.phone_number = phone_number if phone_number else PhoneNumber.random()
-        self.description = fake.text()
+    def __init__(
+            self, 
+            name=None, 
+            address=None, 
+            job=None, 
+            phone_number=None, 
+            description=None
+        ):
+        self.name = name
+        self.address = address
+        self.job = job
+        self.phone_number = phone_number
+        self.description = description
     
     def display(self, x, y, mx, my, indent=None):
         space = ''
@@ -157,6 +254,16 @@ class Person:
         for line in desc[:my-dy]:
             yield (y + dy, dx, line)
             dy += 1
+
+    @classmethod
+    def random(cls):
+        n = Name.random(SHORT_NAME_SCHEMA)
+        a = fake.address()
+        j = fake.job()
+        p = PhoneNumber.random()
+        d = fake.text()
+        return cls(n, a, j, p, d)
+
 
 class Transaction:
     properties = ["subtotal", "tax", "total", "payment"]

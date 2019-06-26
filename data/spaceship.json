@@ -1,0 +1,21 @@
+{
+    "Statistics": {
+        "Strength": "",
+        "Wisdom": "",
+        "Constitution": "",
+        "Dexterity": "",
+        "Charisma": "",
+        "LucK": "",
+        "Perception": "",
+        "Willpower": ""
+    },
+    "Races": {},
+    "Classes": {},
+    "Locations": {},
+    "Items": {
+        "Consumables": [],
+        "Weapons": ""
+    },
+    "Environment": {},
+    "Magic Spells": {}
+}

@@ -1,7 +1,6 @@
-"""
-File: calendargrid.py
+# grid.py
 
-Notes:
+"""
 Takes in all available dates and builds a graph between each available date
 This would allow for a interfaceable calendar with interactive dates.
 
@@ -46,8 +45,10 @@ class that holds everything we need. It would be an unordered map that
 would hold links of each path that a day could navigate to using the tuple
 value that each day mapped to.
 """
+
 import calendar
 import collections
+
 
 unicode_arrows = {
     "n": u'\u2191',
@@ -57,7 +58,7 @@ unicode_arrows = {
 }
 
 # just found out this is already implemented by str.center(width)
-class String:
+class String(object):
     @staticmethod
     def center(word, width):
         if len(word) >= width:

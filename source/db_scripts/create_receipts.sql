@@ -23,7 +23,7 @@ create table receipts (
     tax             float,
     total           float,
     payment         float,
-    reciept_file    float,
+    receipt_file    float,
     FOREIGN KEY (id_store) REFERENCES stores(id_store)
 );
 
@@ -35,10 +35,10 @@ create table products (
     FOREIGN KEY (id_store) REFERENCES stores(id_store)
 );
 
-create table recieptproducts (
-    id_recieptproduct integer PRIMARY KEY AUTOINCREMENT,
-    id_reciept        integer NOT NULL,
+create table receiptproducts (
+    id_receiptproduct integer PRIMARY KEY AUTOINCREMENT,
+    id_receipt        integer NOT NULL,
     id_product        integer NOT NULL,
-    FOREIGN KEY (id_reciept) REFERENCES reciepts(id_receipt),
+    FOREIGN KEY (id_receipt) REFERENCES receipts(id_receipt),
     FOREIGN KEY (id_product) REFERENCES products(id_product)
 );

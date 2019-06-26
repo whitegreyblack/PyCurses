@@ -1,0 +1,14 @@
+[
+    {
+        "title": "MVC",
+        "created": [2019, 1, 20],
+        "modified": [2019, 1, 21],
+        "note": "This is an example page describing my notes on the MVC design architecture. MVC stands for Model-View-Controller."
+    },
+    {
+        "title": "Python",
+        "created": [2019, 1, 20],
+        "modified": [2019, 1, 20],
+        "note": "This is another example page describing my notes on python. Python was used to build this application!"
+    }
+]

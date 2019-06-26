@@ -1,23 +1,12 @@
 """Datacontroller.py"""
+import json
 import os
-from source.database import (
-    NoteConnection,
-    ReceiptConnection,
-)
-from source.models.models import (
-    Person,
-    Transaction,
-    Note,
-    Product,
-    Receipt
-)
-from source.utils import (
-    setup_logger,
-    Event, 
-    EventArg,
-    parse_date_from_database,
-    format_date
-)
+
+import source.config as config
+from source.database import NoteConnection, ReceiptConnection
+from source.models.models import Note, Person, Product, Receipt, Transaction
+from source.utils import (EventHandler, EventArg, format_date,
+                          parse_date_from_database, setup_logger)
 
 
 class Node:
@@ -36,15 +25,40 @@ class Controller:
     logger_file = 'controller.log'
     logger_args = {'currentfile': __file__}
     # def __init__(self, connection=None, logger=None):
-    def __init__(self, connection=None):
+    def __init__(self, connection=None, reinsert=False):
+        print(self.__class__.__name__, reinsert)
         self.connection = connection
-        # if not logger:
-        #     logger = setup_logger(
-        #         self.logger_name, 
-        #         self.logger_file, 
-        #         extra=self.logger_args
-        #     )
-        # self.logger = logger
+    
+        if reinsert:
+            self.read_data_file()
+    
+    def read_data_file(self):
+        if not self.data_file_path:
+            raise NotImplementedError
+        try:
+            with open(self.data_file_path, "r") as f:
+                d = json.loads(f.read())
+        except FileNotFoundError:
+            print("Could not open file. File does not exist.")
+        else:
+            # Note.nid = self.get_next_note_id() + 1
+            for obj in d:
+                # o = Note(
+                #     obj['title'],
+                #     created=obj['created'], 
+                #     modified=obj['modified'], 
+                #     note=obj['note']
+                # )
+                self.connection.insert(obj)
+    
+
+class QuizController(Controller):
+    data_file_path = config.DATA_FILE_PATH_QUIZ
+    def request_questions(self):
+        for qdata in self.connection.select_questions():
+            yield qdata
+        else:
+            yield None
 
 
 class NotesController(Controller):
@@ -57,12 +71,19 @@ class NotesController(Controller):
         modified datetime, -- last modified or every modification?
         note     varchar(250),
     """
+    data_file_path = config.DATA_FILE_PATH_NOTES
+    def get_next_note_id(self):
+        return self.connection.select_max_note_id()
+    
     def request_note(self, nid):
         pass
     
     def request_notes(self):
         notes = self.connection.select_from_table()
         return [Note.from_database(*n) for n in notes]
+
+    def add_to_database(self, obj):
+        self.connection.insert_note(obj)
 
 
 class ExplorerController(Controller):
@@ -152,4 +173,6 @@ class ReceiptController(Controller):
             yield r
 
 if __name__ == "__main__":
-    e = ExplorerController()
+    # e = ExplorerController()
+    n = NotesController(NoteConnection())
+    print(n.request_notes())

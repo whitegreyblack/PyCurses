@@ -113,7 +113,8 @@ def main(window):
                 weekdayindex += 1
             verticaloffset += 1
     
-    window.getch()
+    ch = window.getch()
+    print(ch, curses.KEY_PPAGE == ch) #ppage:339, #npage:338
     # TODO: implement program loop involving vertical/horiontal scrolling
 
 

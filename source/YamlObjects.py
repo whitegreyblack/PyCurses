@@ -2,8 +2,6 @@
 holds all objects used during transporting data from yaml to database
 """
 
-__Author__ = "Sam Whang"
-
 import yaml
 import datetime
 import source.config as config
@@ -27,9 +25,10 @@ def format_receipt_date(filename, date):
         return date
     return filedate.strftime(config.DATE_FORMAT['L'])
 
-class receipt(yaml.YAMLObject):
+
+class Receipt(yaml.YAMLObject):
     __doc__ = """Yaml Object Class used to describe a receipt"""
-    yaml_tag = u'!receipt'
+    yaml_tag = u'!Receipt'
     properties = {
         # [key]: (object type(s), validation_handler, format_handler)
         'store': (str, validate_receipt_store, None),

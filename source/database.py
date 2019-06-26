@@ -2,26 +2,22 @@
 
 __author__ = "Samuel Whang"
 
-import sqlite3
-import logging
 import datetime
+import logging
+import sqlite3
 from collections import namedtuple
+
+import source.config as config
 from source.logger import Loggable
+from source.schema import (SQLType, Table, build_products_table,
+                           build_receipts_table)
+from source.utils import filename_and_extension as fileonly
+from source.utils import format_date as date
+from source.utils import format_float as real
+from source.utils import logargs, setup_logger, setup_logger_from_logargs
 from source.YamlObjects import receipt
-from source.schema import (
-    Table, 
-    SQLType, 
-    build_products_table, 
-    build_receipts_table
-)
-from source.utils import (
-    logargs, 
-    setup_logger, 
-    setup_logger_from_logargs, 
-    format_date as date,
-    format_float as real, 
-    filename_and_extension as fileonly
-)
+from source.models.models import Note
+
 spacer = "  "
 
 def unpack(cursor):
@@ -34,27 +30,90 @@ class Connection:
     Database Connection Object
     TODO: make this more abstract for different connections
     """
+    schema = None
     rebuild = False
-    def __init__(self, database, schema=None, rebuild=None):
+    database_path = None
+    clean_script_path = None
+    rebuild_script_path = None
+
+    def __init__(self, database, schema=None, rebuild=False):
+        if database:
+            self.database = database
+        if schema:
+            self.schema = schema
+        if rebuild:
+            self.rebuild = rebuild
+
         self._connection = sqlite3.connect(
-            database,
+            self.database,
             detect_types=sqlite3.PARSE_DECLTYPES
         )
         self.schema = schema
         self.rebuild_database(rebuild)
     
-    def __exit__(self):
-        self.conn.close()
+    def __del__(self):
+        print(self.database_path)
+        self._connection.close()
 
     def rebuild_database(self, rebuild):
-        if not rebuild:
+        """
+        If table needs rebuilding, the rebuild script path linked to the
+        rebuild script will be opened and each statement in the script 
+        executed.
+        """
+        if not rebuild or not self.rebuild_script_path:
             return
-        with open(rebuild, 'r') as sql:
+
+        with open(self.rebuild_script_path, 'r') as sql:
             for stmt in ''.join(sql.readlines()).split(';'):
                 self._connection.execute(f"{stmt};")
+        self._connection.commit()
+
+    def insert(self, obj):
+        if not self.model_name:
+            raise NotImplementedError
+        fn_name = 'insert_' + self.model_name
+        if hasattr(self, 'insert_' + self.model_name):
+            getattr(self, fn_name)(obj)
+        else:
+            raise Exception(f"function name not found {fn_name}")
+
+class PersonConnection(Connection):
+    database = config.DATABASE_POINTER_CONTACTS
+
+    def __init__(self, database=None, schema=None, rebuild=False):
+        """Wrapper to pass in contact connection specific attributes"""
+        super().__init__(database, schema, rebuild)
+
+class QuizConnection(Connection):
+    database = config.DATABASE_POINTER_QUIZ
+    clean_script = config.CONNECTION_CLEAN_SCRIPT_QUIZ
+    rebuild_script = config.CONNECTION_REBUILD_SCRIPT_QUIZ
+
+    def __init__(self, database=None, schema=None, rebuild=False):
+        """Wrapper to pass in quiz connection specific attributes"""
+        super().__init__(database, schema, rebuild)
+
+    def select_questions(self):
+        return []
+
+    def insert_question(self):
+        pass
 
 class ReceiptConnection(Connection):
-    def __init__(self, database='./data/receipts.db', rebuild=False):
+    
+    database = config.DATABASE_POINTER_RECEIPTS
+    clean_script = config.CONNECTION_CLEAN_SCRIPT_RECEIPTS
+    rebuild_script = config.CONNECTION_REBUILD_SCRIPT_RECEIPTS
+
+    def __init__(self, database=None, schema=None, rebuild=False):
+        if database:
+            self.database = database
+        if schema:
+            self.schema = schema
+        if rebuild:
+            self.rebuild = rebuild
+
         super().__init__(database, rebuild=rebuild)
         self.tables = [
             build_receipts_table(),
@@ -179,10 +238,10 @@ class ReceiptConnection(Connection):
         store = namedtuple("StoreName", "store cid")
 
         c = f"""
-select store, id_category
-from stores
-where id_store = {store_id};
-"""
+        select store, id_category
+        from stores
+        where id_store = {store_id};
+        """[1:]
         cursor = self._connection.execute(c)
         for info in unpack(cursor):
             return store(*info)
@@ -203,25 +262,37 @@ where id_store = {store_id};
 
     def select_receipt_products(self, receipt_id):
         product = namedtuple("ProductInfo", "product price")
-
         c = f"""
-SELECT product, price 
-from recieptproducts rp 
-join products p 
-on rp.id_product = p.id_product
-where rp.id_recieptproduct = {receipt_id};
-"""[1:]
-
+        SELECT product, price 
+        from receiptproducts rp 
+        join products p 
+        on rp.id_product = p.id_product
+        where rp.id_receiptproduct = {receipt_id};
+        """[1:]
         cursor = self._connection.execute(c)
         for info in unpack(cursor):
             yield product(*info)
 
 class NoteConnection(Connection):
-    def __init__(self, database="./data/notes.db", schema=None, rebuild=False):
-        super().__init__(database, schema, rebuild)
+    model_name = "note"
+    schema = None
+    database_path = config.DATABASE_POINTER_NOTES
+    clean_script_path = config.CONNECTION_CLEAN_SCRIPT_NOTES
+    rebuild_script_path = config.CONNECTION_REBUILD_SCRIPT_NOTES
+
+    def __init__(self, database=None, schema=None, rebuild=False):
+        if database:
+            self.database_path = database
+        if schema:
+            self.schema = schema
+        if rebuild:
+            self.rebuild = rebuild
+        
+        super().__init__(self.database_path, self.schema, self.rebuild)
+
         self.fields = list(self.tables_info())
         if not self.fields:
-            self._connection.execute()
+            raise Exception("Table not initialized for notes app")
 
     def tables_info(self):
         table_info = []
@@ -229,11 +300,64 @@ class NoteConnection(Connection):
         for colnum, colname, coltype, _, _, autoincrement in cursor:
             yield (colname, coltype)
     
+    def select_max_note_id(self):
+        statement = "SELECT MAX(id_note) FROM NOTES;"
+        cursor = self._connection.execute(statement)
+        for max_id in cursor.fetchone():
+            return max_id
+
     def select_from_table(self):
         table = "notes"
         fields = ", ".join(n for (n, t) in self.fields)
         statement = f"select {fields} from {table}"
         for note in self._connection.execute(statement).fetchall():
+            yield note
+    
+    def insert_note(self, obj):
+        print(obj)
+        if isinstance(obj, Note):
+            attr = f"""
+'{obj.title}', '{obj.created}', '{obj.modified}', {repr(obj.note)}
+"""[1:]
+        else:
+            attr = f"""
+'{obj['title']}', 
+'{datetime.datetime(*obj['created'])}', 
+'{datetime.datetime(*obj['modified'])}', 
+{repr(obj['note'])}
+"""[1:]
+        print('Attr:', attr)
+        s = f"INSERT INTO NOTES (title, created, modified, note) VALUES ({attr});"
+        self._connection.execute(s)
+        self._connection.commit()
+        print(obj, "written to db")
+
+class NoteConnection:
+    """TODO: make this more abstract for different connections"""
+    def __init__(self):
+        # leave the logging initialization to the loggable class
+        self.__connection = sqlite3.connect(
+            'data/notes.db', 
+            detect_types=sqlite3.PARSE_DECLTYPES
+        )
+        self.fields = list(self.tables_info())
+        if not self.fields:
+            self.__connection.execute()
+
+    def tables_info(self):
+        table_info = []
+        cursor = self.__connection.execute('pragma table_info(notes)')
+        for colnum, colname, coltype, _, _, autoincrement in cursor:
+            yield (colname, coltype)
+    
+    def select_from_table(self):
+        table = "notes"
+        print(self.fields)
+        fields = ", ".join(n for (n, t) in self.fields)
+        print(fields)
+        statement = f"select {fields} from {table}"
+        print(statement)
+        for note in self.__connection.execute(statement).fetchall():
             yield note
     
 if __name__ == "__main__":
