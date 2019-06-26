@@ -1,9 +1,9 @@
 """
-calendargridtest.py: Runs calendargrid within blt or curses.
+__main__.py: Runs calendar\grid within blt or curses.
 """
 
 import click
-from examples.calendargrid import CalendarGrid, MonthGrid, DateNode, Options, YearMonthDay
+from grid import CalendarGrid, MonthGrid, DateNode, Options, YearMonthDay
 
 @click.command()
 @click.option("--debug", "debug", default=False)
@@ -120,3 +120,4 @@ def main_blt(options, debug):
 
 if __name__ == "__main__":
     main()
+
