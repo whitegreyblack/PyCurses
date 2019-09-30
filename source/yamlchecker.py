@@ -1,28 +1,31 @@
-"""yamlchecker.py 
-YamlChecker provides methods to iterate through and validate
-yaml files. It can be used as a stand alone script to check
-the files as they are written for any errors. Used before
-inserting data into the database.
+# yamlchecker.py
+
+""" 
+    YamlChecker provides methods to iterate through and validate
+    yaml files. It can be used as a stand alone script to check
+    the files as they are written for any errors. Used before
+    inserting data into the database.
 """
 
-__author__ = "Samuel Whang"
-
-import re
-import os
-import yaml
-import click
-import logging
 import datetime
+import logging
+import os
+import re
 from collections import namedtuple
 
-import source.utils as utils
+import click
+import yaml
+
 import source.config as config
+import source.utils as utils
 from source.logger import Loggable
-from source.YamlObjects import receipt
+from source.YamlObjects import Receipt
+
 
 class YamlChecker(Loggable):
-    """Processes yaml files in specified folder for both file integrity and
-    yaml safe syntax
+    """
+        Processes yaml files in specified folder for both file integrity and
+        yaml safe syntax
     """
     def __init__(self, folder, logger=None):
         super().__init__(self, logger=logger)
@@ -49,13 +52,14 @@ class YamlChecker(Loggable):
         return self.unverified
 
     def verify_file_states(self, loaded_files=None):
-        """Iterate through each file in directory to verify if the file is
-        safe to load into the database.
+        """
+            Iterate through each file in directory to verify if the file is
+            safe to load into the database.
 
-        Parameters:
-            loaded_files => file names pulled from database passed in to 
-                            skip future checking and loading during the 
-                            verification process.
+            Parameters:
+                loaded_files => file names pulled from database passed in to 
+                                skip future checking and loading during the 
+                                verification process.
         """
         def convert_int(floatval):
             return int(floatval * 100)
@@ -427,12 +431,12 @@ def usage():
 USAGE: -f [ arg ] [ -p ]
     -f  => folder flag with expecting argument
     arg => folder name containing yaml files
-    -p  => print mode flag
-"""[1:]
+    -p  => print mode flag"""[1:]
 
 def log(logger, message, consoleprint):
-    """Prints messages in info mode. If consoleprint is true then also prints
-    to terminal as well.
+    """
+        Prints messages in info mode. If consoleprint is true then also prints
+        to terminal as well.
     """
     logger.info(message)
     if consoleprint:

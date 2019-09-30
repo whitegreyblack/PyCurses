@@ -2,9 +2,12 @@
 holds all objects used during transporting data from yaml to database
 """
 
-import yaml
 import datetime
+
+import yaml
+
 import source.config as config
+
 
 def validate_receipt_store(filename, storename):
     store_from_filename = filename.split('.')[0].split('-')[1]

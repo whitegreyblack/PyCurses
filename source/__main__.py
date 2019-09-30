@@ -74,7 +74,7 @@ def run_application(screen, folderpath, app, demo, rebuild, reinsert, logger=Non
 @click.option('-f', "folder", nargs=1,
               help="Folder containing yaml data files")
 @click.option('--app', "app", nargs=1,
-              help="Specified which demo application to run [notes, tree, tasks, receipts, quiz]")
+              help="Specify which demo application to run")
 @click.option('-x', "demo", nargs=1, is_flag=True, default=False,
               help="Use fake data to build the app")
 @click.option('-r', "rebuild", nargs=1, is_flag=True, default=False,
@@ -82,8 +82,9 @@ def run_application(screen, folderpath, app, demo, rebuild, reinsert, logger=Non
 @click.option('-i', "reinsert", nargs=1, is_flag=True, default=False,
               help="Reinsert data for specified application")
 def main(folder, app, demo, rebuild, reinsert):
-    """Handles argument parsing using click framework before calling the
-    curses wrapper handler function
+    """
+        Handles argument parsing using click framework before calling the
+        curses wrapper handler function
     """
     demos = dict()
     for a in Applications:
@@ -91,8 +92,9 @@ def main(folder, app, demo, rebuild, reinsert):
             for name in getattr(a, 'CLI_NAMES'):
                 demos.update({name: a})
 
-    # these apps have not been built yet but we want to keep their names in the 
-    # demo list for future use. For now they will call the default app program
+    # these apps have not been built yet but we want to keep their names in 
+    # the demo list for future use. For now they will call the default app 
+    # program
     demos.update({
         "receipts": Application,
         "receipt": Application,
@@ -108,12 +110,14 @@ def main(folder, app, demo, rebuild, reinsert):
         return
 
     # determine which application to run
-    application = Application
     if app:
         if app not in demos.keys():
             print("Invalid demo specified: not found in demo list")
+            print("\n".join(str(d) for d in demos))
             return
         application = demos[app]
+    else:
+        application = Application
 
     # Format the given path for the correct path delimiter and the check if
     # that path exists as a directory within the filesystem. Exit early if
@@ -130,7 +134,15 @@ def main(folder, app, demo, rebuild, reinsert):
     # logger class before we enter main curses loop
     logargs = utils.logargs(application, __file__)
     logger = utils.setup_logger_from_logargs(logargs)
-    curses.wrapper(run_application, folder, application, demo, rebuild, reinsert, logger)
+    curses.wrapper(
+        run_application, 
+        folder, 
+        application, 
+        demo, 
+        rebuild, 
+        reinsert, 
+        logger
+    )
 
 if __name__ == "__main__":
     main()

@@ -1,5 +1,5 @@
+-- drop existing table then recreate notes table
 drop table if exists notes;
-
 create table notes (
     id_note integer PRIMARY KEY,
     title varchar(20) NOT NULL UNIQUE,

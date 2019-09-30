@@ -149,10 +149,7 @@ class Task:
         else:
             self.nid = Task.tid
             Task.tid += 1
-<<<<<<< HEAD
-=======
 
->>>>>>> 0839317a574efa9caf443dbb5a042d2eed3cac6f
     def display(self, x, y, mx, my, indent):
         text = textwrap.wrap(self.description, mx)
         for i, line in enumerate(text):

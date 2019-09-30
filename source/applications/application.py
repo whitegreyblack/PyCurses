@@ -25,25 +25,25 @@ from source.schema import (SQLType, Table, build_products_table,
 from source.window import (DisplayWindow, PromptWindow, ScrollableWindow,
                            Window, WindowProperty, keypress_down, keypress_up)
 from source.yamlchecker import YamlChecker
-from source.YamlObjects import receipt as Yamlreceipt
+from source.YamlObjects import Receipt as Yamlreceipt
 
 
 class Application(Loggable):
     """
-    Builds the initial parent window using the initial curses screen passed in
-    during initialization.
+        Builds the initial parent window using the initial curses screen 
+        passed in during initialization.
 
-    Also saves export folder paths for data exporting.
+        Also saves export folder paths for data exporting.
 
-    During build functions, creates window objects for the view, controller
-    objects to retrieve data after requests are sent in, and moves model data
-    into the correct window object.
+        During build functions, creates window objects for the view, 
+        controller objects to retrieve data after requests are sent in, 
+        and moves model data into the correct window object.
 
-    Then the application is looped to draw the views onto the screen using 
-    curses framework.
+        Then the application is looped to draw the views onto the screen 
+        using curses framework.
 
-    Handles two way data exchanges between windows if data needs transformation
-    before reaching destination window from source window.
+        Handles two way data exchanges between windows if data needs 
+        transformation before reaching destination window from source window.
     """
     def __init__(self, folder, screen=None, logger=None):
         # print(self.__class__.__name__)

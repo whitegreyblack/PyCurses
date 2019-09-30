@@ -9,14 +9,15 @@ from collections import namedtuple
 
 import source.config as config
 from source.logger import Loggable
+from source.models.models import Note
 from source.schema import (SQLType, Table, build_products_table,
                            build_receipts_table)
 from source.utils import filename_and_extension as fileonly
 from source.utils import format_date as date
 from source.utils import format_float as real
 from source.utils import logargs, setup_logger, setup_logger_from_logargs
-from source.YamlObjects import receipt
-from source.models.models import Note
+from source.YamlObjects import Receipt
+
 
 spacer = "  "
 
@@ -292,7 +293,16 @@ class NoteConnection(Connection):
 
         self.fields = list(self.tables_info())
         if not self.fields:
-            raise Exception("Table not initialized for notes app")
+            # table doesn't exist, inject create table command
+            # try:
+            query = open('./source/db_scripts/create_notes.sql', 'r')
+            c = self._connection.cursor()
+            c.execute(query.read())
+            self._connection.commit()
+            c.close()
+            # except:
+            #     raise Exception("Table not initialized for notes app")
+            self.fields = list(self.tables_info())
 
     def tables_info(self):
         table_info = []
@@ -317,32 +327,32 @@ class NoteConnection(Connection):
         print(obj)
         if isinstance(obj, Note):
             attr = f"""
-'{obj.title}', '{obj.created}', '{obj.modified}', {repr(obj.note)}
-"""[1:]
+'{obj.title}', '{obj.created}', '{obj.modified}', {repr(obj.note)}"""[1:]
         else:
             attr = f"""
 '{obj['title']}', 
 '{datetime.datetime(*obj['created'])}', 
 '{datetime.datetime(*obj['modified'])}', 
-{repr(obj['note'])}
-"""[1:]
+{repr(obj['note'])}"""[1:]
+
         print('Attr:', attr)
         s = f"INSERT INTO NOTES (title, created, modified, note) VALUES ({attr});"
         self._connection.execute(s)
         self._connection.commit()
         print(obj, "written to db")
 
-class NoteConnection:
+class AbstractConnection:
     """TODO: make this more abstract for different connections"""
-    def __init__(self):
+    def __init__(self, rebuild):
         # leave the logging initialization to the loggable class
         self.__connection = sqlite3.connect(
             'data/notes.db', 
             detect_types=sqlite3.PARSE_DECLTYPES
         )
         self.fields = list(self.tables_info())
-        if not self.fields:
-            self.__connection.execute()
+        print(self.fields)
+        # if not self.fields:
+        #     self.__connection.execute()
 
     def tables_info(self):
         table_info = []
