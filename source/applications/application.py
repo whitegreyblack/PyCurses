@@ -49,15 +49,19 @@ class Application(Loggable):
         # print(self.__class__.__name__)
         super().__init__(self, logger=logger)
 
-        self.continue_app = True
+        self.running = True
         
         self.screen = screen
         self.window = Window(
             screen, 
             eventmap=EventMap.fromkeys((
-                27,         # escape key
-                113,        # letter q
-                81          # letter Q
+                27,  # escape key
+                113, # letter q
+                81,  # letter Q
+                258, # down
+                259, # up
+                260, # left
+                261, # right
             ))
         )
         self.focused = self.window
@@ -140,7 +144,7 @@ class Application(Loggable):
         return yobjs
 
     def run(self):
-        while self.continue_app:
+        while self.running:
             key = self.screen.getch()
             print(f"focused:{self.focused} | keypress map:{self.focused.keypresses}")
             if key in self.focused.keypresses.keys():
@@ -236,7 +240,7 @@ class Application(Loggable):
         self.on_data_removed(self, data=self.data)
 
     def keypress_escape(self, sender=None, **kwargs):
-        self.continue_app = False
+        self.running = False
 
     def build_receipt_viewer(self, rebuild=False):
         screen = self.screen
@@ -299,7 +303,8 @@ class Application(Loggable):
                 0
             ),
             title="Sub-win 1",
-            focused=True
+            focused=True,
+            dataobj=Text.random()
         )
 
         # second window quarter screen top right
@@ -310,7 +315,8 @@ class Application(Loggable):
                 0,
                 utils.partition(width, 2, 1), 
             ),
-            title="Sub-win 2"
+            title="Sub-win 2",
+            dataobj=Text.random()
         )
 
         sub3 = DisplayWindow(
@@ -320,9 +326,15 @@ class Application(Loggable):
                 utils.partition(height-1, 2, 1, math.ceil),
                 utils.partition(width, 2, 1), 
             ),
-            title="Sub-win 3"
+            title="Sub-win 3",
+            dataobj=Text.random()
         )
         
+        # Handlers need windows to be built before adding them.
+        # Could use string names and methods which get called
+        # by getattr instead so that handlers can be created
+        # during object creation
+
         # win 1 handlers
         sub1.add_handler(27, self.keypress_escape)
         sub1.add_handlers(

@@ -77,14 +77,12 @@ class ContactsApplication(Application):
             reinsert=reinsert
         )
 
+        # if no real data is present use fakedata to generate data
         if rebuild:
-            self.data = [
-                self.controller.request_persons()
-            ]
+            self.data = [ self.controller.request_persons() ]
         else:
-            self.data = [
-                Person.random() for _ in range(10)
-            ]
+            self.data = [ Person.random() for _ in range(10) ]
+
         # main window
         self.window.title = 'Application Example 1'
 
