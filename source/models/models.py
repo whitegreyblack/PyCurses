@@ -109,6 +109,26 @@ Question(
             t = c.replace('\n', '')
             yield y + dy + j, x, t[:mx]
 
+class LabelList(list):
+    def __init__(self, *items):
+        self += items
+    def display(self, x, y, mx, my, indent):
+        for dy, item in enumerate(self):
+            for ly, lx, s in item.display(x, y+dy, mx, my, indent):
+                yield ly, lx, s
+
+class Label:
+    random_id = 0
+    def __init__(self, text):
+        self.text = text
+    def display(self, x, y, mx, my, indent):
+        text = textwrap.wrap(self.text, mx)
+        yield y, 1, text[0]
+    @classmethod
+    def random(cls):
+        i = cls.random_id
+        cls.random_id += 1
+        return cls(f"label #{i}")
 
 class Text:
     def __init__(self, text):

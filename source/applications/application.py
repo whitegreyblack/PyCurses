@@ -18,7 +18,7 @@ from source.controllers import (ExplorerController, NotesController,
 from source.database import Connection, NoteConnection, ReceiptConnection
 from source.keymap import EventMap
 from source.logger import Loggable
-from source.models.models import Receipt, Task, Text, Transaction
+from source.models.models import Receipt, Task, Text, Transaction, Label, LabelList
 from source.models.product import Product
 from source.schema import (SQLType, Table, build_products_table,
                            build_receipts_table)
@@ -304,7 +304,11 @@ class Application(Loggable):
             ),
             title="Sub-win 1",
             focused=True,
-            dataobj=Text.random()
+            dataobj=LabelList(
+                Label.random(), 
+                Label.random(), 
+                Label.random()
+            )
         )
 
         # second window quarter screen top right
