@@ -1,9 +1,15 @@
-"""window.py"""
+# base.py
+
+"""
+    Base window class which all other windows derive from
+"""
 
 import curses
-from source.utils import EventHandler
-from source.keymap import EventMap
 from math import ceil, floor
+
+from source.keymap import EventMap
+from source.utils import EventHandler
+
 
 class Window:
     window_ids = 0
@@ -16,10 +22,11 @@ class Window:
             showing=True,
             border=False,
             eventmap=None,
-            keypresses=None):
-        """Main parent window which all other windows derive from"""
-        # Window.window_ids[2**w] = self
-        self.wid = 2**Window.window_ids
+            keypresses=None
+    ):
+        # keep track of current window id based on number of initialized 
+        # windows
+        self.wid = 1 << window_ids
         Window.window_ids += 1
 
         self.title = title

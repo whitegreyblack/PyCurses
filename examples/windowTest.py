@@ -1,38 +1,48 @@
-import curses
+# windowTest.py
 
-cards = []
+""" Example showing vertical divder bar """
+
+import curses
+from dataclasses import dataclass, field
+
+
+@dataclass
+class Card:
+    description: str
+
+@dataclass
+class CardList:
+    cards: list = field(default_factory=list)
+    def add_cards(self, *cards):
+        self.cards += cards
+    @property
+    def descriptions(self):
+        for c in self.cards: yield c.description
+
+cards = CardList()
+cards.add_cards(Card('a'), Card('b'))
 
 def main(screen): 
-    terminal_lines = curses.LINES
-    terminal_cols = curses.COLS
+    # turn off blinking cursor
+    curses.curs_set(0)
 
-    if (curses.COLS <= 80):
-        # accounts for border characters taking up two lines 
-        # horizontally and vertically each
-        screen_length = terminal_cols - 2
-        screen_height = terminal_lines - 2
+    # calculate space inside divided panel
+    vertical_divider = max(16, (curses.COLS - 2) // 4) 
 
-        horizontal_divider = (screen_height // 5) # closest int
-        vertical_divider = max(16, screen_height // 4) 
-        curses.curs_set(0)
+    screen.border()
+    # add separator
+    screen.vline(1, vertical_divider, curses.ACS_VLINE, curses.LINES - 2)
+    # add title
+    screen.addstr(0, 2, '[receipt Viewer]')
 
-        # Mobile view
-        screen.border()
-        #screen.addstr(horizontal_divider, 1, '-' * screen_length)
-        for i in range(screen_height):
-            screen.addch(i + 1, vertical_divider, '|')
-        # get bounds of header
-        screen.addstr(0, 1, 'receipt Viewer')
-
-        # get bounds of main panel to add string
-        card_length = vertical_divider - 3
-        for index, card in enumerate(cards):
-            screen.addstr(index + 1, 1, card.description(card_length))
-
-        screen.getch()
-    else:
-        # Desktop view
-        raise NotYetImplementedError()
+    # get bounds of main panel to add string
+    card_length = vertical_divider - 2
+    for height, description in enumerate(cards.descriptions):
+        screen.addstr(height + 1, 1, f"{chr(97+height)}. {description}")
+    
+    # exit on keypress
+    print(repr(screen.getkey()))
+    # screen.getch()
 
 if __name__ == "__main__":
     curses.wrapper(main)
