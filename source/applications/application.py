@@ -1,6 +1,7 @@
-"""Application.py: 
-Main class that builds all other objects and runs the curses loop
-"""
+# application
+
+""" Main class that builds all other objects and runs the curses loop """
+
 import curses
 import datetime
 import logging

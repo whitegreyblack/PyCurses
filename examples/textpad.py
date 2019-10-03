@@ -1,3 +1,5 @@
+# textpad.py
+
 import curses
 import curses.textpad
 

@@ -37,4 +37,3 @@ if __name__ == "__main__":
             w.split(Direction.HORIZONTAL)
         else:
             w.split()
-        i = input()

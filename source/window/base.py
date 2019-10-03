@@ -1,8 +1,6 @@
 # base.py
 
-"""
-    Base window class which all other windows derive from
-"""
+""" Base window class which all other windows derive from """
 
 import curses
 from math import ceil, floor
@@ -26,7 +24,7 @@ class Window:
     ):
         # keep track of current window id based on number of initialized 
         # windows
-        self.wid = 1 << window_ids
+        self.wid = 1 << Window.window_ids
         Window.window_ids += 1
 
         self.title = title
