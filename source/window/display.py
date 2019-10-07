@@ -27,3 +27,4 @@ class DisplayWindow(Window):
                     self.window.addstr(y, x, s)
         else:
             self.window.addstr(1, 1, "No data present")
+

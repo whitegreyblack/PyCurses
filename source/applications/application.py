@@ -23,7 +23,7 @@ from source.models.models import Receipt, Task, Text, Transaction, Label, LabelL
 from source.models.product import Product
 from source.schema import (SQLType, Table, build_products_table,
                            build_receipts_table)
-from source.window import (DisplayWindow, PromptWindow, ScrollableWindow,
+from source.window import (DisplayWindow, PromptWindow, ScrollableWindow, ListWindow,
                            Window, WindowProperty, keypress_down, keypress_up)
 from source.yamlchecker import YamlChecker
 from source.YamlObjects import Receipt as Yamlreceipt
@@ -53,6 +53,7 @@ class Application(Loggable):
         self.running = True
         
         self.screen = screen
+        # base window will recieve keypresses and emit to subwindows if needed
         self.window = Window(
             screen, 
             eventmap=EventMap.fromkeys((

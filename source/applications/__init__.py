@@ -5,6 +5,7 @@ from source.applications.notes import NoteApplication
 from source.applications.quiz import QuizApplication
 from source.applications.tasks import TaskApplication
 from source.applications.system.system import SystemApplication
+from source.applications.receipts import ReceiptApplication
 
 Applications = (
     ContactsApplication, 
@@ -12,5 +13,6 @@ Applications = (
     QuizApplication, 
     TaskApplication, 
     Encyclopedia, 
-    SystemApplication
+    SystemApplication,
+    ReceiptApplication
 )

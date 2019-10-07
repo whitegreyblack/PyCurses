@@ -29,3 +29,4 @@ class WindowProperty(object):
     def __repr__(self):
         attrs = ', '.join(f'{k}: {getattr(self, k)}' for k in self.__slots__)
         return f"WindowProperty({attrs})"
+

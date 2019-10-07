@@ -7,7 +7,7 @@ from source.utils import EventHandler
 from collections.abc import MutableMapping
 
 def function_called(sender, *args):
-    print(sender.__class__.__name__, args)
+    print('---', sender.__class__.__name__, args)
 
 class KeyMap(MutableMapping):
     def __init__(self, *args, **kwargs):
@@ -67,3 +67,4 @@ if __name__ == "__main__":
         print(k, v)
     em[1].append(function_called)
     em(1, em, 'Got \'em', 1)
+

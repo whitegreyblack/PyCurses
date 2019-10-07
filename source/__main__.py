@@ -16,6 +16,7 @@ import source.utils as utils
 from source.applications import (Application, Applications,
                                  ContactsApplication, Encyclopedia,
                                  NoteApplication, QuizApplication,
+                                 ReceiptApplication,
                                  SystemApplication, TaskApplication)
 
 
@@ -96,8 +97,8 @@ def main(folder, app, demo, rebuild, reinsert):
     # the demo list for future use. For now they will call the default app 
     # program
     demos.update({
-        "receipts": Application,
-        "receipt": Application,
+        "receipts": ReceiptApplication,
+        "receipt": ReceiptApplication,
     })
 
     # pprint.pprint(demos)

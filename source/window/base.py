@@ -201,10 +201,10 @@ class Window:
 
     def add_handlers(self, key, *handlers):
         for handler in handlers:
-            print(handler)
-            print(handler.__name__)
+            print(f'adding {key}, {handler}, "{handler.__name__}"')
             self.add_handler(key, handler)
 
     def handle_key(self, key):
         print(f"{self}: handling key {key}")
         self.keypresses.trigger(key, self)
+
