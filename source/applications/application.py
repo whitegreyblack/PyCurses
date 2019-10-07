@@ -27,6 +27,7 @@ from source.window import (DisplayWindow, PromptWindow, ScrollableWindow, ListWi
                            Window, WindowProperty, keypress_down, keypress_up)
 from source.yamlchecker import YamlChecker
 from source.YamlObjects import Receipt as Yamlreceipt
+from source.window.property import WindowProperty
 
 
 class Application(Loggable):
@@ -56,6 +57,7 @@ class Application(Loggable):
         # base window will recieve keypresses and emit to subwindows if needed
         self.window = Window(
             screen, 
+            properties=WindowProperty(border=False),
             eventmap=EventMap.fromkeys((
                 27,  # escape key
                 113, # letter q
@@ -66,6 +68,7 @@ class Application(Loggable):
                 261, # right
             ))
         )
+        print(self.window)
         self.focused = self.window
         self.last_focused = None
         self.folder = folder
@@ -305,12 +308,12 @@ class Application(Loggable):
                 0
             ),
             title="Sub-win 1",
-            focused=True,
             dataobj=LabelList(
                 Label.random(), 
                 Label.random(), 
                 Label.random()
-            )
+            ),
+            properties=WindowProperty(focused=True, showing=True, border=True)
         )
 
         # second window quarter screen top right

@@ -15,10 +15,8 @@ class Window:
             self, 
             window, 
             title=None, 
+            properties=None,
             title_centered=False,
-            focused=False, 
-            showing=True,
-            border=False,
             eventmap=None,
             keypresses=None
     ):
@@ -28,6 +26,17 @@ class Window:
         Window.window_ids += 1
 
         self.title = title
+        # from window property class
+        if properties:
+            self._focused = properties.focused
+            self.showing = properties.showing
+            self.border = properties.border
+            print(self, self.border)
+        else:
+            self._focused = False
+            self.showing = True
+            self.border = True
+
         self.title_centered = title_centered
         y, x = window.getmaxyx()
         self.term_width = x
@@ -35,7 +44,6 @@ class Window:
         self.window = window
         self.parent = None
         self.child = False
-        self.border = border
         self.width = x - 2
         self.height = y - 2
         self.components = []
@@ -48,15 +56,15 @@ class Window:
             'showing'
         ))
 
-        self.showing = showing
-        self._focused = focused
 
         self.keypresses = keypresses if keypresses else EventMap()
 
         self.on_focus_changed = EventHandler()
 
     def __repr__(self):
-        return f"{self.__class__.__name__}({self.title if self.title else self.wid})"
+        clsname = self.__class__.__name__
+        description = f"{self.wid}{('-'+self.title) if self.title else ''}"
+        return f"{clsname}({description})"
 
     @property
     def currently_focused(self):
@@ -84,6 +92,7 @@ class Window:
     def focus(self, sender=None, **kwargs):
         """Focus event handler"""
         self.focused = True
+        return str(self)
 
     def unfocus(self, sender=None, **kwargs):
         """Focus event handler"""
@@ -106,7 +115,6 @@ class Window:
         self.__windows = value
 
     def add_window(self, window):
-        # print("add", window, window.focused, window.focused and self.focused)
         print(f"Adding window: {window}")
         window.parent = self
         window.border = True
@@ -191,9 +199,30 @@ class Window:
             view.clear()
 
     def draw_border(self):
+        print(self, self.border)
         if self.border:
             self.window.border()
-    
+
+    def draw_title(self): 
+        if self.title:
+            c = curses.color_pair(2)
+            x, y, s = 0, 0, self.title[:self.term_width//2]
+            # children titles are -1 from the right
+            if self.title_centered:
+                c = curses.color_pair(1)
+                if self.focused:
+                    c = curses.color_pair(2)
+                x = self.width // 2 - len(self.title) // 2
+            else:
+                if self.parent:
+                    x = self.width - len(s) - 2
+                    c = curses.color_pair(1)
+                    if self.focused:
+                        c = curses.color_pair(2)
+                else:
+                    s = s.rjust(len(s)+2).ljust(self.width+2)
+            self.window.addstr(y, x, s, c)
+ 
     def add_handler(self, key, handler):
         if key not in self.keypresses.keys():
             self.keypress[key] = EventHandler()

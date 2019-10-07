@@ -1,9 +1,13 @@
-"""display.py"""
+# display.py
 from source.window.base import Window
+from source.window.property import WindowProperty
+
 
 class DisplayWindow(Window):
-    def __init__(self, window, title=None, dataobj=None, focused=False, showing=True):
-        super().__init__(window, title, focused=focused, showing=showing)
+    def __init__(self, window, title=None, dataobj=None, properties=None):
+        if not properties:
+            properties = WindowProperty()
+        super().__init__(window, title, properties)
         self.dataobject = dataobj
         self.selected = -1
 
@@ -15,7 +19,10 @@ class DisplayWindow(Window):
         if not self.showing:
             return
 
-        super().draw()
+        
+        self.draw_border()
+        self.draw_title()
+        # super().draw()
         if self.dataobject:
             mx, my = self.width, self.height
             strings = list(self.dataobject.display(1, 1, mx, my, 2))

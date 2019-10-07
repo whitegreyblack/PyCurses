@@ -30,6 +30,8 @@ from source.window import (DisplayWindow, PromptWindow, ScrollableWindow,
 from source.yamlchecker import YamlChecker
 from source.YamlObjects import Receipt as Yamlreceipt
 from source.applications.application import Application
+from source.window.property import WindowProperty
+
 
 class ReceiptApplication(Application):
 
@@ -50,12 +52,15 @@ class ReceiptApplication(Application):
                 0
             ),
             title="Sub-win 1",
-            focused=True,
-            dataobj=LabelList(
-                Label.random(), 
-                Label.random(), 
-                Label.random(),
-                Label.random()
+            data=[
+                "label 1", 
+                "label 2", 
+                "label 3" 
+            ],
+            properties=WindowProperty(
+                focused=True, 
+                showing=True, 
+                border=True
             )
         )
 
