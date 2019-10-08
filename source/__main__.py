@@ -20,10 +20,11 @@ from source.applications import (Application, Applications,
                                  SystemApplication, TaskApplication)
 
 
-def initialize_curses_settings(logger=None):
+def initialize_curses_settings(term, logger=None):
     """Sets settings for cursor visibility and color pairings"""
     if logger:
         logger.info('main(): initializing curses library settings')
+    term.nodelay(1)
     curses.curs_set(0)
     curses.init_pair(1, curses.COLOR_WHITE, curses.COLOR_BLACK)
     curses.init_pair(2, curses.COLOR_BLACK, curses.COLOR_WHITE)
@@ -36,7 +37,7 @@ def initialize_environment_settings(logger=None):
     # Reduce the delay when pressing escape key on keyboard.
     os.environ.setdefault('ESCDELAY', '25')
 
-def run_application(screen, folderpath, app, demo, rebuild, reinsert, logger=None):
+def run_application(term, folderpath, app, demo, rebuild, reinsert, logger=None):
     """Initializes the Application object which builds the rest of the
     necessary frontend/backend objects.
 
@@ -50,10 +51,10 @@ def run_application(screen, folderpath, app, demo, rebuild, reinsert, logger=Non
     have access to the logger.
     """
     # curses only options.
-    initialize_curses_settings()
+    initialize_curses_settings(term)
       
     # initialize application object and build front/back end
-    a = app(folderpath, screen=screen, logger=logger)
+    a = app(folderpath, term=term, logger=logger)
 
     # should we create a new function that calls all 4 functions?
     # or manually call individual functions in here?
@@ -65,7 +66,6 @@ def run_application(screen, folderpath, app, demo, rebuild, reinsert, logger=Non
     #     getattr(app, demo)()
     # else:
     #     getattr(app, demo)(rebuild=rebuild)
-    a.draw()
     a.run()
 
 # TODO: need a way to run main without needing a folder

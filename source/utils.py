@@ -295,5 +295,5 @@ def validate_filename(filename):
     v = cerberus.Validator(schema)
     print(v.validate({'filename': filename}))
 
-def partition(distance, partitions, length=1, operator=round):
-    return operator(distance/partitions*length)
+def partition(distance, partitions, length=1, op=round):
+    return op(distance/partitions*length)

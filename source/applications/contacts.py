@@ -90,9 +90,9 @@ class ContactsApplication(Application):
         display = DisplayWindow(
             screen.subwin(
                 11,
-                utils.partition(width, 5, 3),
+                utils.partition(width, 5, length=3),
                 1, 
-                utils.partition(width, 5, 2)
+                utils.partition(width, 5, length=2)
             ),
             title="Profile"
         )
@@ -102,7 +102,7 @@ class ContactsApplication(Application):
         scroller = ScrollableWindow(
             screen.subwin(
                 height - 2, 
-                utils.partition(width, 5, 2), 
+                utils.partition(width, 5, length=2), 
                 1, 
                 0
             ),
@@ -117,9 +117,9 @@ class ContactsApplication(Application):
         unused = Window(
             screen.subwin(
                 height - 13, 
-                utils.partition(width, 5, 3),
+                utils.partition(width, 5, length=3),
                 12, 
-                utils.partition(width, 5, 2)
+                utils.partition(width, 5, length=2)
             ), 
             title='verylongtitlescree'
         )

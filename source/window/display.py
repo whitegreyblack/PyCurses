@@ -4,10 +4,10 @@ from source.window.property import WindowProperty
 
 
 class DisplayWindow(Window):
-    def __init__(self, window, title=None, dataobj=None, properties=None):
+    def __init__(self, window, title=None, dataobj=None, properties=None, keymap=None):
         if not properties:
             properties = WindowProperty()
-        super().__init__(window, title, properties)
+        super().__init__(window, title, properties, keymap=None)
         self.dataobject = dataobj
         self.selected = -1
 
@@ -18,20 +18,12 @@ class DisplayWindow(Window):
     def draw(self):
         if not self.showing:
             return
-
-        
-        self.draw_border()
+        self.term.erase()
+        if self.border:
+            self.term.border()        
         self.draw_title()
-        # super().draw()
-        if self.dataobject:
-            mx, my = self.width, self.height
-            strings = list(self.dataobject.display(1, 1, mx, my, 2))
-            print(strings)
-            if strings:
-                for y, x, s in strings:
-                    if len(s) > mx:
-                        raise Exception("Length of string is greater than width of window", s)
-                    self.window.addstr(y, x, s)
-        else:
-            self.window.addstr(1, 1, "No data present")
-
+        if not self.dataobject:
+            return
+        mx, my = self.width, self.height
+        for y, x, s in self.dataobject.display(1, 1, mx, my, 2):
+            self.term.addstr(y, x, s)
