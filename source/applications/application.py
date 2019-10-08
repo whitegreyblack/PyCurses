@@ -163,21 +163,24 @@ class Application(Loggable):
                 continue
             self.window.draw()
         print(self.window.active)
-                # self.focused.eventmap[key]()
-            # if key in self.keymap.keys():
-            #     if self.keymap[key] == None:
-            #         break
-            #     self.keyhandler(key)
-            # elif key in self.events.keys():
-            #     self.events[key](key)
-            # else:
-            #     retval = self.send_signal(key)
-            #     if not retval:
-            #         break
-            # self.screen.erase()
-            # self.draw()
-            # y, x = self.screen.getmaxyx()
-            # self.screen.addstr(y-1, 1, str(key))
+        print(list(self.window.window_ids))
+        print(3 in self.window.window_ids)
+        print(3 in list(self.window.window_ids))
+        # self.focused.eventmap[key]()
+        # if key in self.keymap.keys():
+        #     if self.keymap[key] == None:
+        #         break
+        #     self.keyhandler(key)
+        # elif key in self.events.keys():
+        #     self.events[key](key)
+        # else:
+        #     retval = self.send_signal(key)
+        #     if not retval:
+        #         break
+        # self.screen.erase()
+        # self.draw()
+        # y, x = self.screen.getmaxyx()
+        # self.screen.addstr(y-1, 1, str(key))
 
     # def keyhandler(self, key):
     #     self.keymap[key]()

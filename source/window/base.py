@@ -40,14 +40,16 @@ class Window:
         self.width = self.term_width - 2
         self.height = self.term_height - 2
         self.keymap = keymap
+        self.children = dict()
 
         if not properties:
              # default window settings if none provided
             properties = WindowProperty()
         for prop, value in properties.__dict__.items():
+            print(self, prop, value)
             setattr(self, prop, value)
+            getattr(self, prop)
         
-        self.children = dict()
         if windows:
             for window in windows:
                 window.parent = self
@@ -63,15 +65,62 @@ class Window:
     @property
     def active(self):
         if self.focusable and self.focused:
-            return self.window_id
+            return self
         if self.children:
             for window_id, child_window in self.children.items():
                 if child_window.focused:
-                    print(child_window)
-                    return window_id
+                    return child_window
         raise Exception("No active window found")
 
-    def change_focus(self):
+    @property
+    def window_ids(self):
+        yield self.window_id
+        for child_window in self.children.values():
+            yield from child_window.window_ids
+
+    def window(self, wid):
+        if wid == self.window_id:
+            return self
+        for window_id, child_window in self.children.items():
+            if window_id in child_window.window_ids:
+                if window_id == child_window:
+                    return child_window
+                return child_window.window(wid)
+        return None
+
+    def change_focus(self, key):
+        direction = int(key == 9) * 2 - 1 # returns -1 or 1
+        next_active = -1
+        while True:
+            next_active = (self.active.window_id + direction) % (Window.window_id - 1)
+            print('next_active:', next_active)
+            window = self.window(next_active)
+            print('direction: ', direction)
+            print('window:', window)
+            print('focusable:', window.focusable)
+            if window and window.focusable:
+                break
+            direction += int(key == 9) * 2 - 1
+        if next_active > -1:
+            self.focused = False
+        self.window(next_active).focused = True
+
+    @property
+    def focused(self):
+        return self._focused
+
+    @focused.setter
+    def focused(self, value):
+        self._focused = value
+        # on value set to false, all children nodes become false as well
+        if not value and self.children:
+            for child in self.children:
+                child.focused = False
+
+    def activate_next(self):
+        ...
+
+    def activate_prev(self):
         ...
 
     def draw_title(self):
@@ -96,8 +145,8 @@ class Window:
 
     def draw(self):
         """
-        Handles erasing of window, border drawing and title placement.
-        Then calls children object draw functions
+            Handles erasing of window, border drawing and title placement.
+            Then calls children object draw functions
         """
         if not self.showing:
             return
@@ -111,15 +160,18 @@ class Window:
             self.term_width - len(dimensions) - 1, 
             dimensions
         )
-
         for child in self.children.values():
             child.draw()
 
-    def close(self):
-        self.closed = True
- 
-    def handle_key(self, key):
-        if key in self.keymap:
-            getattr(self, self.keymap[key])()
+    def close(self, key):
+        if key is 27:
+            self.closed = True
             return True
+        exit('Early exit')
+
+    def handle_key(self, key):
+        try:
+            return getattr(self.active, self.active.keymap[key])(key)
+        except Exception as e:
+            print(self.active.window_id, e)
         return False

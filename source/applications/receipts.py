@@ -59,8 +59,8 @@ class ReceiptApplication(Application):
                     properties=WindowProperty(),
                     keymap={
                         27: 'close',
-                        9: 'unfocus',
-                        351: 'unfocus',
+                        9: 'change_focus',
+                        351: 'change_focus',
                     }
                 ),
                 # second window quarter screen top right
@@ -76,8 +76,8 @@ class ReceiptApplication(Application):
                     properties=WindowProperty(),
                     keymap={
                         27: 'close',
-                        9: 'unfocus',
-                        351: 'unfocus',
+                        9: 'change_focus',
+                        351: 'change_focus',
                     }
                 ),
                 # third window quarter screen bottom left
@@ -93,8 +93,8 @@ class ReceiptApplication(Application):
                     properties=WindowProperty(),
                     keymap={
                         27: 'close',
-                        9: 'unfocus',
-                        351: 'unfocus',
+                        9: 'change_focus',
+                        351: 'change_focus',
                     }
                 )
             ]
