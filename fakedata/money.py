@@ -18,11 +18,11 @@ class Money:
         >>> Money(33, 20) - Money(22, 33)
         Money($10.87)
     """
-    def __init__(self, dollars, cents):
+    def __init__(self, dollars, cents=0):
         self.dollars = dollars
         self.cents = cents
     def __str__(self):
-        return f"${self.dollars}.{self.cents}"
+        return f"${self.dollars}.{self.cents:02}"
     def __repr__(self):
         return f"Money({str(self)})"
     def __add__(self, other):
@@ -34,16 +34,36 @@ class Money:
         if isinstance(other, Money):
             total = self.total() - other.total()
             return Money(total // 100, total % 100)
-        raise ValueError("Cannot sub {other}")
+        raise ValueError("Cannot subtract {other}")
+    def __mul__(self, other):
+        if isinstance(other, int):
+            total = self.total() * other
+            return Money(total // 100, total % 100)
+        return ValueError("Cannot multiply by a non-int value")
     def total(self):
         return self.dollars * 100 + self.cents
     @classmethod
     def from_string(cls, amount):
-        dollars, cents = cls.parse(amount)
-        return cls(amount)
+        return cls(*cls.parse(amount))
     @staticmethod
     def parse(amount):
-         raise NotImplementedError
+        values = amount.split('.')
+        if len(values) == 2:
+            dollars, cents = values
+            # handle precision
+            if len(cents) == 2:
+                ...
+            elif len(cents) == 1:
+                cents += '0'
+            else:
+                 raise ValueError(f"""
+Input string value has too high precision. Input: {cents}"""[1:])
+            # handle dollars
+            ...
+            print(dollars, cents)
+            return int(dollars), int(cents)
+        raise ValueError(f"String parsing found multiple '.'s. Input: {amount}")
+
 if __name__ == "__main__":
     import sys
     if len(sys.argv) < 2:
